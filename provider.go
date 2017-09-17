@@ -1,4 +1,4 @@
-package elasticsearch
+package main
 
 import (
 	"net/http"
