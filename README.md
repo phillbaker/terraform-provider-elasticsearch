@@ -58,13 +58,17 @@ resource "elasticsearch_kibana_dashboard" "test" {
 
 ## Development
 
-```
-go get github.com/phillbaker/terraform-provider-elasticsearch
-gopkg.in/olivere/elastic.v5/uritemplates cf4e58efdcee2e8e7c18dad44d51ed166fb256c2
-gopkg.in/olivere/elastic.v5 f698dfea7c6cb058bee5de042f1ad3387f678ab1
-go get github.com/deoxxa/aws_signing_client # c20ee106809eacdffcc81ac7cb984261f8e3067e
+### Requirements
 
+* [Golang](https://golang.org/dl/) 1.7
+* [Glide](https://github.com/Masterminds/glide)
+
+
+```
+# Ensure that this folder is at the following location: `${GOPATH}/src/github.com/phillbaker/terraform-provider-elasticsearch`
 cd $GOPATH/src/github.com/phillbaker/terraform-provider-elasticsearch
+
+glide install
 go build -o /path/to/binary/terraform-provider-elasticsearch
 ```
 

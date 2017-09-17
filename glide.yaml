@@ -1,0 +1,25 @@
+package: github.com/phillbaker/terraform-provider-elasticsearch
+import:
+- package: github.com/aws/aws-sdk-go
+  version: 1.8.36
+  subpackages:
+  - aws/credentials
+  - aws/signer/v4
+- package: github.com/deoxxa/aws_signing_client
+  version: c20ee106809eacdffcc81ac7cb984261f8e3067e
+- package: github.com/hashicorp/terraform
+  version: v0.9.9
+  subpackages:
+  - helper/schema
+  - terraform
+- package: gopkg.in/olivere/elastic.v5
+  version: f698dfea7c6cb058bee5de042f1ad3387f678ab1
+  subpackages:
+  - uritemplates
+# - package: gopkg.in/olivere/elastic.v5/uritemplates
+#   version: cf4e58efdcee2e8e7c18dad44d51ed166fb256c2
+- package: github.com/stretchr/testify
+  version: ^1.1.4
+  subpackages:
+  - mock
+

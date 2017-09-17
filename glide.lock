@@ -1,0 +1,181 @@
+hash: fab5044983637e52255e2a15e9c2903edaee00b37e54c96fce02cb365fd426aa
+updated: 2017-09-18T09:44:54.350432701-04:00
+imports:
+- name: github.com/apparentlymart/go-cidr
+  version: 2bd8b58cf4275aeb086ade613de226773e29e853
+  subpackages:
+  - cidr
+- name: github.com/aws/aws-sdk-go
+  version: 512bdaf8bec30abd545b440447cebb57b53d3af9
+  subpackages:
+  - aws
+  - aws/awserr
+  - aws/awsutil
+  - aws/client
+  - aws/client/metadata
+  - aws/corehandlers
+  - aws/credentials
+  - aws/credentials/ec2rolecreds
+  - aws/credentials/endpointcreds
+  - aws/credentials/stscreds
+  - aws/defaults
+  - aws/ec2metadata
+  - aws/endpoints
+  - aws/request
+  - aws/session
+  - aws/signer/v4
+  - internal/shareddefaults
+  - private/protocol
+  - private/protocol/query
+  - private/protocol/query/queryutil
+  - private/protocol/rest
+  - private/protocol/restxml
+  - private/protocol/xml/xmlutil
+  - service/s3
+  - service/sts
+- name: github.com/bgentry/go-netrc
+  version: 9fd32a8b3d3d3f9d43c341bfe098430e07609480
+  subpackages:
+  - netrc
+- name: github.com/davecgh/go-spew
+  version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
+  subpackages:
+  - spew
+- name: github.com/deoxxa/aws_signing_client
+  version: c20ee106809eacdffcc81ac7cb984261f8e3067e
+- name: github.com/go-ini/ini
+  version: afbc45e87f3ba324c532d12c71918ef52e0fb194
+- name: github.com/golang/protobuf
+  version: 11b8df160996e00fd4b55cbaafb3d84ec6d50fa8
+  subpackages:
+  - proto
+  - ptypes
+  - ptypes/any
+  - ptypes/duration
+  - ptypes/timestamp
+- name: github.com/hashicorp/errwrap
+  version: 7554cd9344cec97297fa6649b055a8c98c2a1e55
+- name: github.com/hashicorp/go-cleanhttp
+  version: 3573b8b52aa7b37b9358d966a898feb387f62437
+- name: github.com/hashicorp/go-getter
+  version: 56c651a79a6eec93e6ef074fe9e57fefb26b8b85
+  subpackages:
+  - helper/url
+- name: github.com/hashicorp/go-hclog
+  version: 8105cc0a3736cc153a2025f5d0d91b80045fc9ff
+- name: github.com/hashicorp/go-multierror
+  version: 83588e72410abfbe4df460eeb6f30841ae47d4c4
+- name: github.com/hashicorp/go-plugin
+  version: 3e6d191694b5a3a2b99755f31b47fa209e4bcd09
+- name: github.com/hashicorp/go-uuid
+  version: 64130c7a86d732268a38cb04cfbaf0cc987fda98
+- name: github.com/hashicorp/go-version
+  version: fc61389e27c71d120f87031ca8c88a3428f372dd
+- name: github.com/hashicorp/hcl
+  version: 68e816d1c783414e79bc65b3994d9ab6b0a722ab
+  subpackages:
+  - hcl/ast
+  - hcl/parser
+  - hcl/scanner
+  - hcl/strconv
+  - hcl/token
+  - json/parser
+  - json/scanner
+  - json/token
+- name: github.com/hashicorp/hil
+  version: fa9f258a92500514cc8e9c67020487709df92432
+  subpackages:
+  - ast
+  - parser
+  - scanner
+- name: github.com/hashicorp/logutils
+  version: 0dc08b1671f34c4250ce212759ebd880f743d883
+- name: github.com/hashicorp/terraform
+  version: 404aaeb4a7f8f05f904cdd194cd7de04868d5bb5
+  subpackages:
+  - config
+  - config/module
+  - dag
+  - flatmap
+  - helper/config
+  - helper/experiment
+  - helper/hashcode
+  - helper/hilmapstructure
+  - helper/logging
+  - helper/resource
+  - helper/schema
+  - helper/shadow
+  - plugin
+  - terraform
+- name: github.com/hashicorp/yamux
+  version: d1caa6c97c9fc1cc9e83bbe34d0603f9ff0ce8bd
+- name: github.com/jmespath/go-jmespath
+  version: bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d
+- name: github.com/mitchellh/copystructure
+  version: d23ffcb85de31694d6ccaa23ccb4a03e55c1303f
+- name: github.com/mitchellh/go-homedir
+  version: b8bc1bf767474819792c23f32d8286a45736f1c6
+- name: github.com/mitchellh/go-testing-interface
+  version: 7bf6f6eaf1bed2fd3c6c63114b18cb64facb9de2
+- name: github.com/mitchellh/hashstructure
+  version: b098c52ef6beab8cd82bc4a32422cf54b890e8fa
+- name: github.com/mitchellh/mapstructure
+  version: d0303fe809921458f417bcf828397a65db30a7e4
+- name: github.com/mitchellh/reflectwalk
+  version: 63d60e9d0dbc60cf9164e6510889b0db6683d98c
+- name: github.com/satori/go.uuid
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
+- name: github.com/stretchr/testify
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+  subpackages:
+  - mock
+- name: github.com/ulikunitz/xz
+  version: 0c6b41e72360850ca4f98dc341fd999726ea007f
+  subpackages:
+  - internal/hash
+  - internal/xlog
+  - lzma
+- name: golang.org/x/crypto
+  version: 7d9177d70076375b9a59c8fde23d52d9c4a7ecd5
+  subpackages:
+  - bcrypt
+  - blowfish
+- name: golang.org/x/net
+  version: d58ca6618b994150e624f6888d871f4709db51a0
+  subpackages:
+  - context
+  - context/ctxhttp
+  - http2
+  - http2/hpack
+  - internal/timeseries
+  - trace
+- name: google.golang.org/genproto
+  version: 1e559d0a00eef8a9a43151db4665280bd8dd5886
+  subpackages:
+  - googleapis/rpc/status
+- name: google.golang.org/grpc
+  version: bb78878767b96d411e740439ac820f118e95ae2f
+  subpackages:
+  - balancer
+  - codes
+  - connectivity
+  - credentials
+  - grpclb/grpc_lb_v1/messages
+  - grpclog
+  - health
+  - health/grpc_health_v1
+  - internal
+  - keepalive
+  - metadata
+  - naming
+  - peer
+  - resolver
+  - stats
+  - status
+  - tap
+  - transport
+- name: gopkg.in/olivere/elastic.v5
+  version: f698dfea7c6cb058bee5de042f1ad3387f678ab1
+  subpackages:
+  - uritemplates
+testImports: []
