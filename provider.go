@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -50,6 +51,7 @@ func Provider() terraform.ResourceProvider {
 		ResourcesMap: map[string]*schema.Resource{
 			"elasticsearch_index_template":      resourceElasticsearchIndexTemplate(),
 			"elasticsearch_snapshot_repository": resourceElasticsearchSnapshotRepository(),
+			"elasticsearch_kibana_object": resourceElasticsearchKibanaObject(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -68,6 +70,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 
 	if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
+		log.Printf("[INFO] Using AWS: %+v", m[1])
 		opts = append(opts, elastic.SetHttpClient(awsHttpClient(m[1], d)), elastic.SetSniff(false))
 	}
 
