@@ -18,7 +18,7 @@ See [the docs for more information](https://www.terraform.io/docs/plugins/basics
 
 ## Usage
 
-```
+```tf
 provider "elasticsearch" {
     url = "https://search-foo-bar-pqrhr4w3u4dzervg41frow4mmy.us-east-1.es.amazonaws.com" # Don't include port at the end for aws
     aws_access_key = ""
@@ -28,25 +28,54 @@ provider "elasticsearch" {
 
 resource "elasticsearch_index_template" "test" {
   name = "terraform-test"
-  template = "tf-*"
-  order = 1
-
-  settings {
-    index.number_of_shards = 5
-  }
-
-  mapping {
-    type = "reports"
-
-    date_property {
-      name = "created_at"
-      format = "EEE MMM dd HH:mm:ss Z YYYY"
+  body = <<EOF
+{
+  "template": "logstash-*",
+  "version": 50001,
+  "settings": {
+    "index.refresh_interval": "5s"
+  },
+  "mappings": {
+    "_default_": {
+      "_all": {"enabled": true, "norms": false},
+      "dynamic_templates": [ {
+        "message_field": {
+          "path_match": "message",
+          "match_mapping_type": "string",
+          "mapping": {
+            "type": "text",
+            "norms": false
+          }
+        }
+      }, {
+        "string_fields": {
+          "match": "*",
+          "match_mapping_type": "string",
+          "mapping": {
+            "type": "text", "norms": false,
+            "fields": {
+              "keyword": { "type": "keyword" }
+            }
+          }
+        }
+      } ],
+      "properties": {
+        "@timestamp": { "type": "date", "include_in_all": false },
+        "@version": { "type": "keyword", "include_in_all": false },
+        "geoip" : {
+          "dynamic": true,
+          "properties": {
+            "ip": { "type": "ip" },
+            "location": { "type": "geo_point" },
+            "latitude": { "type": "half_float" },
+            "longitude": { "type": "half_float" }
+          }
+        }
+      }
     }
-
-    keyword_property {
-      name = "subject"
-    }
   }
+}
+EOF
 }
 
 # A saved search, visualization or dashboard
