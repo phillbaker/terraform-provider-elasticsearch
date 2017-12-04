@@ -24,6 +24,8 @@ provider "elasticsearch" {
     aws_access_key = ""
     aws_secret_key = ""
     aws_token = "" # if necessary
+    insecure = true # to bypass certificate check
+    cacert_file = "/path/to/ca.crt" # when connecting to elastic with self-signed certificate
 }
 
 resource "elasticsearch_index_template" "test" {

@@ -62,3 +62,5 @@ The following arguments are supported:
 * `aws_access_key` - (Optional) The access key for use with AWS Elasticsearch Service domains. It can also be sourced from the `AWS_ACCESS_KEY_ID` environment variable.
 * `aws_secret_key` - (Optional) The secret key for use with AWS Elasticsearch Service domains. It can also be sourced from the `AWS_SECRET_ACCESS_KEY` environment variable.
 * `aws_token` - (Optional) The session token for use with AWS Elasticsearch Service domains. It can also be sourced from the `AWS_SESSION_TOKEN` environment variable.
+* `cacert_file` - (Optional) Specify a custom CA certificate when communicating over SSL. You can specify either a path to the file or the contents of the certificate.
+* `insecure` - (Optional) Trust self-signed certificates.
