@@ -1,5 +1,5 @@
 hash: fab5044983637e52255e2a15e9c2903edaee00b37e54c96fce02cb365fd426aa
-updated: 2017-09-18T09:44:54.350432701-04:00
+updated: 2017-12-03T18:55:37.48086421+02:00
 imports:
 - name: github.com/apparentlymart/go-cidr
   version: 2bd8b58cf4275aeb086ade613de226773e29e853
@@ -102,6 +102,7 @@ imports:
   - helper/hashcode
   - helper/hilmapstructure
   - helper/logging
+  - helper/pathorcontents
   - helper/resource
   - helper/schema
   - helper/shadow
