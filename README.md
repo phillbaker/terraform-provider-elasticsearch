@@ -111,7 +111,7 @@ EOF
 
 ### Requirements
 
-* [Golang](https://golang.org/dl/) 1.7
+* [Golang](https://golang.org/dl/) >= 1.7
 * [Glide](https://github.com/Masterminds/glide)
 
 
