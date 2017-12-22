@@ -91,7 +91,12 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 	// termQuery := elastic.Query(elastic.NewTermQuery("title", id))
 	result, err := client.Get().Index(d.Get("index").(string)).Type(objectType).Id(id).Do(context.TODO())
 	if err != nil {
-		log.Printf("[INFO] Not found: %s %s %s", id, objectType, d.Get("index").(string))
+		if elastic.IsNotFound(err) {
+			log.Printf("[WARN] Kibana Object (%s) not found, removing from state", id)
+			d.SetId("")
+			return nil
+		}
+
 		return err
 	}
 	if result.Found {
