@@ -8,7 +8,7 @@ import:
 - package: github.com/deoxxa/aws_signing_client
   version: c20ee106809eacdffcc81ac7cb984261f8e3067e
 - package: github.com/hashicorp/terraform
-  version: v0.9.9
+  version: v0.10.8
   subpackages:
   - helper/schema
   - terraform
