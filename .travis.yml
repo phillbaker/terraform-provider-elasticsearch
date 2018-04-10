@@ -1,7 +1,7 @@
 language: go
 go:
-  - 1.8
-  - 1.9
+  - '1.9'
+  - '1.10'
   - master
 install:
   - go get -v github.com/Masterminds/glide
@@ -24,4 +24,4 @@ deploy:
   on:
     tags: true
     branch: master
-    go: 1.9
+    go: '1.10'
