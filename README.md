@@ -121,7 +121,7 @@ Static credentials can be provided by adding an `aws_access_key` and `aws_secret
 
 Example usage:
 
-```terraform
+```tf
 provider "elasticsearch" {
     url = "https://search-foo-bar-pqrhr4w3u4dzervg41frow4mmy.us-east-1.es.amazonaws.com"
     aws_access_key = "anaccesskey"
