@@ -107,6 +107,47 @@ EOF
 }
 ```
 
+### For use with AWS Elasticsearch domains
+
+The Elasticsearch provider is flexible in the means of providing credentials for authentication with AWS Elasticsearch domains. The following methods are supported, in this order, and explained below:
+
+- Static credentials
+- Environment variables
+- Shared credentials file
+
+#### Static credentials
+
+Static credentials can be provided by adding an `aws_access_key` and `aws_secret_key` in-line in the Elasticsearch provider block. If applicable, you may also specify a `aws_token` value.
+
+Example usage:
+
+```terraform
+provider "elasticsearch" {
+    url = "https://search-foo-bar-pqrhr4w3u4dzervg41frow4mmy.us-east-1.es.amazonaws.com"
+    aws_access_key = "anaccesskey"
+    aws_secret_key = "asecretkey"
+    aws_token = "" # if necessary
+}
+```
+
+#### Environment variables
+
+You can provide your credentials via the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`, environment variables, representing your AWS Access Key and AWS Secret Key. If applicable, the `AWS_SESSION_TOKEN` environment variables is also supported.
+
+Example usage:
+
+```shell
+$ export AWS_ACCESS_KEY_ID="anaccesskey"
+$ export AWS_SECRET_ACCESS_KEY="asecretkey"
+$ terraform plan
+```
+
+#### Shared Credentials file
+
+You can use an AWS credentials file to specify your credentials. The default location is `$HOME/.aws/credentials` on Linux and macOS, or `%USERPROFILE%\.aws\credentials` for Windows users. 
+
+Please refer to the official [userguide](https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html) for instructions on how to create the credentials file.
+
 ## Development
 
 ### Requirements
