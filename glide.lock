@@ -1,5 +1,5 @@
-hash: 3037313e8fa0950bdb0c51f64f25ceced65448a932500d77ef760e58baa588d4
-updated: 2018-04-09T05:16:21.446150136-04:00
+hash: 5399a3eeac6d6f2b1655e85c36a65d5f1b46462ccdbd3777e94cbe4586af4618
+updated: 2018-04-14T17:58:27.185477637-04:00
 imports:
 - name: github.com/agext/levenshtein
   version: 5f10fee965225ac1eecdc234c09daf5cd9e7f7b6
@@ -114,7 +114,7 @@ imports:
 - name: github.com/hashicorp/logutils
   version: 0dc08b1671f34c4250ce212759ebd880f743d883
 - name: github.com/hashicorp/terraform
-  version: e0fd3ddd704b230897723a7ca251f36b71c2b67a
+  version: dbce85d85ff0beebc660b3d1805b4ef15361af00
   subpackages:
   - config
   - config/configschema
@@ -129,9 +129,16 @@ imports:
   - helper/pathorcontents
   - helper/resource
   - helper/schema
+  - httpclient
   - moduledeps
   - plugin
   - plugin/discovery
+  - registry
+  - registry/regsrc
+  - registry/response
+  - svchost
+  - svchost/auth
+  - svchost/disco
   - terraform
   - tfdiags
   - version
@@ -144,7 +151,7 @@ imports:
 - name: github.com/mattn/go-isatty
   version: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
 - name: github.com/mitchellh/cli
-  version: c54c85e9bd492bdba226ffdda55d4e293b79f8e8
+  version: c48282d14eba4b0817ddef3f832ff8d13851aefd
 - name: github.com/mitchellh/copystructure
   version: d23ffcb85de31694d6ccaa23ccb4a03e55c1303f
 - name: github.com/mitchellh/go-homedir
@@ -160,13 +167,11 @@ imports:
 - name: github.com/mitchellh/reflectwalk
   version: 63d60e9d0dbc60cf9164e6510889b0db6683d98c
 - name: github.com/posener/complete
-  version: 98eb9847f27ba2008d380a32c98be474dea55bdf
+  version: e037c22b2fcfa85e74495388f03892ed194bba76
   subpackages:
   - cmd
   - cmd/install
   - match
-- name: github.com/satori/go.uuid
-  version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/stretchr/testify
   version: 12b6f73e6084dad08a7c6e575284b177ecafbc71
   subpackages:
@@ -208,14 +213,15 @@ imports:
   - html/atom
   - http2
   - http2/hpack
+  - idna
   - internal/timeseries
   - trace
 - name: golang.org/x/sys
-  version: 3b87a42e500a6dc65dae1a55d0b641295971163e
+  version: 2281fa97ef7b0c26324634d5a22f04babdac8713
   subpackages:
   - unix
 - name: golang.org/x/text
-  version: 2cb43934f0eece38629746959acc633cba083fe4
+  version: 7922cc490dd5a7dbaa7fd5d6196b49db59ac042f
   subpackages:
   - transform
   - unicode/norm
