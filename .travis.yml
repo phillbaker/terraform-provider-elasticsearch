@@ -10,15 +10,15 @@ install:
 script:
 - go build -v
 - go test -v -cover
+before_deploy: |
+  # rename to match terraform provider conventions:
+  #  https://www.terraform.io/docs/configuration/providers.html#third-party-plugins
+  mv terraform-provider-elasticsearch "terraform-provider-elasticsearch_${TRAVIS_TAG}"
 deploy:
   provider: releases
   api_key:
     secure: JOkdZIcFaAlf+RXY3xQ3MkTYxBCA5Ot2QOR7RtPTfbM1a7R9YrG0zFvgMNnZCiE5ONmf2OkJlcmSdviCE+awrBXSdARZXJFdO+CMa6Q9meyNYcQ8vBTM52BQLmkL2YF+mEEMnxgMD/qXyP4LXR45Hc0LamoDFiONx5w984VZRitPyNDoLczlH4uU3cecfWJN6GFCX/DyG4E1LSQFfy5jVoiaKTbWK/l+XeBJW2pyoCp9a/zmfsZsJhV6gr8Nl9PJxyu2dmgAHQKDEjjIJu6J1eP2vbC4YP/YI73RtWHMUGQ+yZpfd01dL6/NYpWwxZh4bKvtVk8CzHhikvD7DXQOc0yOxw52SMqct+ek0sfkRSz/l/AhwBbOobxbksUIUylBtTRIpH0elW//1WZ2+7pbcZB/SEeKecPoxpfyRQmV/VRRSoQWva9OQ3SObiypTLsPYCY9YG75vAkRddlASbtrErzLS3C8cbo4c7Hrl91Qxw/rNihYIFrwamSax7YJqyA6NmNqIMXr3H9BZMXy1H4FSXBnGOMmnmfeOw9WC4qU/KP31ieyOdzRvP18DQPQjggGz6fzdnIJ8mo1kT46vt9fK0h6AjGB+VVBt9BOBCO8dzPE8NASVE5uRV4FYsTMWOUKLO/SbmFdOpKHR8WIYOe8A7/sJMAnmZqocE8fykCwH9k=
   file: terraform-provider-elasticsearch*
-  before_deploy: |
-    # rename to match terraform provider conventions:
-    #  https://www.terraform.io/docs/configuration/providers.html#third-party-plugins
-    mv terraform-provider-elasticsearch "terraform-provider-elasticsearch_${TRAVIS_TAG}"
   skip_cleanup: true
   file_glob: true
   on:
