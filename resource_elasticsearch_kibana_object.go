@@ -20,8 +20,6 @@ func resourceElasticsearchKibanaObject() *schema.Resource {
 			"body": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-				// ForceNew: true,
-				// DiffSuppressFunc: diffSuppressKibanaObject,
 			},
 			"index": &schema.Schema{
 				Type:     schema.TypeString,
@@ -78,7 +76,6 @@ func resourceElasticsearchKibanaObjectCreate(d *schema.ResourceData, meta interf
 
 func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*elastic.Client)
-	// res, err := client.IndexGetTemplate(d.Id()).Do(context.TODO())
 	bodyString := d.Get("body").(string)
 	var body []map[string]interface{}
 	if err := json.Unmarshal([]byte(bodyString), &body); err != nil {
@@ -88,7 +85,6 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 	id := body[0]["_id"].(string)
 	objectType := body[0]["_type"].(string)
 
-	// termQuery := elastic.Query(elastic.NewTermQuery("title", id))
 	result, err := client.Get().Index(d.Get("index").(string)).Type(objectType).Id(id).Do(context.TODO())
 	if err != nil {
 		if elastic.IsNotFound(err) {
@@ -100,8 +96,6 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 		return err
 	}
 	if result.Found {
-		// search.Hits.Hits.Fields
-		// search.Hits.Hits.Source
 		d.Set("index", d.Get("index").(string))
 		d.Set("body", result.Source)
 		// already exists
@@ -109,13 +103,6 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 		return fmt.Errorf("Object not found.")
 	}
 
-	// t := res[d.Id()]
-	// tj, err := json.Marshal(t)
-	// if err != nil {
-	//   return err
-	// }
-	// d.Set("name", d.Id())
-	// d.Set("body", string(tj))
 	return nil
 }
 
@@ -126,7 +113,6 @@ func resourceElasticsearchKibanaObjectUpdate(d *schema.ResourceData, meta interf
 
 func resourceElasticsearchKibanaObjectDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*elastic.Client)
-	// _, err := client.IndexDeleteTemplate(d.Id()).Do(context.TODO())
 
 	bodyString := d.Get("body").(string)
 	var body []map[string]interface{}
@@ -147,7 +133,6 @@ func resourceElasticsearchKibanaObjectDelete(d *schema.ResourceData, meta interf
 		return err
 	}
 	if !res.Found {
-		// fmt.Print("Document deleted from from index\n")
 		return fmt.Errorf("failed to delete the object")
 	}
 
@@ -156,9 +141,6 @@ func resourceElasticsearchKibanaObjectDelete(d *schema.ResourceData, meta interf
 
 func resourceElasticsearchPutKibanaObject(d *schema.ResourceData, meta interface{}) (string, error) {
 	client := meta.(*elastic.Client)
-	// name := d.Get("name").(string)
-	// body := d.Get("body").(string)
-	// _, err := client.IndexPutTemplate(name).BodyString(body).Create(create).Do(context.TODO())
 
 	bodyString := d.Get("body").(string)
 	var body []map[string]interface{}
