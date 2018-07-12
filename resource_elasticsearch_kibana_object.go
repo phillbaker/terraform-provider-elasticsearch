@@ -40,18 +40,20 @@ func resourceElasticsearchKibanaObjectCreate(d *schema.ResourceData, meta interf
 	if !exists {
 		log.Printf("[INFO] Creating new kibana index")
 		mapping := `{
-      "search": {
-        "properties": {
-          "hits": {
-            "type": "integer",
-          },
-          "version": {
-            "type": "integer",
-          }
-        }
-      }
+			"mappings": {
+	      "search": {
+	        "properties": {
+	          "hits": {
+	            "type": "integer"
+	          },
+	          "version": {
+	            "type": "integer"
+	          }
+	        }
+	      }
+	    }
     }`
-		createIndex, err := client.CreateIndex(d.Get("index").(string) + "/_mapping/search").Body(mapping).Do(context.TODO())
+		createIndex, err := client.CreateIndex(d.Get("index").(string)).Body(mapping).Do(context.TODO())
 		if err != nil {
 			log.Printf("[INFO] Failed to creating new kibana index: %+v", err)
 			return err

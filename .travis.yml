@@ -13,6 +13,7 @@ install:
   - tar -xzf elasticsearch-${ES_VERSION}.tar.gz
   - ./elasticsearch-${ES_VERSION}/bin/elasticsearch -Epath.repo=/tmp &
   - export ELASTICSEARCH_URL=http://127.0.0.1:9200
+  - export TF_LOG=INFO
   - go get -v github.com/Masterminds/glide
   - cd $GOPATH/src/github.com/Masterminds/glide && git checkout v0.13.1 && go install && cd -
   - glide install
