@@ -5,20 +5,37 @@ import (
 	"fmt"
 	"testing"
 
-	elastic "gopkg.in/olivere/elastic.v5"
+	elastic5 "gopkg.in/olivere/elastic.v5"
+	elastic6 "gopkg.in/olivere/elastic.v6"
 
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestAccElasticsearchIndexTemplate(t *testing.T) {
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var config string
+	switch meta.(type) {
+	case *elastic6.Client:
+		config = testAccElasticsearchIndexTemplateV6
+	default:
+		config = testAccElasticsearchIndexTemplateV5
+	}
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testCheckElasticsearchIndexTemplateDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccElasticsearchIndexTemplate,
+				Config: config,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchIndexTemplateExists("elasticsearch_index_template.test"),
 				),
@@ -37,8 +54,18 @@ func testCheckElasticsearchIndexTemplateExists(name string) resource.TestCheckFu
 			return fmt.Errorf("No index template ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*elastic.Client)
-		_, err := conn.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
+		meta := testAccProvider.Meta()
+
+		var err error
+		switch meta.(type) {
+		case *elastic6.Client:
+			client := meta.(*elastic6.Client)
+			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
+		default:
+			client := meta.(*elastic5.Client)
+			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
+		}
+
 		if err != nil {
 			return err
 		}
@@ -48,16 +75,25 @@ func testCheckElasticsearchIndexTemplateExists(name string) resource.TestCheckFu
 }
 
 func testCheckElasticsearchIndexTemplateDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*elastic.Client)
-
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "elasticsearch_index_template" {
 			continue
 		}
 
-		_, err := conn.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
+		meta := testAccProvider.Meta()
+
+		var err error
+		switch meta.(type) {
+		case *elastic6.Client:
+			client := meta.(*elastic6.Client)
+			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
+		default:
+			client := meta.(*elastic5.Client)
+			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
+		}
+
 		if err != nil {
-			return nil
+			return nil // should be not found error
 		}
 
 		return fmt.Errorf("Index template %q still exists", rs.Primary.ID)
@@ -66,51 +102,61 @@ func testCheckElasticsearchIndexTemplateDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccElasticsearchIndexTemplate = `
+var testAccElasticsearchIndexTemplateV5 = `
 resource "elasticsearch_index_template" "test" {
   name = "terraform-test"
   body = <<EOF
 {
-  "template": "logstash-*",
-  "version": 50001,
+  "template": "te*",
   "settings": {
-    "index.refresh_interval": "5s"
+    "index": {
+      "number_of_shards": 1
+    }
   },
   "mappings": {
-    "_default_": {
-      "_all": {"enabled": true, "norms": false},
-      "dynamic_templates": [ {
-        "message_field": {
-          "path_match": "message",
-          "match_mapping_type": "string",
-          "mapping": {
-            "type": "text",
-            "norms": false
-          }
-        }
-      }, {
-        "string_fields": {
-          "match": "*",
-          "match_mapping_type": "string",
-          "mapping": {
-            "type": "text", "norms": false,
-            "fields": {
-              "keyword": { "type": "keyword" }
-            }
-          }
-        }
-      } ],
+    "type1": {
+      "_source": {
+        "enabled": false
+      },
       "properties": {
-        "@timestamp": { "type": "date", "include_in_all": false },
-        "@version": { "type": "keyword", "include_in_all": false },
-        "geoip" : {
-          "dynamic": true,
-          "properties": {
-            "ip": { "type": "ip" },
-            "location": { "type": "geo_point" },
-            "latitude": { "type": "half_float" },
-            "longitude": { "type": "half_float" }
-          }
+        "host_name": {
+          "type": "keyword"
+        },
+        "created_at": {
+          "type": "date",
+          "format": "EEE MMM dd HH:mm:ss Z YYYY"
+        }
+      }
+    }
+  }
+}
+EOF
+}
+`
+
+var testAccElasticsearchIndexTemplateV6 = `
+resource "elasticsearch_index_template" "test" {
+  name = "terraform-test"
+  body = <<EOF
+{
+  "index_patterns": ["te*", "bar*"],
+  "settings": {
+    "index": {
+      "number_of_shards": 1
+    }
+  },
+  "mappings": {
+    "type1": {
+      "_source": {
+        "enabled": false
+      },
+      "properties": {
+        "host_name": {
+          "type": "keyword"
+        },
+        "created_at": {
+          "type": "date",
+          "format": "EEE MMM dd HH:mm:ss Z YYYY"
         }
       }
     }

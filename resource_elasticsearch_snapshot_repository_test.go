@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	elastic "gopkg.in/olivere/elastic.v5"
+	elastic5 "gopkg.in/olivere/elastic.v5"
+	elastic6 "gopkg.in/olivere/elastic.v6"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -37,8 +38,18 @@ func testCheckElasticsearchSnapshotRepositoryExists(name string) resource.TestCh
 			return fmt.Errorf("No snapshot repository ID is set")
 		}
 
-		conn := testAccProvider.Meta().(*elastic.Client)
-		_, err := conn.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
+		meta := testAccProvider.Meta()
+
+		var err error
+		switch meta.(type) {
+		case *elastic6.Client:
+			client := meta.(*elastic6.Client)
+			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
+		default:
+			client := meta.(*elastic5.Client)
+			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
+		}
+
 		if err != nil {
 			return err
 		}
@@ -48,16 +59,25 @@ func testCheckElasticsearchSnapshotRepositoryExists(name string) resource.TestCh
 }
 
 func testCheckElasticsearchSnapshotRepositoryDestroy(s *terraform.State) error {
-	conn := testAccProvider.Meta().(*elastic.Client)
-
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "elasticsearch_snapshot_repository" {
 			continue
 		}
 
-		_, err := conn.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
+		meta := testAccProvider.Meta()
+
+		var err error
+		switch meta.(type) {
+		case *elastic6.Client:
+			client := meta.(*elastic6.Client)
+			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
+		default:
+			client := meta.(*elastic5.Client)
+			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
+		}
+
 		if err != nil {
-			return nil
+			return nil // should be not found error
 		}
 
 		return fmt.Errorf("Snapshot repository %q still exists", rs.Primary.ID)

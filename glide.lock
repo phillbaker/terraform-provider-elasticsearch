@@ -1,5 +1,5 @@
-hash: 2456c61263f1cee301631f18cfee4a6f32665b6c97ef5a298a952ce9555ace05
-updated: 2018-07-08T15:16:37.837141322-04:00
+hash: de28c6cb3b0f74063f90c9e6c504ef8f65d06de64d6e43fc83ec5ce466a1acf3
+updated: 2018-09-13T22:18:03.780130207-04:00
 imports:
 - name: github.com/agext/levenshtein
   version: 5f10fee965225ac1eecdc234c09daf5cd9e7f7b6
@@ -172,6 +172,11 @@ imports:
   version: d0303fe809921458f417bcf828397a65db30a7e4
 - name: github.com/mitchellh/reflectwalk
   version: 63d60e9d0dbc60cf9164e6510889b0db6683d98c
+- name: github.com/olivere/elastic
+  version: 2a5234d20b058173aaea6835e671fc83eee777b0
+  subpackages:
+  - config
+  - uritemplates
 - name: github.com/pkg/errors
   version: 816c9085562cd7ee03e7f8188a1cfd942858cded
 - name: github.com/posener/complete
@@ -261,5 +266,9 @@ imports:
   version: b708306d715bea9b983685e94ab4602cdc9f988b
   subpackages:
   - config
+  - uritemplates
+- name: gopkg.in/olivere/elastic.v6
+  version: e6cae211ee802eab70248a68fe2cb03b616744c9
+  subpackages:
   - uritemplates
 testImports: []

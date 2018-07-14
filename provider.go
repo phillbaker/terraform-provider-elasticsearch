@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"log"
@@ -14,7 +15,8 @@ import (
 	"github.com/hashicorp/terraform/helper/pathorcontents"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
-	elastic "gopkg.in/olivere/elastic.v5"
+	elastic5 "gopkg.in/olivere/elastic.v5"
+	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
 var awsUrlRegexp = regexp.MustCompile(`([a-z0-9-]+).es.amazonaws.com$`)
@@ -83,19 +85,49 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	opts := []elastic.ClientOptionFunc{
-		elastic.SetURL(rawUrl),
-		elastic.SetScheme(parsedUrl.Scheme),
+	opts := []elastic6.ClientOptionFunc{
+		elastic6.SetURL(rawUrl),
+		elastic6.SetScheme(parsedUrl.Scheme),
 	}
 
 	if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
 		log.Printf("[INFO] Using AWS: %+v", m[1])
-		opts = append(opts, elastic.SetHttpClient(awsHttpClient(m[1], d)), elastic.SetSniff(false))
+		opts = append(opts, elastic6.SetHttpClient(awsHttpClient(m[1], d)), elastic6.SetSniff(false))
 	} else if insecure || cacertFile != "" {
-		opts = append(opts, elastic.SetHttpClient(tlsHttpClient(d)), elastic.SetSniff(false))
+		opts = append(opts, elastic6.SetHttpClient(tlsHttpClient(d)), elastic6.SetSniff(false))
 	}
 
-	return elastic.NewClient(opts...)
+	var relevantClient interface{}
+	client, err := elastic6.NewClient(opts...)
+	if err != nil {
+		return nil, err
+	}
+	relevantClient = client
+
+	// Use the v6 client to ping the cluster to determine the version
+	info, _, err := client.Ping(rawUrl).Do(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+	if info.Version.Number < "6.0.0" {
+		log.Printf("[INFO] Using ES 5")
+		opts := []elastic5.ClientOptionFunc{
+			elastic5.SetURL(rawUrl),
+			elastic5.SetScheme(parsedUrl.Scheme),
+		}
+
+		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
+			opts = append(opts, elastic5.SetHttpClient(awsHttpClient(m[1], d)), elastic5.SetSniff(false))
+		} else if insecure || cacertFile != "" {
+			opts = append(opts, elastic5.SetHttpClient(tlsHttpClient(d)), elastic5.SetSniff(false))
+		}
+		relevantClient, err = elastic5.NewClient(opts...)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return relevantClient, nil
 }
 
 func awsHttpClient(region string, d *schema.ResourceData) *http.Client {

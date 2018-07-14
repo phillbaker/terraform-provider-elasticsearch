@@ -19,7 +19,7 @@ func normalizedIndexSettings(settings map[string]interface{}) map[string]interfa
 	for k, v := range f {
 		f[k] = fmt.Sprintf("%v", v)
 		if !strings.HasPrefix(k, "index.") {
-			f["index."+k] = v
+			f["index."+k] = fmt.Sprintf("%v", v)
 			delete(f, k)
 		}
 	}
