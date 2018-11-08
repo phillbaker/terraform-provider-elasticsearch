@@ -24,4 +24,7 @@ import:
   version: ^1.1.4
   subpackages:
   - mock
-
+- package: gopkg.in/coveo/elasticsearch-client-go.v6
+  version: v6.3.0
+  subpackages:
+   - uritemplates

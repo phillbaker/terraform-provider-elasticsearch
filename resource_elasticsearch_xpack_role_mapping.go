@@ -1,15 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"context"
-	"errors"
-	"log"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
+	"log"
 
 	elastic6 "gopkg.in/coveo/elasticsearch-client-go.v6"
-	elastic5 "gopkg.in/coveo/elasticsearch-client-go.v5"
+	elastic5 "gopkg.in/olivere/elastic.v5"
 )
 
 func resourceElasticsearchXpackRoleMapping() *schema.Resource {
@@ -47,7 +47,7 @@ func resourceElasticsearchXpackRoleMapping() *schema.Resource {
 
 func resourceElasticsearchXpackRoleMappingCreate(d *schema.ResourceData, m interface{}) error {
 	var err error
-	name := d.Get("role_mapping_name").(string)	
+	name := d.Get("role_mapping_name").(string)
 	err = xpackPutRoleMapping(d, m, name, []byte("reqBody"))
 	//_ , err = buildPutRoleMappingBody(d, m)
 	if err != nil {
@@ -55,7 +55,7 @@ func resourceElasticsearchXpackRoleMappingCreate(d *schema.ResourceData, m inter
 	}
 	/*
 
-	d.SetId(name)
+		d.SetId(name)
 	*/
 	return resourceElasticsearchXpackRoleMappingRead(d, m)
 }
@@ -76,20 +76,20 @@ func buildPutRoleMappingBody(d *schema.ResourceData, m interface{}) ([]byte, err
 	enabled := d.Get("enabled").(bool)
 	rules := d.Get("rules").(string)
 	roles := d.Get("roles").([]string)
-	
+
 	body, err := json.Marshal(PutRoleMappingBody{roles, enabled, rules, ""})
 	if err != nil {
-		err = errors.New(fmt.Sprintf("Body Error : %s",body))
+		err = errors.New(fmt.Sprintf("Body Error : %s", body))
 	}
 	return body, err
 }
 
-func xpackPutRoleMapping(d *schema.ResourceData, m interface{},name string, body []byte) error {
+func xpackPutRoleMapping(d *schema.ResourceData, m interface{}, name string, body []byte) error {
 
 	var err error
 	client := m.(*elastic6.Client)
 	err = elastic6PutRoleMapping(client, name, body)
-	
+
 	switch m.(type) {
 	case *elastic6.Client:
 		client := m.(*elastic6.Client)
@@ -100,7 +100,7 @@ func xpackPutRoleMapping(d *schema.ResourceData, m interface{},name string, body
 	default:
 		err = errors.New("unhandled client type") //TODO: Add verbosity
 	}
-	
+
 	return err
 }
 
@@ -115,8 +115,8 @@ func elastic6PutRoleMapping(client *elastic6.Client, name string, body []byte) e
 }
 
 type PutRoleMappingBody struct {
-	Roles []string `json:"roles"`
-	Enabled bool `json:"enabled"`
-	Rules interface{} `json:"rules"`
+	Roles    []string    `json:"roles"`
+	Enabled  bool        `json:"enabled"`
+	Rules    interface{} `json:"rules"`
 	Metadata interface{} `json:"metadata"`
 }
