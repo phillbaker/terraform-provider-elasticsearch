@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	elastic5 "gopkg.in/olivere/elastic.v5"
-	elastic6 "gopkg.in/olivere/elastic.v6"
+	elastic6 "gopkg.in/coveo/elasticsearch-client-go.v6"
 )
 
 var awsUrlRegexp = regexp.MustCompile(`([a-z0-9-]+).es.amazonaws.com$`)
