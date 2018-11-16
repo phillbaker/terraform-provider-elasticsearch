@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	elastic5 "gopkg.in/olivere/elastic.v5"
-	elastic6 "gopkg.in/coveo/elasticsearch-client-go.v6"
+	elastic6 "gopkg.in/coveo/elasticsearch-client-go.v6" //TODO: Change back to olivere when the v6 update is released
 )
 
 var awsUrlRegexp = regexp.MustCompile(`([a-z0-9-]+).es.amazonaws.com$`)
@@ -34,21 +34,21 @@ func Provider() terraform.ResourceProvider {
 			"sniff": &schema.Schema{
 				Type: schema.TypeBool,
 				Optional: true,
-				Default: true,
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_SNIFF", true),
 				Description: "Set the node sniffing option for the elastic client. Client won't work with sniffing if nodes are not routable.",
 			},
 
 			"username": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "",
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_USERNAME", ""),
 				Description: "The username for the Elasticsearch cluster",
 			},
 
 			"password": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "",
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_PASSWORD", ""),
 				Description: "The password for the Elasticsearch cluster",
 			},
 

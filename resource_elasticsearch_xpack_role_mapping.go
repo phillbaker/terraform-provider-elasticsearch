@@ -192,7 +192,7 @@ func elastic6GetRoleMapping(client *elastic6.Client, name string) (XPackSecurity
 	roleMapping.Name = name
 	roleMapping.Roles = obj.Roles
 	roleMapping.Enabled = obj.Enabled
-	if rules, err := json.Marshal(obj.Rules); err != nil { //TODO: Ask Julien for better flow of error handling
+	if rules, err := json.Marshal(obj.Rules); err != nil { //TODO: Can we do a better flow of error handling
 		return roleMapping, err
 	} else {
 		roleMapping.Rules = string(rules)
