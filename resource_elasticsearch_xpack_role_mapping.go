@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	elastic6 "gopkg.in/coveo/elasticsearch-client-go.v6"
 	elastic5 "gopkg.in/olivere/elastic.v5"
+	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
 func resourceElasticsearchXpackRoleMapping() *schema.Resource {
@@ -34,7 +34,7 @@ func resourceElasticsearchXpackRoleMapping() *schema.Resource {
 				DiffSuppressFunc: suppressEquivalentJson,
 			},
 			"roles": &schema.Schema{
-				Type: schema.TypeList,
+				Type: schema.TypeSet,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -121,14 +121,14 @@ func resourceElasticsearchXpackRoleMappingDelete(d *schema.ResourceData, m inter
 func buildPutRoleMappingBody(d *schema.ResourceData, m interface{}) (string, error) {
 	enabled := d.Get("enabled").(bool)
 	rules := d.Get("rules").(string)
-	roles := expandStringList(d.Get("roles").([]interface{}))
+	roles := expandStringList(d.Get("roles").(*schema.Set).List())
 	metadata := d.Get("metadata").(string)
 
 	roleMapping := PutRoleMappingBody{
 		Roles:    roles,
 		Enabled:  enabled,
 		Rules:    json.RawMessage(rules),
-		Metadata: json.RawMessage(metadata),
+		Metadata: optionalInterfaceJson(metadata),
 	}
 
 	body, err := json.Marshal(roleMapping)
@@ -192,7 +192,7 @@ func elastic6GetRoleMapping(client *elastic6.Client, name string) (XPackSecurity
 	roleMapping.Name = name
 	roleMapping.Roles = obj.Roles
 	roleMapping.Enabled = obj.Enabled
-	if rules, err := json.Marshal(obj.Rules); err != nil { //TODO: Can we do a better flow of error handling
+	if rules, err := json.Marshal(obj.Rules); err != nil {
 		return roleMapping, err
 	} else {
 		roleMapping.Rules = string(rules)
@@ -220,7 +220,7 @@ type PutRoleMappingBody struct {
 	Roles    []string    `json:"roles"`
 	Enabled  bool        `json:"enabled"`
 	Rules    interface{} `json:"rules"`
-	Metadata interface{} `json:"metadata"`
+	Metadata interface{} `json:"metadata,omitempty"`
 }
 
 type XPackSecurityRoleMapping struct {

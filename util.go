@@ -1,8 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func normalizeIndexTemplate(tpl map[string]interface{}) {
@@ -57,13 +60,56 @@ func boolp(b bool) *bool {
 
 // Takes the result of flatmap.Expand for an array of strings
 // and returns a []string
-func expandStringList(configured []interface{}) []string {
-	vs := make([]string, 0, len(configured))
-	for _, v := range configured {
+func expandStringList(resourcesArray []interface{}) []string {
+	vs := make([]string, 0, len(resourcesArray))
+	for _, v := range resourcesArray {
 		val, ok := v.(string)
 		if ok && val != "" {
-			vs = append(vs,v.(string))
+			vs = append(vs, v.(string))
 		}
 	}
 	return vs
+}
+
+func expandApplicationPermissionSet(resourcesArray []interface{}) ([]XPackSecurityApplicationPrivileges, error) {
+	vperm := make([]XPackSecurityApplicationPrivileges, 0, len(resourcesArray))
+	for _, item := range resourcesArray {
+		data, ok := item.(map[string]interface{})
+		if !ok {
+			return vperm, fmt.Errorf("Error asserting data as type []byte : %v", item)
+		}
+		obj := XPackSecurityApplicationPrivileges{
+			Application: data["application"].(string),
+			Privileges:  expandStringList(data["privileges"].(*schema.Set).List()),
+			Resources:   expandStringList(data["resources"].(*schema.Set).List()),
+		}
+		vperm = append(vperm, obj)
+	}
+	return vperm, nil
+}
+
+func expandIndicesPermissionSet(resourcesArray []interface{}) ([]XPackSecurityIndicesPermissions, error) {
+	vperm := make([]XPackSecurityIndicesPermissions, 0, len(resourcesArray))
+	for _, item := range resourcesArray {
+		data, ok := item.(map[string]interface{})
+		if !ok {
+			return vperm, fmt.Errorf("Error asserting data as type []byte : %v", item)
+		}
+		obj := XPackSecurityIndicesPermissions{
+			Names:         expandStringList(data["names"].(*schema.Set).List()),
+			Privileges:    expandStringList(data["privileges"].(*schema.Set).List()),
+			FieldSecurity: data["field_security"].(string),
+			Query:         data["query"].(string),
+		}
+		vperm = append(vperm, obj)
+	}
+	return vperm, nil
+}
+
+func optionalInterfaceJson(input string) interface{} {
+	if input == "" || input == "{}" {
+		return nil
+	} else {
+		return json.RawMessage(input)
+	}
 }

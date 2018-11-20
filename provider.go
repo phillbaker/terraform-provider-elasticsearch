@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	elastic5 "gopkg.in/olivere/elastic.v5"
-	elastic6 "gopkg.in/coveo/elasticsearch-client-go.v6" //TODO: Change back to olivere when the v6 update is released
+	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
 var awsUrlRegexp = regexp.MustCompile(`([a-z0-9-]+).es.amazonaws.com$`)
@@ -32,8 +32,8 @@ func Provider() terraform.ResourceProvider {
 			},
 
 			"sniff": &schema.Schema{
-				Type: schema.TypeBool,
-				Optional: true,
+				Type:        schema.TypeBool,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_SNIFF", true),
 				Description: "Set the node sniffing option for the elastic client. Client won't work with sniffing if nodes are not routable.",
 			},
@@ -93,6 +93,7 @@ func Provider() terraform.ResourceProvider {
 			"elasticsearch_snapshot_repository": resourceElasticsearchSnapshotRepository(),
 			"elasticsearch_kibana_object":       resourceElasticsearchKibanaObject(),
 			"elasticsearch_xpack_role_mapping":  resourceElasticsearchXpackRoleMapping(),
+			"elasticsearch_xpack_role":          resourceElasticsearchXpackRole(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -104,12 +105,12 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	insecure := d.Get("insecure").(bool)
 	sniffing := d.Get("sniff").(bool)
 	cacertFile := d.Get("cacert_file").(string)
-	
+
 	parsedUrl, err := url.Parse(rawUrl)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	opts := []elastic6.ClientOptionFunc{
 		elastic6.SetURL(rawUrl),
 		elastic6.SetScheme(parsedUrl.Scheme),

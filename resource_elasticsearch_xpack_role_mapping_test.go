@@ -2,19 +2,18 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	elastic6 "gopkg.in/coveo/elasticsearch-client-go.v6"
+	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
 func TestAccElasticsearchXpackRoleMapping(t *testing.T) {
 
-	randomName := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheckXpack(t) },
@@ -29,7 +28,8 @@ func TestAccElasticsearchXpackRoleMapping(t *testing.T) {
 						"elasticsearch_xpack_role_mapping.test",
 						"id",
 						randomName,
-					),resource.TestCheckResourceAttr(
+					),
+					resource.TestCheckResourceAttr(
 						"elasticsearch_xpack_role_mapping.test",
 						"enabled",
 						"true",
