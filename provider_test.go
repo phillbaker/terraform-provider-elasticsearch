@@ -35,9 +35,7 @@ func testAccPreCheck(t *testing.T) {
 }
 
 func testAccPreCheckXpack(t *testing.T) {
-	if v := os.Getenv("ELASTICSEARCH_URL"); v == "" {
-		t.Fatal("ELASTICSEARCH_URL must be set for acceptance tests")
-	}
+	testAccPreCheck(t)
 	if u := os.Getenv("ELASTICSEARCH_USERNAME"); u == "" {
 		t.Fatal("ELASTICSEARCH_USERNAME must be set for acceptance tests on xpack cluster")
 	}
