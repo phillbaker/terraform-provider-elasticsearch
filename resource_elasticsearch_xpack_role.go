@@ -300,14 +300,11 @@ func elastic6GetRole(client *elastic6.Client, name string) (XPackSecurityRole, e
 			return role, err
 		}
 	}
-	//FIXME: Global is missing from the client interface
-	/*
 		if global, err := json.Marshal(obj.Global); err != nil {
 			return role, err
 		} else {
 			role.Global = string(global)
 		}
-	*/
 	if metadata, err := json.Marshal(obj.Metadata); err != nil {
 		return role, err
 	} else {
