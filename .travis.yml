@@ -37,3 +37,9 @@ deploy:
     tags: true
     branch: master
     go: '1.10'
+
+after_success:
+- if [ ${TRAVIS_TAG::1} = v ];
+  then
+    curl -sL https://git.io/goreleaser | bash;
+  fi
