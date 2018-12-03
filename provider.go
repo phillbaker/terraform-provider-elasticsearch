@@ -38,6 +38,13 @@ func Provider() terraform.ResourceProvider {
 				Description: "Set the node sniffing option for the elastic client. Client won't work with sniffing if nodes are not routable.",
 			},
 
+			"healthcheck": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_HEALTH", true),
+				Description: "Set the client healthcheck option for the elastic client. Healthchecking is designed for direct access to the cluster.",
+			},
+
 			"username": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -104,6 +111,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	rawUrl := d.Get("url").(string)
 	insecure := d.Get("insecure").(bool)
 	sniffing := d.Get("sniff").(bool)
+	healthchecking := d.Get("healthcheck").(bool)
 	cacertFile := d.Get("cacert_file").(string)
 
 	parsedUrl, err := url.Parse(rawUrl)
@@ -115,6 +123,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		elastic6.SetURL(rawUrl),
 		elastic6.SetScheme(parsedUrl.Scheme),
 		elastic6.SetSniff(sniffing),
+		elastic6.SetHealthcheck(healthchecking),
 	}
 
 	if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
