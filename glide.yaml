@@ -17,7 +17,7 @@ import:
   subpackages:
   - uritemplates
 - package: gopkg.in/olivere/elastic.v6
-  version: v6.2.13
+  version: v6.2.14
   subpackages:
    - uritemplates
 - package: github.com/stretchr/testify

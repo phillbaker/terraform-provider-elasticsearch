@@ -1,5 +1,5 @@
-hash: 06b56ca99a43f2397565b0699c7c1f7a40b073e4db7bb7f54d118cc9c93f7933
-updated: 2018-11-19T11:34:38.176810938-05:00
+hash: 306b48a62666e6322381b4e489dab30d32398c2f9cc72ef4008bf63fd2b0f88c
+updated: 2018-12-03T11:49:26.684658101-05:00
 imports:
 - name: github.com/agext/levenshtein
   version: 5f10fee965225ac1eecdc234c09daf5cd9e7f7b6
@@ -277,7 +277,7 @@ imports:
   - config
   - uritemplates
 - name: gopkg.in/olivere/elastic.v6
-  version: 0f13c62d4153081f2be7d0e136353b57dd3f1619
+  version: 1619150b007041b6dba8aa447f0e2d151cc2b4c5
   subpackages:
   - uritemplates
 testImports: []
