@@ -27,8 +27,8 @@ before_install:
 - if [[ "$TRAVIS_OS_NAME" == "linux" && ! $(which nc)     ]] ; then sudo apt-get install -y netcat ; fi
 - sudo sysctl -w vm.max_map_count=262144
 # - docker run -d --rm -p 9200:9200  -e "http.host=0.0.0.0" -e "transport.host=127.0.0.1" -e "bootstrap.memory_lock=true" -e "ES_JAVA_OPTS=-Xms1g -Xmx1g" docker.elastic.co/elasticsearch/elasticsearch:6.5.0 elasticsearch -Enetwork.host=_local_,_site_ -Enetwork.publish_host=_local_
-- docker-compose -f docker_compose/docker-compose-{ES_VERSION}.yml pull
-- docker-compose -f docker_compose/docker-compose-{ES_VERSION}.yml up -d
+- docker-compose -f docker_compose/docker-compose-${ES_VERSION}.yml pull
+- docker-compose -f docker_compose/docker-compose-${ES_VERSION}.yml up -d
 - while ! nc -vz localhost 9200; do sleep 1; done
 - while ! nc -vz localhost 9210; do sleep 1; done
 install:
