@@ -9,8 +9,12 @@ matrix:
   allow_failures:
     - go: master
 env:
-  - ES_VERSION=5.5.3 ELASTICSEARCH_URL=http://127.0.0.1:9200
-  - ES_VERSION=6.5.1 XPACK=true ELASTICSEARCH_URL=http://127.0.0.1:9210
+  global:
+    - ELASTICSEARCH_SNIFF=false
+    - TF_ACC=1 
+  matrix:
+    - ES_VERSION=5.5.3 ELASTICSEARCH_URL=http://localhost:9200
+    - ES_VERSION=6.5.1 XPACK=true ELASTICSEARCH_URL=http://localhost:9210
 addons:
   ssh_known_hosts: github.com
   apt:
