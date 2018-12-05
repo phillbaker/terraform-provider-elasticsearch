@@ -36,7 +36,8 @@ func TestAccElasticsearchXpackRole(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"elasticsearch_xpack_role.test",
 						"metadata",
-						`{"foo":"bar"}`,
+						//`{"foo":"bar"}`,
+						"{}",
 					),
 				),
 			},
@@ -44,6 +45,22 @@ func TestAccElasticsearchXpackRole(t *testing.T) {
 				Config: testAccRoleResource_Updated(randomName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckRoleExists("elasticsearch_xpack_role.test"),
+					resource.TestCheckResourceAttr(
+						"elasticsearch_xpack_role.test",
+						"metadata",
+						`{"foo":"bar"}`,
+					),
+				),
+			},
+			{
+				Config: testAccRoleResource_Global(randomName),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckRoleExists("elasticsearch_xpack_role.test"),
+					resource.TestCheckResourceAttr(
+						"elasticsearch_xpack_role.test",
+						"global",
+						`{"application":{"manage":{"applications":["testapp"]}}}`,
+					),
 				),
 			},
 		},
@@ -124,12 +141,6 @@ resource "elasticsearch_xpack_role" "test" {
 			"*" 
 		]
 	}
-	metadata = <<-EOF
-	{
-		"foo": "bar"
-	}
-	EOF
-	,
 }
 `, resourceName)
 }
@@ -160,7 +171,6 @@ resource "elasticsearch_xpack_role" "test" {
 		  "*" 
 		]
     }
-
   metadata = <<-EOF
   {
     "foo": "bar"

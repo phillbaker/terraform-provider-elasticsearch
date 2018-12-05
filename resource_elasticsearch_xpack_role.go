@@ -300,11 +300,16 @@ func elastic6GetRole(client *elastic6.Client, name string) (XPackSecurityRole, e
 			return role, err
 		}
 	}
-		if global, err := json.Marshal(obj.Global); err != nil {
-			return role, err
+	if global, err := json.Marshal(obj.Global); err != nil {
+		return role, err
+	} else {
+		// The Elastic API will not return the field unless it exists, which force us to check for null compared to Metadata
+		if string(global) == "null" {
+			role.Global = ""
 		} else {
 			role.Global = string(global)
 		}
+	}
 	if metadata, err := json.Marshal(obj.Metadata); err != nil {
 		return role, err
 	} else {
