@@ -34,7 +34,7 @@ install:
   - glide install
 script:
   - go build
-  - TF_ACC=1 go test -v -cover
+  - go test -v -cover
 
 after_success:
 - if [ ${TRAVIS_TAG::1} = v ];
