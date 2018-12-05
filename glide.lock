@@ -1,5 +1,5 @@
-hash: 306b48a62666e6322381b4e489dab30d32398c2f9cc72ef4008bf63fd2b0f88c
-updated: 2018-12-03T11:49:26.684658101-05:00
+hash: 73e602fafa5c51d3b301179f379e86f837b25f0dde8768330fee3682ee0e5e19
+updated: 2018-12-05T15:25:55.885343344-05:00
 imports:
 - name: github.com/agext/levenshtein
   version: 5f10fee965225ac1eecdc234c09daf5cd9e7f7b6
@@ -267,10 +267,6 @@ imports:
   - status
   - tap
   - transport
-- name: gopkg.in/coveo/elasticsearch-client-go.v6
-  version: 5b00cc872311c26417a770ec634c41fa503168b9
-  subpackages:
-  - uritemplates
 - name: gopkg.in/olivere/elastic.v5
   version: b708306d715bea9b983685e94ab4602cdc9f988b
   subpackages:
