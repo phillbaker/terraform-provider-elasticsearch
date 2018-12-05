@@ -33,8 +33,7 @@ install:
   - cd $GOPATH/src/github.com/Masterminds/glide && git checkout v0.13.1 && go install && cd -
   - glide install
 script:
-  - go build -v
-  - wget -q --waitretry=1 --retry-connrefused -T 10 -O - $ELASTICSEARCH_URL
+  - go build
   - TF_ACC=1 go test -v -cover
 
 after_success:
