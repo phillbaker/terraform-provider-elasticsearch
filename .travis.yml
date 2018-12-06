@@ -41,7 +41,7 @@ script:
   - go test -v -cover
 
 after_success:
-- if [ ${TRAVIS_TAG::1} = v ];
+- if [ "${TRAVIS_TAG::1}" = "v" ];
   then
     curl -sL https://git.io/goreleaser | bash;
   fi
