@@ -1,1 +1,3 @@
 /vendor
+/terraform-provider-project
+.vscode/*
