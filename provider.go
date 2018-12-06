@@ -31,6 +31,34 @@ func Provider() terraform.ResourceProvider {
 				Description: "Elasticsearch URL",
 			},
 
+			"sniff": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_SNIFF", true),
+				Description: "Set the node sniffing option for the elastic client. Client won't work with sniffing if nodes are not routable.",
+			},
+
+			"healthcheck": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_HEALTH", true),
+				Description: "Set the client healthcheck option for the elastic client. Healthchecking is designed for direct access to the cluster.",
+			},
+
+			"username": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_USERNAME", ""),
+				Description: "The username for the Elasticsearch cluster",
+			},
+
+			"password": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_PASSWORD", ""),
+				Description: "The password for the Elasticsearch cluster",
+			},
+
 			"aws_access_key": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -71,6 +99,8 @@ func Provider() terraform.ResourceProvider {
 			"elasticsearch_index_template":      resourceElasticsearchIndexTemplate(),
 			"elasticsearch_snapshot_repository": resourceElasticsearchSnapshotRepository(),
 			"elasticsearch_kibana_object":       resourceElasticsearchKibanaObject(),
+			"elasticsearch_xpack_role_mapping":  resourceElasticsearchXpackRoleMapping(),
+			"elasticsearch_xpack_role":          resourceElasticsearchXpackRole(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -80,14 +110,20 @@ func Provider() terraform.ResourceProvider {
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	rawUrl := d.Get("url").(string)
 	insecure := d.Get("insecure").(bool)
+	sniffing := d.Get("sniff").(bool)
+	healthchecking := d.Get("healthcheck").(bool)
 	cacertFile := d.Get("cacert_file").(string)
+
 	parsedUrl, err := url.Parse(rawUrl)
 	if err != nil {
 		return nil, err
 	}
+
 	opts := []elastic6.ClientOptionFunc{
 		elastic6.SetURL(rawUrl),
 		elastic6.SetScheme(parsedUrl.Scheme),
+		elastic6.SetSniff(sniffing),
+		elastic6.SetHealthcheck(healthchecking),
 	}
 
 	if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
@@ -95,6 +131,19 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		opts = append(opts, elastic6.SetHttpClient(awsHttpClient(m[1], d)), elastic6.SetSniff(false))
 	} else if insecure || cacertFile != "" {
 		opts = append(opts, elastic6.SetHttpClient(tlsHttpClient(d)), elastic6.SetSniff(false))
+	}
+
+	username := d.Get("username").(string)
+	password := d.Get("password").(string)
+
+	if parsedUrl.User != nil {
+		username = parsedUrl.User.Username()
+		password, _ = parsedUrl.User.Password()
+		opts = append(opts, elastic6.SetBasicAuth(username, password))
+	} else if username := d.Get("username").(string); username != "" {
+		if password := d.Get("password").(string); password != "" {
+			opts = append(opts, elastic6.SetBasicAuth(username, password))
+		}
 	}
 
 	var relevantClient interface{}

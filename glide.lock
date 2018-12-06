@@ -1,5 +1,5 @@
-hash: de28c6cb3b0f74063f90c9e6c504ef8f65d06de64d6e43fc83ec5ce466a1acf3
-updated: 2018-09-13T22:18:03.780130207-04:00
+hash: 73e602fafa5c51d3b301179f379e86f837b25f0dde8768330fee3682ee0e5e19
+updated: 2018-12-05T15:25:55.885343344-05:00
 imports:
 - name: github.com/agext/levenshtein
   version: 5f10fee965225ac1eecdc234c09daf5cd9e7f7b6
@@ -122,6 +122,7 @@ imports:
   - config/module
   - dag
   - flatmap
+  - helper/acctest
   - helper/config
   - helper/hashcode
   - helper/hilmapstructure
@@ -211,12 +212,16 @@ imports:
   - bcrypt
   - blowfish
   - cast5
+  - curve25519
+  - ed25519
+  - ed25519/internal/edwards25519
   - openpgp
   - openpgp/armor
   - openpgp/elgamal
   - openpgp/errors
   - openpgp/packet
   - openpgp/s2k
+  - ssh
 - name: golang.org/x/net
   version: d58ca6618b994150e624f6888d871f4709db51a0
   subpackages:
@@ -268,7 +273,7 @@ imports:
   - config
   - uritemplates
 - name: gopkg.in/olivere/elastic.v6
-  version: e6cae211ee802eab70248a68fe2cb03b616744c9
+  version: 1619150b007041b6dba8aa447f0e2d151cc2b4c5
   subpackages:
   - uritemplates
 testImports: []
