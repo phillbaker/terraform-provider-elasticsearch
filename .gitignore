@@ -1,3 +1,4 @@
 /vendor
 /terraform-provider-project
+terraform-provider-elasticsearch
 .vscode/*
