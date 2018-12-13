@@ -1,3 +1,9 @@
+stages:
+  - build
+  - name: deploy
+  if: branch = master
+
+stage: build
 sudo: required
 language: go
 go:
@@ -40,6 +46,7 @@ script:
   - go build
   - go test -v -cover
 
+stage: deploy
 after_success:
 - if [ "${TRAVIS_TAG::1}" = "v" ];
   then
