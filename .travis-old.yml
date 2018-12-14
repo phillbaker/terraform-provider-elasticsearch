@@ -1,0 +1,55 @@
+stages:
+  - build
+  - name: deploy
+  if: branch = master
+
+sudo: required
+language: go
+go:
+  - '1.9'
+  - '1.10'
+  - '1.11.x'
+# - master
+matrix:
+  allow_failures:
+    - go: master
+env:
+  global:
+    - ELASTICSEARCH_SNIFF=false
+    - TF_ACC=1 
+  matrix:
+    - ES_VERSION=5.5.3 ELASTICSEARCH_URL=http://localhost:9200
+    - ES_VERSION=6.5.1 XPACK=true ELASTICSEARCH_URL=http://localhost:9210
+addons:
+  ssh_known_hosts: github.com
+  apt:
+    update: true
+    packages:
+    - docker-ce
+services:
+- docker
+jobs:
+  include:
+    stage: build
+    before_install:
+    - if [[ "$TRAVIS_OS_NAME" == "linux" && ! $(which nc)     ]] ; then sudo apt-get install -y netcat ; fi
+    - sudo sysctl -w vm.max_map_count=262144
+    # - docker run -d --rm -p 9200:9200  -e "http.host=0.0.0.0" -e "transport.host=127.0.0.1" -e "bootstrap.memory_lock=true" -e "ES_JAVA_OPTS=-Xms1g -Xmx1g" docker.elastic.co/elasticsearch/elasticsearch:6.5.0 elasticsearch -Enetwork.host=_local_,_site_ -Enetwork.publish_host=_local_
+    - docker-compose -f docker-compose/docker-compose-${ES_VERSION}.yml pull
+    - docker-compose -f docker-compose/docker-compose-${ES_VERSION}.yml up -d
+    - n=0; until [ $n -ge 5 ]; do nc -vz localhost 9200 && break; n=$[$n+1];sleep $((n)); done
+    - n=0; until [ $n -ge 5 ]; do nc -vz localhost 9210 && break; n=$[$n+1];sleep $((n)); done
+    install:
+      - export TF_LOG=INFO
+      - go get -v github.com/Masterminds/glide
+      - cd $GOPATH/src/github.com/Masterminds/glide && git checkout v0.13.1 && go install && cd -
+      - glide install
+    script:
+      - go build
+      - go test -v -cover
+    stage: deploy
+    script:
+    - if [ "${TRAVIS_TAG::1}" = "v" ];
+      then
+        curl -sL https://git.io/goreleaser | bash;
+      fi
