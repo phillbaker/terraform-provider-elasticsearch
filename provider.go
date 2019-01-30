@@ -139,8 +139,8 @@ func awsHttpClient(region string, d *schema.ResourceData) *http.Client {
 				SessionToken:    d.Get("aws_token").(string),
 			},
 		},
-		&awscredentials.SharedCredentialsProvider{},
 		&awscredentials.EnvProvider{},
+		&awscredentials.SharedCredentialsProvider{},
 	})
 	signer := awssigv4.NewSigner(creds)
 	client, _ := aws_signing_client.New(signer, nil, "es", region)
