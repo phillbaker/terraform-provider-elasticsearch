@@ -29,11 +29,21 @@ func resourceElasticsearchWatch() *schema.Resource {
 				Required: true,
 			},
 		},
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 	}
 }
 
 func resourceElasticsearchWatchCreate(d *schema.ResourceData, m interface{}) error {
-	watchID, err := resourceElasticsearchPutWatch(d, m)
+	// Determine whether the watch already exists.
+	watchID := d.Get("watch_id").(string)
+	_, err := resourceElasticsearchGetWatch(watchID, m)
+	if !elastic6.IsNotFound(err) {
+		return fmt.Errorf("watch already exists with ID: %v", watchID)
+	}
+
+	watchID, err = resourceElasticsearchPutWatch(d, m)
 
 	if err != nil {
 		log.Printf("[INFO] Failed to put watch: %+v", err)
@@ -46,32 +56,11 @@ func resourceElasticsearchWatchCreate(d *schema.ResourceData, m interface{}) err
 	return resourceElasticsearchWatchRead(d, m)
 }
 
-func resourceElasticsearchWatchRead(d *schema.ResourceData, meta interface{}) error {
-	watchID := d.Get("watch_id").(string)
-
-	// Build URL for the watch
-	path, err := uritemplates.Expand("/_xpack/watcher/watch/{id}", map[string]string{
-		"id": watchID,
-	})
-
-	if err != nil {
-		return fmt.Errorf("error building URL path for watch: %+v", err)
-	}
-
-	var res *elastic6.Response
-	switch meta.(type) {
-	case *elastic6.Client:
-		client := meta.(*elastic6.Client)
-		res, err = client.PerformRequest(context.TODO(), elastic6.PerformRequestOptions{
-			Method: "GET",
-			Path:   path,
-		})
-	default:
-		err = errors.New("watch resource not implemented prior to Elastic v6")
-	}
+func resourceElasticsearchWatchRead(d *schema.ResourceData, m interface{}) error {
+	res, err := resourceElasticsearchGetWatch(d.Id(), m)
 
 	if elastic6.IsNotFound(err) {
-		log.Printf("[WARN] Watch (%s) not found, removing from state", watchID)
+		log.Printf("[WARN] Watch (%s) not found, removing from state", d.Id())
 		d.SetId("")
 		return nil
 	}
@@ -85,6 +74,7 @@ func resourceElasticsearchWatchRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("error unmarshalling watch body: %+v: %+v", err, res.Body)
 	}
 
+	d.Set("watch_id", d.Id())
 	d.Set("watch_json", response.Watch)
 
 	return nil
@@ -101,14 +91,12 @@ func resourceElasticsearchWatchUpdate(d *schema.ResourceData, m interface{}) err
 }
 
 func resourceElasticsearchWatchDelete(d *schema.ResourceData, m interface{}) error {
-	watchID := d.Get("watch_id").(string)
-
 	var err error
 	switch m.(type) {
 	case *elastic6.Client:
 		client := m.(*elastic6.Client)
 		_, err = client.XPackWatchDelete().
-			Id(watchID).
+			Id(d.Id()).
 			Do(context.TODO())
 	default:
 		err = errors.New("watch resource not implemented prior to Elastic v6")
@@ -117,14 +105,39 @@ func resourceElasticsearchWatchDelete(d *schema.ResourceData, m interface{}) err
 	return err
 }
 
-func resourceElasticsearchPutWatch(d *schema.ResourceData, meta interface{}) (string, error) {
+func resourceElasticsearchGetWatch(watchID string, m interface{}) (*elastic6.Response, error) {
+	// Build URL for the watch
+	path, err := uritemplates.Expand("/_xpack/watcher/watch/{id}", map[string]string{
+		"id": watchID,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error building URL path for watch: %+v", err)
+	}
+
+	var res *elastic6.Response
+	switch m.(type) {
+	case *elastic6.Client:
+		client := m.(*elastic6.Client)
+		res, err = client.PerformRequest(context.TODO(), elastic6.PerformRequestOptions{
+			Method: "GET",
+			Path:   path,
+		})
+	default:
+		err = errors.New("watch resource not implemented prior to Elastic v6")
+	}
+
+	return res, err
+}
+
+func resourceElasticsearchPutWatch(d *schema.ResourceData, m interface{}) (string, error) {
 	watchID := d.Get("watch_id").(string)
 	watchJSON := d.Get("watch_json").(string)
 
 	var err error
-	switch meta.(type) {
+	switch m.(type) {
 	case *elastic6.Client:
-		client := meta.(*elastic6.Client)
+		client := m.(*elastic6.Client)
 		_, err = client.XPackWatchPut().
 			Id(watchID).
 			BodyString(watchJSON).
