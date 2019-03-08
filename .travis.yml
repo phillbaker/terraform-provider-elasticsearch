@@ -15,17 +15,18 @@ install:
   - ./elasticsearch-${ES_VERSION}/bin/elasticsearch -Epath.repo=/tmp &
   - export ELASTICSEARCH_URL=http://127.0.0.1:9200
   - export TF_LOG=INFO
+  - go get github.com/mitchellh/gox
   - go get -v github.com/Masterminds/glide
   - cd $GOPATH/src/github.com/Masterminds/glide && git checkout v0.13.1 && go install && cd -
   - glide install
 script:
-  - go build -v
+  - gox -os "freebsd darwin linux windows" -arch "386 amd64"
   - wget -q --waitretry=1 --retry-connrefused -T 10 -O - $ELASTICSEARCH_URL
   - TF_ACC=1 go test -v -cover
 before_deploy: |
   # rename to match terraform provider conventions:
   #  https://www.terraform.io/docs/configuration/providers.html#third-party-plugins
-  mv terraform-provider-elasticsearch "terraform-provider-elasticsearch_${TRAVIS_TAG}"
+  for file in terraform-provider-elasticsearch*; do mv "$file" "${file}_${TRAVIS_TAG}"; done
 deploy:
   provider: releases
   api_key:
