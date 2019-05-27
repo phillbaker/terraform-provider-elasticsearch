@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"log"
 	"net/http"
 	"net/url"
@@ -17,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
+	elastic7 "github.com/olivere/elastic/v7"
 )
 
 var awsUrlRegexp = regexp.MustCompile(`([a-z0-9-]+).es.amazonaws.com$`)
@@ -85,20 +87,21 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	opts := []elastic6.ClientOptionFunc{
-		elastic6.SetURL(rawUrl),
-		elastic6.SetScheme(parsedUrl.Scheme),
+
+	opts := []elastic7.ClientOptionFunc{
+		elastic7.SetURL(rawUrl),
+		elastic7.SetScheme(parsedUrl.Scheme),
 	}
 
 	if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
 		log.Printf("[INFO] Using AWS: %+v", m[1])
-		opts = append(opts, elastic6.SetHttpClient(awsHttpClient(m[1], d)), elastic6.SetSniff(false))
+		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(m[1], d)), elastic7.SetSniff(false))
 	} else if insecure || cacertFile != "" {
-		opts = append(opts, elastic6.SetHttpClient(tlsHttpClient(d)), elastic6.SetSniff(false))
+		opts = append(opts, elastic7.SetHttpClient(tlsHttpClient(d)), elastic7.SetSniff(false))
 	}
 
 	var relevantClient interface{}
-	client, err := elastic6.NewClient(opts...)
+	client, err := elastic7.NewClient(opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +112,25 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if info.Version.Number < "6.0.0" {
+
+	if info.Version.Number < "7.0.0" && info.Version.Number >= "6.0.0" {
+		log.Printf("[INFO] Using ES 6")
+		opts := []elastic6.ClientOptionFunc{
+		 	elastic6.SetURL(rawUrl),
+		 	elastic6.SetScheme(parsedUrl.Scheme),
+		}
+
+		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
+		 	log.Printf("[INFO] Using AWS: %+v", m[1])
+		 	opts = append(opts, elastic6.SetHttpClient(awsHttpClient(m[1], d)), elastic6.SetSniff(false))
+		} else if insecure || cacertFile != "" {
+		 	opts = append(opts, elastic6.SetHttpClient(tlsHttpClient(d)), elastic6.SetSniff(false))
+		}
+		relevantClient, err = elastic6.NewClient(opts...)
+		if err != nil {
+		 	return nil, err
+		}
+	} else if info.Version.Number < "6.0.0" && info.Version.Number >= "5.0.0" {
 		log.Printf("[INFO] Using ES 5")
 		opts := []elastic5.ClientOptionFunc{
 			elastic5.SetURL(rawUrl),
@@ -125,6 +146,8 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
+	} else if info.Version.Number < "5.0.0" {
+		return nil, errors.New("ElasticSearch is older than 5.0.0!")
 	}
 
 	return relevantClient, nil

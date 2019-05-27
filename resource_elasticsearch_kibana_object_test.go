@@ -7,6 +7,7 @@ import (
 
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
+	elastic7 "github.com/olivere/elastic/v7"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -42,6 +43,9 @@ func testCheckElasticsearchKibanaObjectExists(name string) resource.TestCheckFun
 
 		var err error
 		switch meta.(type) {
+		case *elastic7.Client:
+			client := meta.(*elastic7.Client)
+			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
 		case *elastic6.Client:
 			client := meta.(*elastic6.Client)
 			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
@@ -68,6 +72,9 @@ func testCheckElasticsearchKibanaObjectDestroy(s *terraform.State) error {
 
 		var err error
 		switch meta.(type) {
+		case *elastic7.Client:
+			client := meta.(*elastic7.Client)
+			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
 		case *elastic6.Client:
 			client := meta.(*elastic6.Client)
 			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())

@@ -7,6 +7,7 @@ import (
 
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
+	elastic7 "github.com/olivere/elastic/v7"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -22,6 +23,8 @@ func TestAccElasticsearchIndexTemplate(t *testing.T) {
 	meta := provider.Meta()
 	var config string
 	switch meta.(type) {
+	case *elastic7.Client:
+		config = testAccElasticsearchIndexTemplateV7
 	case *elastic6.Client:
 		config = testAccElasticsearchIndexTemplateV6
 	default:
@@ -58,6 +61,9 @@ func testCheckElasticsearchIndexTemplateExists(name string) resource.TestCheckFu
 
 		var err error
 		switch meta.(type) {
+		case *elastic7.Client:
+			client := meta.(*elastic7.Client)
+			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
 			client := meta.(*elastic6.Client)
 			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
@@ -84,6 +90,9 @@ func testCheckElasticsearchIndexTemplateDestroy(s *terraform.State) error {
 
 		var err error
 		switch meta.(type) {
+		case *elastic7.Client:
+			client := meta.(*elastic7.Client)
+			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
 			client := meta.(*elastic6.Client)
 			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
@@ -158,6 +167,36 @@ resource "elasticsearch_index_template" "test" {
           "type": "date",
           "format": "EEE MMM dd HH:mm:ss Z YYYY"
         }
+      }
+    }
+  }
+}
+EOF
+}
+`
+
+var testAccElasticsearchIndexTemplateV7 = `
+resource "elasticsearch_index_template" "test" {
+  name = "terraform-test"
+  body = <<EOF
+{
+  "index_patterns": ["te*", "bar*"],
+  "settings": {
+    "index": {
+      "number_of_shards": 1
+    }
+  },
+  "mappings": {
+    "_source": {
+      "enabled": false
+    },
+    "properties": {
+      "host_name": {
+        "type": "keyword"
+      },
+      "created_at": {
+        "type": "date",
+        "format": "EEE MMM dd HH:mm:ss Z YYYY"
       }
     }
   }
