@@ -176,15 +176,10 @@ Please refer to the official [userguide](https://docs.aws.amazon.com/cli/latest/
 
 ### Requirements
 
-* [Golang](https://golang.org/dl/) >= 1.7
-* [Glide](https://github.com/Masterminds/glide)
+* [Golang](https://golang.org/dl/) >= 1.11
 
 
 ```
-# Ensure that this folder is at the following location: `${GOPATH}/src/github.com/phillbaker/terraform-provider-elasticsearch`
-cd $GOPATH/src/github.com/phillbaker/terraform-provider-elasticsearch
-
-glide install
 go build -o /path/to/binary/terraform-provider-elasticsearch
 ```
 

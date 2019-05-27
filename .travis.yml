@@ -1,11 +1,10 @@
 language: go
 go:
-  - '1.9'
-  - '1.10'
+  - '1.12'
   - master
 env:
-  - ES_VERSION=5.3.3 ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz
-  - ES_VERSION=6.0.1 ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz
+  - ES_VERSION=5.6.16 ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz
+  - ES_VERSION=6.8.0 ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz
 matrix:
   allow_failures:
     - go: master
@@ -15,12 +14,10 @@ install:
   - ./elasticsearch-${ES_VERSION}/bin/elasticsearch -Epath.repo=/tmp &
   - export ELASTICSEARCH_URL=http://127.0.0.1:9200
   - export TF_LOG=INFO
-  - go get github.com/mitchellh/gox
-  - go get -v github.com/Masterminds/glide
-  - cd $GOPATH/src/github.com/Masterminds/glide && git checkout v0.13.1 && go install && cd -
-  - glide install
+  - env GO111MODULE=on go get github.com/mitchellh/gox
+  - env GO111MODULE=on go mod vendor
 script:
-  - gox -os "freebsd darwin linux windows" -arch "386 amd64" -output="terraform-provider-elasticsearch_${TRAVIS_TAG}_{{.OS}}_{{.Arch}}"
+  - env GO111MODULE=on gox -os "freebsd darwin linux windows" -arch "386 amd64" -output="terraform-provider-elasticsearch_${TRAVIS_TAG}_{{.OS}}_{{.Arch}}"
   - wget -q --waitretry=1 --retry-connrefused -T 10 -O - $ELASTICSEARCH_URL
   - TF_ACC=1 go test -v -cover
 deploy:
@@ -33,4 +30,4 @@ deploy:
   on:
     tags: true
     branch: master
-    go: '1.10'
+    go: '1.12'

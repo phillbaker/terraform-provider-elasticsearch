@@ -91,7 +91,7 @@ resource "elasticsearch_snapshot_repository" "test" {
   name = "terraform-test"
   type = "fs"
 
-  settings {
+  settings = {
     location = "/tmp/elasticsearch"
   }
 }
