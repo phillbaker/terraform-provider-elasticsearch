@@ -72,7 +72,6 @@ func Provider() terraform.ResourceProvider {
 		ResourcesMap: map[string]*schema.Resource{
 			"elasticsearch_index_template":      resourceElasticsearchIndexTemplate(),
 			"elasticsearch_snapshot_repository": resourceElasticsearchSnapshotRepository(),
-			"elasticsearch_kibana_object":       resourceElasticsearchKibanaObject(),
 		},
 
 		ConfigureFunc: providerConfigure,
