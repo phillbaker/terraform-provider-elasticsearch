@@ -67,6 +67,20 @@ func Provider() terraform.ResourceProvider {
 				Default:     false,
 				Description: "Disable SSL verification of API calls",
 			},
+			"client_cert_path": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "A X509 certificate to connect to elasticsearch",
+				DefaultFunc: schema.EnvDefaultFunc("ES_CLIENT_CERTIFICATE_PATH", ""),
+			},
+			"client_key_path": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "A X509 key to connect to elasticsearch",
+				DefaultFunc: schema.EnvDefaultFunc("ES_CLIENT_KEY_PATH", ""),
+			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -174,9 +188,26 @@ func awsHttpClient(region string, d *schema.ResourceData) *http.Client {
 func tlsHttpClient(d *schema.ResourceData) *http.Client {
 	insecure := d.Get("insecure").(bool)
 	cacertFile := d.Get("cacert_file").(string)
+	certPemPath := d.Get("client_cert_path").(string)
+	keyPemPath := d.Get("client_key_path").(string)
 
 	// Configure TLS/SSL
 	tlsConfig := &tls.Config{}
+	if certPemPath != "" && keyPemPath != "" {
+		certPem, _, err := pathorcontents.Read(certPemPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		keyPem, _, err := pathorcontents.Read(keyPemPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		cert, err := tls.X509KeyPair([]byte(certPem), []byte(keyPem))
+		if err != nil {
+			log.Fatal(err)
+		}
+		tlsConfig.Certificates = []tls.Certificate{cert}
+	}
 
 	// If a cacertFile has been specified, use that for cert validation
 	if cacertFile != "" {
