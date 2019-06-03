@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
+	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
-	elastic7 "github.com/olivere/elastic/v7"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -15,7 +16,13 @@ import (
 
 func TestAccElasticsearchKibanaObject(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			// skip tests on ES > 7 until saved object API is supported
+			if v := os.Getenv("ES_VERSION"); v >= "7.0.0" {
+				t.Skip("Need to implement saved object API on ES >= 6")
+			}
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testCheckElasticsearchKibanaObjectDestroy,
 		Steps: []resource.TestStep{
@@ -44,8 +51,7 @@ func testCheckElasticsearchKibanaObjectExists(name string) resource.TestCheckFun
 		var err error
 		switch meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
-			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
+			// not implemented
 		case *elastic6.Client:
 			client := meta.(*elastic6.Client)
 			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
@@ -73,8 +79,7 @@ func testCheckElasticsearchKibanaObjectDestroy(s *terraform.State) error {
 		var err error
 		switch meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
-			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
+			// not implemented
 		case *elastic6.Client:
 			client := meta.(*elastic6.Client)
 			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
