@@ -85,6 +85,24 @@ func normalizedIndexSettings(settings map[string]interface{}) map[string]interfa
 	return f
 }
 
+func normalizeIndexLifecyclePolicy(pol map[string]interface{}) {
+	delete(pol, "version")
+	if policy, ok := pol["policy"]; ok {
+		if policyMap, ok := policy.(map[string]interface{}); ok {
+			pol["policy"] = normalizedIndexLifecyclePolicy(policyMap)
+		}
+	}
+}
+
+func normalizedIndexLifecyclePolicy(policy map[string]interface{}) map[string]interface{} {
+	f := flattenMap(policy)
+	for k, v := range f {
+		f[k] = fmt.Sprintf("%v", v)
+	}
+
+	return f
+}
+
 func flattenMap(m map[string]interface{}) map[string]interface{} {
 	f := make(map[string]interface{})
 	for k, v := range m {
