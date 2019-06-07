@@ -107,6 +107,11 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		elastic7.SetScheme(parsedUrl.Scheme),
 	}
 
+	if parsedUrl.User.Username() != "" {
+		p, _ := parsedUrl.User.Password()
+		opts = append(opts, elastic7.SetBasicAuth(parsedUrl.User.Username(), p))
+	}
+
 	if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
 		log.Printf("[INFO] Using AWS: %+v", m[1])
 		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(m[1], d)), elastic7.SetSniff(false))
@@ -134,6 +139,11 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 			elastic6.SetScheme(parsedUrl.Scheme),
 		}
 
+		if parsedUrl.User.Username() != "" {
+			p, _ := parsedUrl.User.Password()
+			opts = append(opts, elastic6.SetBasicAuth(parsedUrl.User.Username(), p))
+		}
+
 		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
 			log.Printf("[INFO] Using AWS: %+v", m[1])
 			opts = append(opts, elastic6.SetHttpClient(awsHttpClient(m[1], d)), elastic6.SetSniff(false))
@@ -149,6 +159,11 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		opts := []elastic5.ClientOptionFunc{
 			elastic5.SetURL(rawUrl),
 			elastic5.SetScheme(parsedUrl.Scheme),
+		}
+
+		if parsedUrl.User.Username() != "" {
+			p, _ := parsedUrl.User.Password()
+			opts = append(opts, elastic5.SetBasicAuth(parsedUrl.User.Username(), p))
 		}
 
 		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
