@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  elasticsearch:
+    image: ${ES_OSS_IMAGE}
+    hostname: elasticsearch
+    environment:
+      - cluster.name=elasticsearch
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - path.repo=/tmp
+      - network.publish_host=127.0.0.1
+      - logger.org.elasticsearch=warn
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    command: ${ES_COMMAND}
+    ulimits:
+      nproc: 65536
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+  platinum:
+    image: ${ES_IMAGE}
+    hostname: elasticsearch-platinum
+    environment:
+      - cluster.name=platinum
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - path.repo=/tmp
+      - xpack.license.self_generated.type=trial
+      - xpack.security.enabled=false
+      - xpack.watcher.enabled=true
+      - http.port=9210
+      - network.publish_host=127.0.0.1
+      - logger.org.elasticsearch=warn
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - ELASTIC_PASSWORD=elastic
+    ulimits:
+      nproc: 65536
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9210:9210

@@ -1,18 +1,28 @@
+sudo: required # required for docker
 language: go
 go:
   - '1.12'
   - master
 env:
-  - ES_VERSION=5.6.16 ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz
-  - ES_VERSION=6.8.0 ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz
-  - ES_VERSION=7.0.1 ES_DOWNLOAD_URL=https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}-linux-x86_64.tar.gz
+  - ES_VERSION=5.6.16 ES_OSS_IMAGE=elasticsearch:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_COMMAND="elasticsearch -Epath.repo=/tmp"
+  - ES_VERSION=6.8.0 ES_OSS_IMAGE=docker.elastic.co/elasticsearch/elasticsearch-oss:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}
+  - ES_VERSION=7.0.1 ES_OSS_IMAGE=docker.elastic.co/elasticsearch/elasticsearch-oss:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION}
 matrix:
   allow_failures:
     - go: master
+addons:
+  ssh_known_hosts: github.com
+  apt:
+    update: true
+    packages:
+      - docker-ce
+services:
+  - docker
+before_install:
+  - sudo sysctl -w vm.max_map_count=262144
+  - docker-compose pull
+  - docker-compose up -d
 install:
-  - wget ${ES_DOWNLOAD_URL}
-  - tar -xzf elasticsearch-${ES_VERSION}*.tar.gz
-  - ./elasticsearch-${ES_VERSION}/bin/elasticsearch -Epath.repo=/tmp &
   - export ELASTICSEARCH_URL=http://127.0.0.1:9200
   - export TF_LOG=INFO
   - env GO111MODULE=on go get github.com/mitchellh/gox
@@ -22,10 +32,10 @@ script:
   - export TARGET_ARCH="386 amd64"
   - export FILE_NAME="terraform-provider-elasticsearch_${TRAVIS_TAG}_{{.OS}}_{{.Arch}}"
   - export GO111MODULE=on
-  - gox -os "$TARGET_OS" -arch "$TARGET_ARCH" -output="$FILE_NAME"
-  - CGO_ENABLED=0 gox -os "$TARGET_OS" -arch "$TARGET_ARCH" -output="${FILE_NAME}_static"
   - wget -q --waitretry=1 --retry-connrefused -T 10 -O - $ELASTICSEARCH_URL
   - TF_ACC=1 go test -v -cover
+  - gox -os "$TARGET_OS" -arch "$TARGET_ARCH" -output="$FILE_NAME"
+  - CGO_ENABLED=0 gox -os "$TARGET_OS" -arch "$TARGET_ARCH" -output="${FILE_NAME}_static"
 deploy:
   provider: releases
   api_key:

@@ -11,10 +11,24 @@ import (
 var testAccProviders map[string]terraform.ResourceProvider
 var testAccProvider *schema.Provider
 
+var testAccXPackProviders map[string]terraform.ResourceProvider
+var testAccXPackProvider *schema.Provider
+
 func init() {
 	testAccProvider = Provider().(*schema.Provider)
 	testAccProviders = map[string]terraform.ResourceProvider{
 		"elasticsearch": testAccProvider,
+	}
+
+	testAccXPackProvider = Provider().(*schema.Provider)
+	testAccXPackProviders = map[string]terraform.ResourceProvider{
+		"elasticsearch": testAccXPackProvider,
+	}
+
+	originalConfigureFunc := testAccXPackProvider.ConfigureFunc
+	testAccXPackProvider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+		d.Set("url", "http://elastic:elastic@127.0.0.1:9210")
+		return originalConfigureFunc(d)
 	}
 }
 
