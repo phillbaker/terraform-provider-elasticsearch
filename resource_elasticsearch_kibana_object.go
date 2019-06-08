@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"errors"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 
@@ -172,40 +172,6 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 	d.Set("body", result)
 
 	return nil
-}
-
-func elastic6GetObject(client *elastic6.Client, objectType string, index string, id string) (*json.RawMessage, error) {
-	result, err := client.Get().
-		Index(index).
-		Type(objectType).
-		Id(id).
-		Do(context.TODO())
-
-	if err != nil {
-		return nil, err
-	}
-	if !result.Found {
-		return nil, fmt.Errorf("Object not found.")
-	}
-
-	return result.Source, nil
-}
-
-func elastic5GetObject(client *elastic5.Client, objectType string, index string, id string) (*json.RawMessage, error) {
-	result, err := client.Get().
-		Index(index).
-		Type(objectType).
-		Id(id).
-		Do(context.TODO())
-
-	if err != nil {
-		return nil, err
-	}
-	if !result.Found {
-		return nil, fmt.Errorf("Object not found.")
-	}
-
-	return result.Source, nil
 }
 
 func resourceElasticsearchKibanaObjectUpdate(d *schema.ResourceData, meta interface{}) error {

@@ -14,6 +14,9 @@ var testAccProvider *schema.Provider
 var testAccXPackProviders map[string]terraform.ResourceProvider
 var testAccXPackProvider *schema.Provider
 
+var testAccOpendistroProviders map[string]terraform.ResourceProvider
+var testAccOpendistroProvider *schema.Provider
+
 func init() {
 	testAccProvider = Provider().(*schema.Provider)
 	testAccProviders = map[string]terraform.ResourceProvider{
@@ -25,10 +28,21 @@ func init() {
 		"elasticsearch": testAccXPackProvider,
 	}
 
-	originalConfigureFunc := testAccXPackProvider.ConfigureFunc
+	xPackOriginalConfigureFunc := testAccXPackProvider.ConfigureFunc
 	testAccXPackProvider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
 		d.Set("url", "http://elastic:elastic@127.0.0.1:9210")
-		return originalConfigureFunc(d)
+		return xPackOriginalConfigureFunc(d)
+	}
+
+	testAccOpendistroProvider = Provider().(*schema.Provider)
+	testAccOpendistroProviders = map[string]terraform.ResourceProvider{
+		"elasticsearch": testAccOpendistroProvider,
+	}
+
+	opendistroOriginalConfigureFunc := testAccOpendistroProvider.ConfigureFunc
+	testAccOpendistroProvider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+		d.Set("url", "http://elastic:elastic@127.0.0.1:9220")
+		return opendistroOriginalConfigureFunc(d)
 	}
 }
 

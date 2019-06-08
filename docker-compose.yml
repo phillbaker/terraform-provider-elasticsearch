@@ -23,11 +23,11 @@ services:
         hard: -1
     ports:
       - 9200:9200
-  platinum:
+  xpack:
     image: ${ES_IMAGE}
-    hostname: elasticsearch-platinum
+    hostname: elasticsearch-xpack
     environment:
-      - cluster.name=platinum
+      - cluster.name=xpack
       - bootstrap.memory_lock=true
       - discovery.type=single-node
       - path.repo=/tmp
@@ -49,3 +49,27 @@ services:
         hard: -1
     ports:
       - 9210:9210
+  opendistro:
+    image: ${ES_OPENDISTRO_IMAGE:-rwgrim/docker-noop}
+    hostname: elasticsearch-opendistro
+    environment:
+      - cluster.name=opendistro
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - path.repo=/tmp
+      - opendistro_security.disabled=true
+      - http.port=9220
+      - network.publish_host=127.0.0.1
+      - logger.org.elasticsearch=warn
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - ELASTIC_PASSWORD=elastic
+    ulimits:
+      nproc: 65536
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9220:9220

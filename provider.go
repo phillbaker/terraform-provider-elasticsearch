@@ -88,6 +88,8 @@ func Provider() terraform.ResourceProvider {
 			"elasticsearch_snapshot_repository": resourceElasticsearchSnapshotRepository(),
 			"elasticsearch_kibana_object":       resourceElasticsearchKibanaObject(),
 			"elasticsearch_watch":               resourceElasticsearchWatch(),
+			"elasticsearch_monitor":             resourceElasticsearchMonitor(),
+			"elasticsearch_destination":         resourceElasticsearchDestination(),
 		},
 
 		ConfigureFunc: providerConfigure,
