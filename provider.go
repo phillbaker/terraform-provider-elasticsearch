@@ -32,7 +32,18 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_URL", nil),
 				Description: "Elasticsearch URL",
 			},
-
+			"username": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_USERNAME", nil),
+				Description: "Username to use to connect to elasticsearch using basic auth",
+			},
+			"password": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_PASSWORD", nil),
+				Description: "Password to use to connect to elasticsearch using basic auth",
+			},
 			"aws_access_key": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -100,6 +111,8 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	rawUrl := d.Get("url").(string)
 	insecure := d.Get("insecure").(bool)
 	cacertFile := d.Get("cacert_file").(string)
+	username := d.Get("username").(string)
+	password := d.Get("password").(string)
 	parsedUrl, err := url.Parse(rawUrl)
 	if err != nil {
 		return nil, err
@@ -113,6 +126,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if parsedUrl.User.Username() != "" {
 		p, _ := parsedUrl.User.Password()
 		opts = append(opts, elastic7.SetBasicAuth(parsedUrl.User.Username(), p))
+	}
+	if username != "" && password != "" {
+		opts = append(opts, elastic7.SetBasicAuth(username, password))
 	}
 
 	if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
@@ -146,6 +162,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 			p, _ := parsedUrl.User.Password()
 			opts = append(opts, elastic6.SetBasicAuth(parsedUrl.User.Username(), p))
 		}
+		if username != "" && password != "" {
+			opts = append(opts, elastic6.SetBasicAuth(username, password))
+		}
 
 		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
 			log.Printf("[INFO] Using AWS: %+v", m[1])
@@ -167,6 +186,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		if parsedUrl.User.Username() != "" {
 			p, _ := parsedUrl.User.Password()
 			opts = append(opts, elastic5.SetBasicAuth(parsedUrl.User.Username(), p))
+		}
+		if username != "" && password != "" {
+			opts = append(opts, elastic5.SetBasicAuth(username, password))
 		}
 
 		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
