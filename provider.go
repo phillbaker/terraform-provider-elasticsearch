@@ -116,6 +116,7 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"elasticsearch_index":                  resourceElasticsearchIndex(),
 			"elasticsearch_index_template":         resourceElasticsearchIndexTemplate(),
 			"elasticsearch_index_lifecycle_policy": resourceElasticsearchIndexLifecyclePolicy(),
 			"elasticsearch_snapshot_repository":    resourceElasticsearchSnapshotRepository(),

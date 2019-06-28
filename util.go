@@ -12,6 +12,10 @@ import (
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
+var (
+	errObjNotFound = fmt.Errorf("object not found")
+)
+
 func elastic7GetObject(client *elastic7.Client, objectType string, index string, id string) (*json.RawMessage, error) {
 	// types are deprecated in elasticsearch, ignore it for the search here
 	result, err := client.Get().
@@ -23,7 +27,7 @@ func elastic7GetObject(client *elastic7.Client, objectType string, index string,
 		return nil, err
 	}
 	if !result.Found {
-		return nil, fmt.Errorf("Object not found.")
+		return nil, errObjNotFound
 	}
 
 	return &result.Source, nil
@@ -40,7 +44,7 @@ func elastic6GetObject(client *elastic6.Client, objectType string, index string,
 		return nil, err
 	}
 	if !result.Found {
-		return nil, fmt.Errorf("Object not found.")
+		return nil, errObjNotFound
 	}
 
 	return result.Source, nil
@@ -57,7 +61,7 @@ func elastic5GetObject(client *elastic5.Client, objectType string, index string,
 		return nil, err
 	}
 	if !result.Found {
-		return nil, fmt.Errorf("Object not found.")
+		return nil, errObjNotFound
 	}
 
 	return result.Source, nil
