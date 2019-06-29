@@ -25,15 +25,19 @@ before_install:
 install:
   - export ELASTICSEARCH_URL=http://127.0.0.1:9200
   - export TF_LOG=INFO
-  - env GO111MODULE=on go get github.com/mitchellh/gox
   - env GO111MODULE=on go mod vendor
 script:
-  - export TARGET_OS="freebsd darwin linux windows"
-  - export TARGET_ARCH="386 amd64"
-  - export FILE_NAME="terraform-provider-elasticsearch_${TRAVIS_TAG}_{{.OS}}_{{.Arch}}"
   - export GO111MODULE=on
   - wget -q --waitretry=1 --retry-connrefused -T 10 -O - $ELASTICSEARCH_URL
   - TF_ACC=1 go test -v -cover
+before_deploy:
+  - export GO111MODULE=on
+  - go get github.com/mitchellh/gox
+  - export TARGET_OS="freebsd darwin linux windows"
+  - export TARGET_ARCH="386 amd64"
+  # Use terraform provider conventions
+  #  https://www.terraform.io/docs/configuration/providers.html#third-party-plugins
+  - export FILE_NAME="terraform-provider-elasticsearch_${TRAVIS_TAG}_{{.OS}}_{{.Arch}}"
   - gox -os "$TARGET_OS" -arch "$TARGET_ARCH" -output="$FILE_NAME"
   - CGO_ENABLED=0 gox -os "$TARGET_OS" -arch "$TARGET_ARCH" -output="${FILE_NAME}_static"
 deploy:
