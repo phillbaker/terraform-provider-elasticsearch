@@ -26,6 +26,7 @@ provider "elasticsearch" {
     aws_token = "" # if necessary
     insecure = true # to bypass certificate check
     cacert_file = "/path/to/ca.crt" # when connecting to elastic with self-signed certificate
+    sign_aws_requests = true # only needs to be true if your domain access policy includes IAM users or roles
 }
 
 resource "elasticsearch_index_template" "test" {
