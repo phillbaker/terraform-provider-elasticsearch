@@ -92,6 +92,12 @@ func Provider() terraform.ResourceProvider {
 				Description: "A X509 key to connect to elasticsearch",
 				DefaultFunc: schema.EnvDefaultFunc("ES_CLIENT_KEY_PATH", ""),
 			},
+			"sign_aws_requests": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Enable signing of AWS elasticsearch requests",
+			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -118,6 +124,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	username := d.Get("username").(string)
 	password := d.Get("password").(string)
 	parsedUrl, err := url.Parse(rawUrl)
+	signAWSRequests := d.Get("sign_aws_requests").(bool)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +142,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		opts = append(opts, elastic7.SetBasicAuth(username, password))
 	}
 
-	if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
+	if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil && signAWSRequests {
 		log.Printf("[INFO] Using AWS: %+v", m[1])
 		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(m[1], d)), elastic7.SetSniff(false))
 	} else if insecure || cacertFile != "" {
@@ -170,7 +177,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 			opts = append(opts, elastic6.SetBasicAuth(username, password))
 		}
 
-		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
+		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil && signAWSRequests {
 			log.Printf("[INFO] Using AWS: %+v", m[1])
 			opts = append(opts, elastic6.SetHttpClient(awsHttpClient(m[1], d)), elastic6.SetSniff(false))
 		} else if insecure || cacertFile != "" {
@@ -195,7 +202,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 			opts = append(opts, elastic5.SetBasicAuth(username, password))
 		}
 
-		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
+		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil && signAWSRequests {
 			opts = append(opts, elastic5.SetHttpClient(awsHttpClient(m[1], d)), elastic5.SetSniff(false))
 		} else if insecure || cacertFile != "" {
 			opts = append(opts, elastic5.SetHttpClient(tlsHttpClient(d)), elastic5.SetSniff(false))
