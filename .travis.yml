@@ -31,7 +31,7 @@ install:
   - env GO111MODULE=on go mod vendor
 script:
   - export GO111MODULE=on
-  - wget -q --waitretry=1 --retry-connrefused -T 30 -O - $ELASTICSEARCH_URL
+  - wget -q --waitretry=1 --retry-connrefused -T 60 -O - $ELASTICSEARCH_URL
   # Opendistro lazily initializes it's indexes, warm it up here :|
   # https://github.com/opendistro-for-elasticsearch/alerting/issues/60
   - |
