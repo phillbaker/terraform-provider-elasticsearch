@@ -3,6 +3,9 @@ language: go
 go:
   - '1.12'
   - master
+cache:
+  directories:
+    - $HOME/gopath/pkg/mod
 env:
   - ES_VERSION=5.6.16 ES_OSS_IMAGE=elasticsearch:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_COMMAND="elasticsearch -Epath.repo=/tmp"
   - ES_VERSION=6.8.0 ES_OSS_IMAGE=docker.elastic.co/elasticsearch/elasticsearch-oss:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_OPENDISTRO_IMAGE=amazon/opendistro-for-elasticsearch:0.9.0
@@ -28,7 +31,7 @@ install:
   - env GO111MODULE=on go mod vendor
 script:
   - export GO111MODULE=on
-  - wget -q --waitretry=1 --retry-connrefused -T 10 -O - $ELASTICSEARCH_URL
+  - wget -q --waitretry=1 --retry-connrefused -T 30 -O - $ELASTICSEARCH_URL
   # Opendistro lazily initializes it's indexes, warm it up here :|
   # https://github.com/opendistro-for-elasticsearch/alerting/issues/60
   - |
