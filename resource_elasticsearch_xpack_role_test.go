@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 
@@ -96,7 +97,18 @@ func testAccCheckRoleDestroy(s *terraform.State) error {
 
 		meta := testAccXPackProvider.Meta()
 
-		if client, ok := meta.(*elastic6.Client); ok {
+		if client, ok := meta.(*elastic7.Client); ok {
+			if _, err := client.XPackSecurityGetRole(rs.Primary.ID).Do(context.TODO()); err != nil {
+				if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
+					return nil
+				} else {
+					return fmt.Errorf("Role %q still exists", rs.Primary.ID)
+				}
+			} else {
+				return err
+			}
+
+		} else if client, ok := meta.(*elastic6.Client); ok {
 			if _, err := client.XPackSecurityGetRole(rs.Primary.ID).Do(context.TODO()); err != nil {
 				if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
 					return nil
@@ -126,8 +138,13 @@ func testCheckRoleExists(name string) resource.TestCheckFunc {
 
 		meta := testAccXPackProvider.Meta()
 
-		client := meta.(*elastic6.Client)
-		_, err := client.XPackSecurityGetRole(rs.Primary.ID).Do(context.TODO())
+		var err error
+		if client, ok := meta.(*elastic7.Client); ok {
+			_, err = client.XPackSecurityGetRole(rs.Primary.ID).Do(context.TODO())
+		} else {
+			client := meta.(*elastic6.Client)
+			_, err = client.XPackSecurityGetRole(rs.Primary.ID).Do(context.TODO())
+		}
 
 		if err != nil {
 			return err
