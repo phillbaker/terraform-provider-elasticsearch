@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 
@@ -42,6 +43,9 @@ func testCheckElasticsearchSnapshotRepositoryExists(name string) resource.TestCh
 
 		var err error
 		switch meta.(type) {
+		case *elastic7.Client:
+			client := meta.(*elastic7.Client)
+			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
 			client := meta.(*elastic6.Client)
 			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
@@ -68,6 +72,9 @@ func testCheckElasticsearchSnapshotRepositoryDestroy(s *terraform.State) error {
 
 		var err error
 		switch meta.(type) {
+		case *elastic7.Client:
+			client := meta.(*elastic7.Client)
+			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
 			client := meta.(*elastic6.Client)
 			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
@@ -91,7 +98,7 @@ resource "elasticsearch_snapshot_repository" "test" {
   name = "terraform-test"
   type = "fs"
 
-  settings {
+  settings = {
     location = "/tmp/elasticsearch"
   }
 }

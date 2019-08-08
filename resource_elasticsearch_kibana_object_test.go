@@ -5,16 +5,38 @@ import (
 	"fmt"
 	"testing"
 
+	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestAccElasticsearchKibanaObject(t *testing.T) {
+
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var allowed bool
+	switch meta.(type) {
+	case *elastic7.Client:
+		allowed = false
+	default:
+		allowed = true
+	}
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck: func() {
+			testAccPreCheck(t)
+			if !allowed {
+				t.Skip("Need to implement saved object API on ES >= 6")
+			}
+		},
 		Providers:    testAccProviders,
 		CheckDestroy: testCheckElasticsearchKibanaObjectDestroy,
 		Steps: []resource.TestStep{
@@ -42,6 +64,8 @@ func testCheckElasticsearchKibanaObjectExists(name string) resource.TestCheckFun
 
 		var err error
 		switch meta.(type) {
+		case *elastic7.Client:
+			// not implemented
 		case *elastic6.Client:
 			client := meta.(*elastic6.Client)
 			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
@@ -68,6 +92,8 @@ func testCheckElasticsearchKibanaObjectDestroy(s *terraform.State) error {
 
 		var err error
 		switch meta.(type) {
+		case *elastic7.Client:
+			// not implemented
 		case *elastic6.Client:
 			client := meta.(*elastic6.Client)
 			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())

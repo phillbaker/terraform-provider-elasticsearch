@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
@@ -44,6 +46,8 @@ func resourceElasticsearchKibanaObjectCreate(d *schema.ResourceData, meta interf
 	var success int
 	var err error
 	switch meta.(type) {
+	case *elastic7.Client:
+		err = errors.New("kibana objects not implemented post to Elastic v7")
 	case *elastic6.Client:
 		client := meta.(*elastic6.Client)
 		success, err = elastic6CreateIndexIfNotExists(client, index, mapping_index)
@@ -144,6 +148,8 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 	var result *json.RawMessage
 	var err error
 	switch meta.(type) {
+	case *elastic7.Client:
+		err = errors.New("kibana objects not implemented post to Elastic v7")
 	case *elastic6.Client:
 		client := meta.(*elastic6.Client)
 		result, err = elastic6GetObject(client, objectType, index, id)
@@ -168,40 +174,6 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func elastic6GetObject(client *elastic6.Client, objectType string, index string, id string) (*json.RawMessage, error) {
-	result, err := client.Get().
-		Index(index).
-		Type(objectType).
-		Id(id).
-		Do(context.TODO())
-
-	if err != nil {
-		return nil, err
-	}
-	if !result.Found {
-		return nil, fmt.Errorf("Object not found.")
-	}
-
-	return result.Source, nil
-}
-
-func elastic5GetObject(client *elastic5.Client, objectType string, index string, id string) (*json.RawMessage, error) {
-	result, err := client.Get().
-		Index(index).
-		Type(objectType).
-		Id(id).
-		Do(context.TODO())
-
-	if err != nil {
-		return nil, err
-	}
-	if !result.Found {
-		return nil, fmt.Errorf("Object not found.")
-	}
-
-	return result.Source, nil
-}
-
 func resourceElasticsearchKibanaObjectUpdate(d *schema.ResourceData, meta interface{}) error {
 	_, err := resourceElasticsearchPutKibanaObject(d, meta)
 	return err
@@ -221,6 +193,8 @@ func resourceElasticsearchKibanaObjectDelete(d *schema.ResourceData, meta interf
 
 	var err error
 	switch meta.(type) {
+	case *elastic7.Client:
+		err = errors.New("kibana objects not implemented post to Elastic v7")
 	case *elastic6.Client:
 		client := meta.(*elastic6.Client)
 		err = elastic6DeleteIndex(client, objectType, index, id)
@@ -273,6 +247,8 @@ func resourceElasticsearchPutKibanaObject(d *schema.ResourceData, meta interface
 
 	var err error
 	switch meta.(type) {
+	case *elastic7.Client:
+		err = errors.New("kibana objects not implemented post to Elastic v7")
 	case *elastic6.Client:
 		client := meta.(*elastic6.Client)
 		err = elastic6PutIndex(client, objectType, index, id, data)

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
@@ -48,6 +49,9 @@ func resourceElasticsearchSnapshotRepositoryRead(d *schema.ResourceData, meta in
 	var settings map[string]interface{}
 	var err error
 	switch meta.(type) {
+	case *elastic7.Client:
+		client := meta.(*elastic7.Client)
+		repositoryType, settings, err = elastic7SnapshotGetRepository(client, id)
 	case *elastic6.Client:
 		client := meta.(*elastic6.Client)
 		repositoryType, settings, err = elastic6SnapshotGetRepository(client, id)
@@ -63,6 +67,15 @@ func resourceElasticsearchSnapshotRepositoryRead(d *schema.ResourceData, meta in
 	d.Set("type", repositoryType)
 	d.Set("settings", settings)
 	return nil
+}
+
+func elastic7SnapshotGetRepository(client *elastic7.Client, id string) (string, map[string]interface{}, error) {
+	repos, err := client.SnapshotGetRepository(id).Do(context.TODO())
+	if err != nil {
+		return "", make(map[string]interface{}), err
+	}
+
+	return repos[id].Type, repos[id].Settings, nil
 }
 
 func elastic6SnapshotGetRepository(client *elastic6.Client, id string) (string, map[string]interface{}, error) {
@@ -95,6 +108,9 @@ func resourceElasticsearchSnapshotRepositoryUpdate(d *schema.ResourceData, meta 
 
 	var err error
 	switch meta.(type) {
+	case *elastic7.Client:
+		client := meta.(*elastic7.Client)
+		err = elastic7SnapshotCreateRepository(client, name, repositoryType, settings)
 	case *elastic6.Client:
 		client := meta.(*elastic6.Client)
 		err = elastic6SnapshotCreateRepository(client, name, repositoryType, settings)
@@ -103,6 +119,16 @@ func resourceElasticsearchSnapshotRepositoryUpdate(d *schema.ResourceData, meta 
 		err = elastic5SnapshotCreateRepository(client, name, repositoryType, settings)
 	}
 
+	return err
+}
+
+func elastic7SnapshotCreateRepository(client *elastic7.Client, name string, repositoryType string, settings map[string]interface{}) error {
+	repo := elastic7.SnapshotRepositoryMetaData{
+		Type:     repositoryType,
+		Settings: settings,
+	}
+
+	_, err := client.SnapshotCreateRepository(name).BodyJson(&repo).Do(context.TODO())
 	return err
 }
 
@@ -131,6 +157,9 @@ func resourceElasticsearchSnapshotRepositoryDelete(d *schema.ResourceData, meta 
 
 	var err error
 	switch meta.(type) {
+	case *elastic7.Client:
+		client := meta.(*elastic7.Client)
+		err = elastic7SnapshotDeleteRepository(client, id)
 	case *elastic6.Client:
 		client := meta.(*elastic6.Client)
 		err = elastic6SnapshotDeleteRepository(client, id)
@@ -144,6 +173,11 @@ func resourceElasticsearchSnapshotRepositoryDelete(d *schema.ResourceData, meta 
 	}
 	d.SetId("")
 	return nil
+}
+
+func elastic7SnapshotDeleteRepository(client *elastic7.Client, id string) error {
+	_, err := client.SnapshotDeleteRepository(id).Do(context.TODO())
+	return err
 }
 
 func elastic6SnapshotDeleteRepository(client *elastic6.Client, id string) error {

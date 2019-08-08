@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"log"
 	"net/http"
 	"net/url"
@@ -15,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform/helper/pathorcontents"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
+	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
@@ -48,17 +50,15 @@ func Provider() terraform.ResourceProvider {
 			"username": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_USERNAME", ""),
-				Description: "The username for the Elasticsearch cluster",
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_USERNAME", nil),
+				Description: "Username to use to connect to elasticsearch using basic auth",
 			},
-
 			"password": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_PASSWORD", ""),
-				Description: "The password for the Elasticsearch cluster",
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_PASSWORD", nil),
+				Description: "Password to use to connect to elasticsearch using basic auth",
 			},
-
 			"aws_access_key": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -93,6 +93,26 @@ func Provider() terraform.ResourceProvider {
 				Default:     false,
 				Description: "Disable SSL verification of API calls",
 			},
+			"client_cert_path": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "A X509 certificate to connect to elasticsearch",
+				DefaultFunc: schema.EnvDefaultFunc("ES_CLIENT_CERTIFICATE_PATH", ""),
+			},
+			"client_key_path": &schema.Schema{
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "A X509 key to connect to elasticsearch",
+				DefaultFunc: schema.EnvDefaultFunc("ES_CLIENT_KEY_PATH", ""),
+			},
+			"sign_aws_requests": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Enable signing of AWS elasticsearch requests",
+			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -101,6 +121,13 @@ func Provider() terraform.ResourceProvider {
 			"elasticsearch_kibana_object":       resourceElasticsearchKibanaObject(),
 			"elasticsearch_xpack_role_mapping":  resourceElasticsearchXpackRoleMapping(),
 			"elasticsearch_xpack_role":          resourceElasticsearchXpackRole(),
+			"elasticsearch_watch":               resourceElasticsearchWatch(),
+			"elasticsearch_monitor":             resourceElasticsearchMonitor(),
+			"elasticsearch_destination":         resourceElasticsearchDestination(),
+		},
+
+		DataSourcesMap: map[string]*schema.Resource{
+			"elasticsearch_destination": dataSourceElasticsearchDestination(),
 		},
 
 		ConfigureFunc: providerConfigure,
@@ -113,24 +140,34 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	sniffing := d.Get("sniff").(bool)
 	healthchecking := d.Get("healthcheck").(bool)
 	cacertFile := d.Get("cacert_file").(string)
-
+	username := d.Get("username").(string)
+	password := d.Get("password").(string)
 	parsedUrl, err := url.Parse(rawUrl)
+	signAWSRequests := d.Get("sign_aws_requests").(bool)
 	if err != nil {
 		return nil, err
 	}
 
-	opts := []elastic6.ClientOptionFunc{
-		elastic6.SetURL(rawUrl),
-		elastic6.SetScheme(parsedUrl.Scheme),
-		elastic6.SetSniff(sniffing),
-		elastic6.SetHealthcheck(healthchecking),
+	opts := []elastic7.ClientOptionFunc{
+		elastic7.SetURL(rawUrl),
+		elastic7.SetScheme(parsedUrl.Scheme),
+		elastic7.SetSniff(sniffing),
+		elastic7.SetHealthcheck(healthchecking),
 	}
 
-	if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
+	if parsedUrl.User.Username() != "" {
+		p, _ := parsedUrl.User.Password()
+		opts = append(opts, elastic7.SetBasicAuth(parsedUrl.User.Username(), p))
+	}
+	if username != "" && password != "" {
+		opts = append(opts, elastic7.SetBasicAuth(username, password))
+	}
+
+	if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil && signAWSRequests {
 		log.Printf("[INFO] Using AWS: %+v", m[1])
-		opts = append(opts, elastic6.SetHttpClient(awsHttpClient(m[1], d)), elastic6.SetSniff(false))
+		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(m[1], d)), elastic7.SetSniff(false))
 	} else if insecure || cacertFile != "" {
-		opts = append(opts, elastic6.SetHttpClient(tlsHttpClient(d)), elastic6.SetSniff(false))
+		opts = append(opts, elastic7.SetHttpClient(tlsHttpClient(d)), elastic7.SetSniff(false))
 	}
 
 	username := d.Get("username").(string)
@@ -147,7 +184,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 
 	var relevantClient interface{}
-	client, err := elastic6.NewClient(opts...)
+	client, err := elastic7.NewClient(opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -158,14 +195,48 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if info.Version.Number < "6.0.0" {
+
+	if info.Version.Number < "7.0.0" && info.Version.Number >= "6.0.0" {
+		log.Printf("[INFO] Using ES 6")
+		opts := []elastic6.ClientOptionFunc{
+			elastic6.SetURL(rawUrl),
+			elastic6.SetScheme(parsedUrl.Scheme),
+		}
+
+		if parsedUrl.User.Username() != "" {
+			p, _ := parsedUrl.User.Password()
+			opts = append(opts, elastic6.SetBasicAuth(parsedUrl.User.Username(), p))
+		}
+		if username != "" && password != "" {
+			opts = append(opts, elastic6.SetBasicAuth(username, password))
+		}
+
+		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil && signAWSRequests {
+			log.Printf("[INFO] Using AWS: %+v", m[1])
+			opts = append(opts, elastic6.SetHttpClient(awsHttpClient(m[1], d)), elastic6.SetSniff(false))
+		} else if insecure || cacertFile != "" {
+			opts = append(opts, elastic6.SetHttpClient(tlsHttpClient(d)), elastic6.SetSniff(false))
+		}
+		relevantClient, err = elastic6.NewClient(opts...)
+		if err != nil {
+			return nil, err
+		}
+	} else if info.Version.Number < "6.0.0" && info.Version.Number >= "5.0.0" {
 		log.Printf("[INFO] Using ES 5")
 		opts := []elastic5.ClientOptionFunc{
 			elastic5.SetURL(rawUrl),
 			elastic5.SetScheme(parsedUrl.Scheme),
 		}
 
-		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil {
+		if parsedUrl.User.Username() != "" {
+			p, _ := parsedUrl.User.Password()
+			opts = append(opts, elastic5.SetBasicAuth(parsedUrl.User.Username(), p))
+		}
+		if username != "" && password != "" {
+			opts = append(opts, elastic5.SetBasicAuth(username, password))
+		}
+
+		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil && signAWSRequests {
 			opts = append(opts, elastic5.SetHttpClient(awsHttpClient(m[1], d)), elastic5.SetSniff(false))
 		} else if insecure || cacertFile != "" {
 			opts = append(opts, elastic5.SetHttpClient(tlsHttpClient(d)), elastic5.SetSniff(false))
@@ -174,6 +245,8 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
+	} else if info.Version.Number < "5.0.0" {
+		return nil, errors.New("ElasticSearch is older than 5.0.0!")
 	}
 
 	return relevantClient, nil
@@ -188,8 +261,8 @@ func awsHttpClient(region string, d *schema.ResourceData) *http.Client {
 				SessionToken:    d.Get("aws_token").(string),
 			},
 		},
-		&awscredentials.SharedCredentialsProvider{},
 		&awscredentials.EnvProvider{},
+		&awscredentials.SharedCredentialsProvider{},
 	})
 	signer := awssigv4.NewSigner(creds)
 	client, _ := aws_signing_client.New(signer, nil, "es", region)
@@ -200,9 +273,26 @@ func awsHttpClient(region string, d *schema.ResourceData) *http.Client {
 func tlsHttpClient(d *schema.ResourceData) *http.Client {
 	insecure := d.Get("insecure").(bool)
 	cacertFile := d.Get("cacert_file").(string)
+	certPemPath := d.Get("client_cert_path").(string)
+	keyPemPath := d.Get("client_key_path").(string)
 
 	// Configure TLS/SSL
 	tlsConfig := &tls.Config{}
+	if certPemPath != "" && keyPemPath != "" {
+		certPem, _, err := pathorcontents.Read(certPemPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		keyPem, _, err := pathorcontents.Read(keyPemPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		cert, err := tls.X509KeyPair([]byte(certPem), []byte(keyPem))
+		if err != nil {
+			log.Fatal(err)
+		}
+		tlsConfig.Certificates = []tls.Certificate{cert}
+	}
 
 	// If a cacertFile has been specified, use that for cert validation
 	if cacertFile != "" {

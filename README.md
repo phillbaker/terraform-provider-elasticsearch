@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/phillbaker/terraform-provider-elasticsearch.svg?branch=master)](https://travis-ci.org/phillbaker/terraform-provider-elasticsearch)
 
-This is a terraform provider that lets you provision elasticsearch resources, compatible with v5 and v6 of elasticsearch. Based off of an [original PR to Terraform](https://github.com/hashicorp/terraform/pull/13238).
+This is a terraform provider that lets you provision elasticsearch resources, compatible with v5, v6 and v7 of elasticsearch. Based off of an [original PR to Terraform](https://github.com/hashicorp/terraform/pull/13238).
 
 ## Installation
 
@@ -26,6 +26,7 @@ provider "elasticsearch" {
     aws_token = "" # if necessary
     insecure = true # to bypass certificate check
     cacert_file = "/path/to/ca.crt" # when connecting to elastic with self-signed certificate
+    sign_aws_requests = true # only needs to be true if your domain access policy includes IAM users or roles
 }
 
 resource "elasticsearch_index_template" "test" {
@@ -85,7 +86,7 @@ resource "elasticsearch_kibana_object" "test_dashboard" {
   body = "${file("dashboard_path.txt")}"
 }
 
-resource "elasticsearch_kibana_object" "test_visualization" {
+resource "elasticsearch_kibana_object" "test_visualization_v5" {
   body = <<EOF
 [
   {
@@ -99,6 +100,30 @@ resource "elasticsearch_kibana_object" "test_visualization" {
       "version": 1,
       "kibanaSavedObjectMeta": {
         "searchSourceJSON": "{\"index\":\"filebeat-*\",\"query\":{\"query_string\":{\"query\":\"*\",\"analyze_wildcard\":true}},\"filter\":[]}"
+      }
+    }
+  }
+]
+EOF
+}
+
+resource "elasticsearch_kibana_object" "test_visualization_v6" {
+  body = <<EOF
+[
+  {
+    "_id": "visualization:response-time-percentile",
+    "_type": "doc",
+    "_source": {
+      "type": "visualization",
+      "visualization": {
+        "title": "Total response time percentiles",
+        "visState": "{\"title\":\"Total response time percentiles\",\"type\":\"line\",\"params\":{\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"showCircles\":true,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"app.total_time\",\"percents\":[50,90,95]}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},{\"id\":\"3\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"group\",\"params\":{\"field\":\"system.syslog.program\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"_term\"}}],\"listeners\":{}}",
+        "uiStateJSON": "{}",
+        "description": "",
+        "version": 1,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": "{\"index\":\"filebeat-*\",\"query\":{\"query_string\":{\"query\":\"*\",\"analyze_wildcard\":true}},\"filter\":[]}"
+        }
       }
     }
   }
@@ -152,15 +177,10 @@ Please refer to the official [userguide](https://docs.aws.amazon.com/cli/latest/
 
 ### Requirements
 
-* [Golang](https://golang.org/dl/) >= 1.7
-* [Glide](https://github.com/Masterminds/glide)
+* [Golang](https://golang.org/dl/) >= 1.11
 
 
 ```
-# Ensure that this folder is at the following location: `${GOPATH}/src/github.com/phillbaker/terraform-provider-elasticsearch`
-cd $GOPATH/src/github.com/phillbaker/terraform-provider-elasticsearch
-
-glide install
 go build -o /path/to/binary/terraform-provider-elasticsearch
 ```
 

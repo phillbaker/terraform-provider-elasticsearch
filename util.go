@@ -1,12 +1,66 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	elastic7 "github.com/olivere/elastic/v7"
+	elastic5 "gopkg.in/olivere/elastic.v5"
+	elastic6 "gopkg.in/olivere/elastic.v6"
 )
+
+func elastic7GetObject(client *elastic7.Client, objectType string, index string, id string) (*json.RawMessage, error) {
+	result, err := client.Get().
+		Index(index).
+		Type(objectType).
+		Id(id).
+		Do(context.TODO())
+
+	if err != nil {
+		return nil, err
+	}
+	if !result.Found {
+		return nil, fmt.Errorf("Object not found.")
+	}
+
+	return &result.Source, nil
+}
+
+func elastic6GetObject(client *elastic6.Client, objectType string, index string, id string) (*json.RawMessage, error) {
+	result, err := client.Get().
+		Index(index).
+		Type(objectType).
+		Id(id).
+		Do(context.TODO())
+
+	if err != nil {
+		return nil, err
+	}
+	if !result.Found {
+		return nil, fmt.Errorf("Object not found.")
+	}
+
+	return result.Source, nil
+}
+
+func elastic5GetObject(client *elastic5.Client, objectType string, index string, id string) (*json.RawMessage, error) {
+	result, err := client.Get().
+		Index(index).
+		Type(objectType).
+		Id(id).
+		Do(context.TODO())
+
+	if err != nil {
+		return nil, err
+	}
+	if !result.Found {
+		return nil, fmt.Errorf("Object not found.")
+	}
+
+	return result.Source, nil
+}
 
 func normalizeIndexTemplate(tpl map[string]interface{}) {
 	delete(tpl, "version")
