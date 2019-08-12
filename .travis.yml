@@ -26,7 +26,7 @@ before_install:
   - docker-compose pull
   - docker-compose up -d
 install:
-  - export ELASTICSEARCH_URL=http://127.0.0.1:9200 
+  - export ELASTICSEARCH_URL=http://127.0.0.1:9200
   - export TF_LOG=INFO
   - env GO111MODULE=on go mod vendor
 script:
