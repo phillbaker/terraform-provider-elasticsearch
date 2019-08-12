@@ -32,7 +32,7 @@ services:
       - discovery.type=single-node
       - path.repo=/tmp
       - xpack.license.self_generated.type=trial
-      - xpack.security.enabled=false
+      - xpack.security.enabled=true
       - xpack.watcher.enabled=true
       - http.port=9210
       - network.publish_host=127.0.0.1

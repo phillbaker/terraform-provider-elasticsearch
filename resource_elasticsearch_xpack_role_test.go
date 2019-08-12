@@ -4,19 +4,42 @@ import (
 	"context"
 	"fmt"
 	"testing"
-
+	
 	"github.com/hashicorp/terraform/helper/acctest"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	
+	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
+	elastic5 "gopkg.in/olivere/elastic.v5"
 )
 
 func TestAccElasticsearchXpackRole(t *testing.T) {
-	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var allowed bool
+	switch meta.(type) {
+	case *elastic5.Client:
+		allowed = false
+	default:
+		allowed = true
+	}
 
+	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+	
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckXpack(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) 
+			if !allowed {
+				t.Skip("Xpack only supported on ES >= 6")
+			}
+		},
+		Providers:    testAccXPackProviders,
 		CheckDestroy: testAccCheckRoleDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -36,7 +59,6 @@ func TestAccElasticsearchXpackRole(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"elasticsearch_xpack_role.test",
 						"metadata",
-						//`{"foo":"bar"}`,
 						"{}",
 					),
 				),
@@ -72,10 +94,21 @@ func testAccCheckRoleDestroy(s *terraform.State) error {
 		if rs.Type != "elasticsearch_xpack_role" {
 			continue
 		}
+		
+		meta := testAccXPackProvider.Meta()
 
-		meta := testAccProvider.Meta()
+		if client, ok := meta.(*elastic7.Client); ok {
+			if _, err := client.XPackSecurityGetRole(rs.Primary.ID).Do(context.TODO()); err != nil {
+				if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
+					return nil
+				} else {
+					return fmt.Errorf("Role %q still exists", rs.Primary.ID)
+				}
+			} else {
+				return err
+			}
 
-		if client, ok := meta.(*elastic6.Client); ok {
+		} else if client, ok := meta.(*elastic6.Client); ok {
 			if _, err := client.XPackSecurityGetRole(rs.Primary.ID).Do(context.TODO()); err != nil {
 				if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
 					return nil
@@ -92,7 +125,7 @@ func testAccCheckRoleDestroy(s *terraform.State) error {
 	}
 	return nil
 }
-
+			
 func testCheckRoleExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
@@ -103,10 +136,15 @@ func testCheckRoleExists(name string) resource.TestCheckFunc {
 			return fmt.Errorf("No role mapping ID is set")
 		}
 
-		meta := testAccProvider.Meta()
+		meta := testAccXPackProvider.Meta()
 
-		client := meta.(*elastic6.Client)
-		_, err := client.XPackSecurityGetRole(rs.Primary.ID).Do(context.TODO())
+		var err error
+		if client, ok := meta.(*elastic7.Client); ok {
+			_, err = client.XPackSecurityGetRole(rs.Primary.ID).Do(context.TODO())
+		} else {
+			client := meta.(*elastic6.Client)
+			_, err = client.XPackSecurityGetRole(rs.Primary.ID).Do(context.TODO())
+		}
 
 		if err != nil {
 			return err
@@ -115,30 +153,142 @@ func testCheckRoleExists(name string) resource.TestCheckFunc {
 		return nil
 	}
 }
-
+			
 func testAccRoleResource(resourceName string) string {
 	return fmt.Sprintf(` 
+	resource "elasticsearch_xpack_role" "test" {
+		role_name = "%s"
+		indices {
+			names 	   = ["testIndice"]
+			privileges = ["testPrivilege"]
+		}
+		indices {
+			names 	   = ["testIndice2"]
+			privileges = ["testPrivilege2"]
+		}
+		cluster = [
+		"all"
+		]
+		applications {
+			application = "testapp"
+			privileges = [ 
+			"admin", 
+			"read" 
+			]
+			resources = [ 
+			"*" 
+			]
+		}
+	}
+	`, resourceName)
+}
+			
+func testAccRoleResource_Updated(resourceName string) string {
+	return fmt.Sprintf(`
+	resource "elasticsearch_xpack_role" "test" {
+		role_name = "%s"
+		indices {
+			names 	 = ["testIndice"]
+			privileges = ["testPrivilege"]
+		}
+		indices {
+			names 	 = ["testIndice2"]
+			privileges = ["testPrivilege2"]
+		}
+		cluster = [
+		"all"
+		]
+		applications {
+			application = "testapp"
+			privileges = [ 
+			"admin", 
+			"read",
+			"delete", 
+			]
+			resources = [ 
+			"*" 
+			]
+		}
+		metadata = <<-EOF
+		{
+			"foo": "bar"
+		}
+		EOF
+	}
+	`, resourceName)
+}
+
+func testAccRoleResource_Global(resourceName string) string {
+	return fmt.Sprintf(`
+	resource "elasticsearch_xpack_role" "test" {
+		role_name = "%s"
+		indices {
+			names 	 = ["testIndice"]
+			privileges = ["testPrivilege"]
+		}
+		indices {
+			names 	 = ["testIndice2"]
+			privileges = ["testPrivilege2"]
+		}
+		cluster = [
+		"all",
+		]
+		applications {
+			application = "testapp"
+			privileges = [ 
+			"admin", 
+			"read",
+			"delete", 
+			]
+			resources = [ 
+			"*" ,
+			]
+		}
+		
+		metadata = <<-EOF
+		{
+			"foo": "bar"
+		}
+		EOF
+		
+		
+		global = <<-EOF
+		{
+			"application": {
+				"manage": {    
+					"applications": ["testapp"] 
+				}
+			}
+		}
+		EOF
+	}
+	`, resourceName)
+}
+			
+
+		
+/*
+
+
+func testAccRoleResource(resourceName string) string {
+	return fmt.Sprintf(`
 resource "elasticsearch_xpack_role" "test" {
 	role_name = "%s"
 	indices {
 		names = ["testIndice"]
 		privileges = ["testPrivilege"]
 	}
-	indices {
-		names = ["testIndice2"]
-		privileges = ["testPrivilege2"]
-	}
 	cluster = [
 		"all"
 	]
-	"applications" = {
-		"application" = "testapp"
-		"privileges" = [ 
-			"admin", 
-			"read" 
+	applications {
+		application = "testapp"
+		privileges = [
+			"admin",
+			"read",
 		]
-		"resources" = [ 
-			"*" 
+		resources = [
+			"*"
 		]
 	}
 }
@@ -153,30 +303,25 @@ resource "elasticsearch_xpack_role" "test" {
 	  names = ["testIndice"]
 	  privileges = ["testPrivilege"]
 	}
-	indices {
-	  names = ["testIndice2"]
-	  privileges = ["testPrivilege2"]
-	}
 	cluster = [
 		"all"
 	]
-	"applications" = {
-      "application" = "testapp"
-      "privileges" = [ 
-		  "admin", 
+	applications {
+    application = "testapp"
+    privileges = [
+		  "admin",
 		  "read",
-		  "delete", 
+		  "delete",
 		]
-      "resources" = [ 
-		  "*" 
+    resources = [
+		  "*"
 		]
-    }
+  }
   metadata = <<-EOF
   {
     "foo": "bar"
   }
   EOF
-  ,
 }
 `, resourceName)
 }
@@ -189,41 +334,36 @@ resource "elasticsearch_xpack_role" "test" {
 	  names = ["testIndice"]
 	  privileges = ["testPrivilege"]
 	}
-	indices {
-	  names = ["testIndice2"]
-	  privileges = ["testPrivilege2"]
-	}
 	cluster = [
 		"all"
 	]
-	"applications" = {
-      "application" = "testapp"
-      "privileges" = [ 
-		  "admin", 
+	applications {
+    application = "testapp"
+    privileges = [
+		  "admin",
 		  "read",
-		  "delete", 
+		  "delete",
 		]
-      "resources" = [ 
-		  "*" 
+    resources = [
+		  "*"
 		]
-    }
+  }
 
   metadata = <<-EOF
   {
     "foo": "bar"
   }
   EOF
-  ,
   global = <<-EOF
   {
 	  "application": {
-		  "manage": {    
-			  "applications": ["testapp"] 
+		  "manage": {
+			  "applications": ["testapp"]
 		  }
 	  }
   }
   EOF
-  ,
 }
 `, resourceName)
 }
+*/

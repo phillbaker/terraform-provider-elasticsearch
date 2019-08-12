@@ -6,18 +6,40 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
+	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	
+	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
+	elastic5 "gopkg.in/olivere/elastic.v5"
 )
 
 func TestAccElasticsearchXpackRoleMapping(t *testing.T) {
 
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var allowed bool
+	switch meta.(type) {
+	case *elastic5.Client:
+		allowed = false
+	default:
+		allowed = true
+	}
+
 	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckXpack(t) },
-		Providers:    testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) 
+			if !allowed {
+				t.Skip("Xpack only supported on ES >= 6")
+			}
+		},
+		Providers:    testAccXPackProviders,
 		CheckDestroy: testAccCheckRoleMappingDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -77,9 +99,20 @@ func testAccCheckRoleMappingDestroy(s *terraform.State) error {
 			continue
 		}
 
-		meta := testAccProvider.Meta()
+		meta := testAccXPackProvider.Meta()
 
-		if client, ok := meta.(*elastic6.Client); ok {
+		if client, ok := meta.(*elastic7.Client); ok {
+			if _, err := client.XPackSecurityGetRoleMapping(rs.Primary.ID).Do(context.TODO()); err != nil {
+				if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
+					return nil
+				} else {
+					return fmt.Errorf("Role mapping %q still exists", rs.Primary.ID)
+				}
+			} else {
+				return err
+			}
+
+		} else if client, ok := meta.(*elastic6.Client); ok {
 			if _, err := client.XPackSecurityGetRoleMapping(rs.Primary.ID).Do(context.TODO()); err != nil {
 				if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
 					return nil
@@ -107,10 +140,14 @@ func testCheckRoleMappingExists(name string) resource.TestCheckFunc {
 			return fmt.Errorf("No role mapping ID is set")
 		}
 
-		meta := testAccProvider.Meta()
-
-		client := meta.(*elastic6.Client)
-		_, err := client.XPackSecurityGetRoleMapping(rs.Primary.ID).Do(context.TODO())
+		meta := testAccXPackProvider.Meta()
+		var err error
+		if client, ok := meta.(*elastic7.Client); ok {
+			_, err = client.XPackSecurityGetRoleMapping(rs.Primary.ID).Do(context.TODO())
+		} else {
+			client := meta.(*elastic6.Client)
+			_, err = client.XPackSecurityGetRoleMapping(rs.Primary.ID).Do(context.TODO())
+		}
 
 		if err != nil {
 			return err
@@ -125,8 +162,8 @@ func testAccRoleMappingResource(resourceName string) string {
 resource "elasticsearch_xpack_role_mapping" "test" {
   role_mapping_name = "%s"
   roles = [
-      "admin",
-      "user",
+    "admin",
+    "user",
   ]
   rules = <<-EOF
   {
@@ -144,7 +181,6 @@ resource "elasticsearch_xpack_role_mapping" "test" {
     ]
   }
   EOF
-  ,
   enabled = true
 }
 `, resourceName)
@@ -155,9 +191,9 @@ func testAccRoleMappingResource_Updated(resourceName string) string {
 resource "elasticsearch_xpack_role_mapping" "test" {
   role_mapping_name = "%s"
   roles = [
-      "admin",
-			"user",
-			"guest",
+    "admin",
+	"user",
+	"guest",
   ]
   rules = <<-EOF
   {
@@ -175,7 +211,6 @@ resource "elasticsearch_xpack_role_mapping" "test" {
     ]
   }
   EOF
-  ,
   enabled = false
 }
 `, resourceName)
