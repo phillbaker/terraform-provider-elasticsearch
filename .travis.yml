@@ -40,11 +40,20 @@ script:
     if [ -n "$ES_OPENDISTRO_IMAGE" ]; then curl -X POST -H 'Content-type: application/json'  -d '{"name":"_warmup","type":"slack","slack":{"url": "http://www.example.com"}}' 127.0.0.1:9220/_opendistro/_alerting/destinations; fi
   - TF_ACC=1 go test -v -cover
 
+before_deploy:
+  - export GO111MODULE=on
+  - go get github.com/mitchellh/gox
+  - export TARGET_OS="freebsd darwin linux windows"
+  - export TARGET_ARCH="386 amd64"
+  # Use terraform provider conventions
+  #  https://www.terraform.io/docs/configuration/providers.html#third-party-plugins
+  - export FILE_NAME="terraform-provider-elasticsearch_${TRAVIS_TAG}_{{.OS}}_{{.Arch}}"
+  - gox -os "$TARGET_OS" -arch "$TARGET_ARCH" -output="$FILE_NAME"
+  - CGO_ENABLED=0 gox -os "$TARGET_OS" -arch "$TARGET_ARCH" -output="${FILE_NAME}_static"
+
 stages:
   - test
   - deploy
-  #- name: deploy
-  #  if: branch = master
 
 jobs:
   include:
