@@ -57,13 +57,13 @@ stages:
 
 jobs:
   include:
-  - stage: &deploy
+  - stage: deploy go-releaser
     name: "Deploy to Github with GoReleaser"
     before_install: skip
     script: if [ "${TRAVIS_TAG::1}" = "v" ]; then curl -sL https://git.io/goreleaser | bash; fi
-  - <<: *deploy
+  - stage: deploy gox
     name: "Deploy with Releases"
-    script: skip
+    before_install: skip
     deploy:
       provider: releases
       api_key:
