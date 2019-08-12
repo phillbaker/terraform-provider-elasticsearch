@@ -26,6 +26,12 @@ var awsUrlRegexp = regexp.MustCompile(`([a-z0-9-]+).es.amazonaws.com$`)
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
+			"url": &schema.Schema{
+				Type:        schema.TypeString,
+				Required:    true,
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_URL", nil),
+				Description: "Elasticsearch URL",
+			},
 			"sniff": &schema.Schema{
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -37,12 +43,6 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_HEALTH", true),
 				Description: "Set the client healthcheck option for the elastic client. Healthchecking is designed for direct access to the cluster.",
-			},
-			"url": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_URL", nil),
-				Description: "Elasticsearch URL",
 			},
 			"username": &schema.Schema{
 				Type:        schema.TypeString,
