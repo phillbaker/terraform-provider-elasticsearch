@@ -34,9 +34,10 @@ func TestAccElasticsearchXpackRoleMapping(t *testing.T) {
 	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) 
+		PreCheck: func() {
+			testAccPreCheck(t)
 			if !allowed {
-				t.Skip("Xpack only supported on ES >= 6")
+				t.Skip("Role Mapping only supported on ES >= 6")
 			}
 		},
 		Providers:    testAccXPackProviders,
@@ -162,8 +163,13 @@ func testAccRoleMappingResource(resourceName string) string {
 resource "elasticsearch_xpack_role_mapping" "test" {
   role_mapping_name = "%s"
   roles = [
+<<<<<<< HEAD
     "admin",
     "user",
+=======
+      "admin",
+      "user",
+>>>>>>> phillbaker/xpack-security
   ]
   rules = <<-EOF
   {
@@ -191,9 +197,15 @@ func testAccRoleMappingResource_Updated(resourceName string) string {
 resource "elasticsearch_xpack_role_mapping" "test" {
   role_mapping_name = "%s"
   roles = [
+<<<<<<< HEAD
     "admin",
 	"user",
 	"guest",
+=======
+      "admin",
+			"user",
+			"guest",
+>>>>>>> phillbaker/xpack-security
   ]
   rules = <<-EOF
   {

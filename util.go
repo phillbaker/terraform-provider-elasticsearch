@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"github.com/hashicorp/terraform/helper/schema"
+	
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 	elastic5 "gopkg.in/olivere/elastic.v5"

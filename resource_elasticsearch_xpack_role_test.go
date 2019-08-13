@@ -32,11 +32,12 @@ func TestAccElasticsearchXpackRole(t *testing.T) {
 	}
 
 	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
-	
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) 
+		PreCheck: func() {
+			testAccPreCheck(t)
 			if !allowed {
-				t.Skip("Xpack only supported on ES >= 6")
+				t.Skip("Roles only supported on ES >= 6")
 			}
 		},
 		Providers:    testAccXPackProviders,
@@ -94,7 +95,6 @@ func testAccCheckRoleDestroy(s *terraform.State) error {
 		if rs.Type != "elasticsearch_xpack_role" {
 			continue
 		}
-		
 		meta := testAccXPackProvider.Meta()
 
 		if client, ok := meta.(*elastic7.Client); ok {
@@ -125,7 +125,6 @@ func testAccCheckRoleDestroy(s *terraform.State) error {
 	}
 	return nil
 }
-			
 func testCheckRoleExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
