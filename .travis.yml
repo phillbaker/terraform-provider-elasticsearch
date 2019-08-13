@@ -64,6 +64,7 @@ jobs:
   - stage: deploy gox
     name: "Deploy with Releases"
     before_install: skip
+    script: skip
     deploy:
       provider: releases
       api_key:
