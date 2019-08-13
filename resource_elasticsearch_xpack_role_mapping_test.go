@@ -163,13 +163,8 @@ func testAccRoleMappingResource(resourceName string) string {
 resource "elasticsearch_xpack_role_mapping" "test" {
   role_mapping_name = "%s"
   roles = [
-<<<<<<< HEAD
     "admin",
     "user",
-=======
-      "admin",
-      "user",
->>>>>>> phillbaker/xpack-security
   ]
   rules = <<-EOF
   {
@@ -197,15 +192,9 @@ func testAccRoleMappingResource_Updated(resourceName string) string {
 resource "elasticsearch_xpack_role_mapping" "test" {
   role_mapping_name = "%s"
   roles = [
-<<<<<<< HEAD
     "admin",
 	"user",
 	"guest",
-=======
-      "admin",
-			"user",
-			"guest",
->>>>>>> phillbaker/xpack-security
   ]
   rules = <<-EOF
   {
