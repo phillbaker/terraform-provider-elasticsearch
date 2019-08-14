@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	
+
+	elastic7 "github.com/olivere/elastic/v7"
+	elastic5 "gopkg.in/olivere/elastic.v5"
+	elastic6 "gopkg.in/olivere/elastic.v6"
+
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	
-	elastic7 "github.com/olivere/elastic/v7"
-	elastic6 "gopkg.in/olivere/elastic.v6"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 )
 
 func TestAccElasticsearchXpackRole(t *testing.T) {

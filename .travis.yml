@@ -31,13 +31,16 @@ install:
   - env GO111MODULE=on go mod vendor
 script:
   - export GO111MODULE=on
-  - wget -q --waitretry=5 --tries=50 --retry-connrefused -T 600 -O - http://127.0.0.1:9200
+  - wget -q --waitretry=1 --retry-connrefused --tries=60 --timeout 60 -O - $ELASTICSEARCH_URL
   - if [ "$XPACK" ]; then wget -q --waitretry=5 --tries=50 --retry-connrefused -T 600 -O - http://elastic:elastic@127.0.0.1:9210; fi
   - if [ -n "$ES_OPENDISTRO_IMAGE" ]; then wget -q --waitretry=5 --tries=50 --retry-connrefused -T 600 -O - http://127.0.0.1:9220; fi
   # Opendistro lazily initializes it's indexes, warm it up here :|
   # https://github.com/opendistro-for-elasticsearch/alerting/issues/60
   - |
-    if [ -n "$ES_OPENDISTRO_IMAGE" ]; then curl -X POST -H 'Content-type: application/json'  -d '{"name":"_warmup","type":"slack","slack":{"url": "http://www.example.com"}}' 127.0.0.1:9220/_opendistro/_alerting/destinations; fi
+    if [ -n "$ES_OPENDISTRO_IMAGE" ]; then
+      wget -q --waitretry=1 --retry-connrefused --tries=60 --timeout 60 -O - 127.0.0.1:9220
+      curl -X POST -H 'Content-type: application/json'  -d '{"name":"_warmup","type":"slack","slack":{"url": "http://www.example.com"}}' 127.0.0.1:9220/_opendistro/_alerting/destinations
+    fi
   - TF_ACC=1 go test -v -cover
 
 before_deploy:
