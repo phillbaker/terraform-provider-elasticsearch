@@ -32,6 +32,12 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_URL", nil),
 				Description: "Elasticsearch URL",
 			},
+			"sniff": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_SNIFF", true),
+				Description: "Set the node sniffing option for the elastic client. Client won't work with sniffing if nodes are not routable.",
+			},
 			"username": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -122,6 +128,7 @@ func Provider() terraform.ResourceProvider {
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	rawUrl := d.Get("url").(string)
 	insecure := d.Get("insecure").(bool)
+	sniffing := d.Get("sniff").(bool)
 	cacertFile := d.Get("cacert_file").(string)
 	username := d.Get("username").(string)
 	password := d.Get("password").(string)
@@ -134,6 +141,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	opts := []elastic7.ClientOptionFunc{
 		elastic7.SetURL(rawUrl),
 		elastic7.SetScheme(parsedUrl.Scheme),
+		elastic7.SetSniff(sniffing),
 	}
 
 	if parsedUrl.User.Username() != "" {
@@ -169,6 +177,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		opts := []elastic6.ClientOptionFunc{
 			elastic6.SetURL(rawUrl),
 			elastic6.SetScheme(parsedUrl.Scheme),
+			elastic6.SetSniff(sniffing),
 		}
 
 		if parsedUrl.User.Username() != "" {
@@ -194,6 +203,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		opts := []elastic5.ClientOptionFunc{
 			elastic5.SetURL(rawUrl),
 			elastic5.SetScheme(parsedUrl.Scheme),
+			elastic5.SetSniff(sniffing),
 		}
 
 		if parsedUrl.User.Username() != "" {
