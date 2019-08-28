@@ -41,6 +41,7 @@ func TestAccElasticsearchDataSourceDestination_basic(t *testing.T) {
 				Config: testAccElasticsearchDataSourceDestination,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.elasticsearch_destination.test", "id"),
+					resource.TestCheckResourceAttrSet("data.elasticsearch_destination.test", "body.type"),
 				),
 			},
 		},

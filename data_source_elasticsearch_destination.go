@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
 
@@ -63,7 +64,18 @@ func dataSourceElasticsearchDestinationRead(d *schema.ResourceData, m interface{
 	}
 
 	d.SetId(id)
-	d.Set("body", response.Destination.(map[string]interface{}))
+
+	// we get a non-uniform map[string]interface{} back for the body, terraform
+	// only accepts a mapping of string to primitive values
+	simplifiedBody := map[string]string{}
+	for key, value := range response.Destination.(map[string]interface{}) {
+		if stringified, ok := value.(string); ok {
+			simplifiedBody[key] = stringified
+		} else {
+			log.Printf("[INFO] couldn't simplify: %+v", value)
+		}
+	}
+	d.Set("body", simplifiedBody)
 
 	return err
 }
