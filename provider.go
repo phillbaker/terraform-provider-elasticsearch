@@ -104,6 +104,12 @@ func Provider() terraform.ResourceProvider {
 				Default:     true,
 				Description: "Enable signing of AWS elasticsearch requests",
 			},
+			"skip_version_check": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Should the provider skip checking the version of the ElasticSearch cluster it connects to? This will typically result in assuming it uses the most recent version of ElastichSearch API.",
+			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -135,6 +141,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	password := d.Get("password").(string)
 	parsedUrl, err := url.Parse(rawUrl)
 	signAWSRequests := d.Get("sign_aws_requests").(bool)
+	skipVersionCheck := d.Get("skip_version_check").(bool)
 	if err != nil {
 		return nil, err
 	}
@@ -166,6 +173,10 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		return nil, err
 	}
 	relevantClient = client
+
+	if skipVersionCheck {
+		return relevantClient, nil
+	}
 
 	// Use the v6 client to ping the cluster to determine the version
 	info, _, err := client.Ping(rawUrl).Do(context.TODO())
