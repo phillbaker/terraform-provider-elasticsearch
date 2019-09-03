@@ -38,12 +38,16 @@ func resourceElasticsearchWatch() *schema.Resource {
 }
 
 func resourceElasticsearchWatchCreate(d *schema.ResourceData, m interface{}) error {
-	// Determine whether the watch already exists.
+	// Determine whether the watch already exists, otherwise the API will
+	// override an existing watch with the name.
 	watchID := d.Get("watch_id").(string)
 	_, err := resourceElasticsearchGetWatch(watchID, m)
-	if !elastic6.IsNotFound(err) && !elastic7.IsNotFound(err) {
+
+	if err == nil {
 		log.Printf("[INFO] watch exists: %+v", err)
 		return fmt.Errorf("watch already exists with ID: %v", watchID)
+	} else if err != nil && !elastic6.IsNotFound(err) && !elastic7.IsNotFound(err) {
+		return err
 	}
 
 	watchID, err = resourceElasticsearchPutWatch(d, m)
