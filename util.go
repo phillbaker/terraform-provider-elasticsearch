@@ -63,6 +63,10 @@ func elastic5GetObject(client *elastic5.Client, objectType string, index string,
 	return result.Source, nil
 }
 
+func normalizeDestination(tpl map[string]interface{}) {
+	delete(tpl, "last_update_time")
+}
+
 func normalizeIndexTemplate(tpl map[string]interface{}) {
 	delete(tpl, "version")
 	if settings, ok := tpl["settings"]; ok {

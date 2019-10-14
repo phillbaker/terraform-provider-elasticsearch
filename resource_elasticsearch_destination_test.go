@@ -50,6 +50,45 @@ func TestAccElasticsearchDestination(t *testing.T) {
 	})
 }
 
+func TestAccElasticsearchDestination_importBasic(t *testing.T) {
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var allowed bool
+	switch meta.(type) {
+	case *elastic7.Client:
+		allowed = false
+	case *elastic5.Client:
+		allowed = false
+	default:
+		allowed = true
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+			if !allowed {
+				t.Skip("Destinations only supported on ES 6, https://github.com/opendistro-for-elasticsearch/alerting/issues/66")
+			}
+		},
+		Providers:    testAccOpendistroProviders,
+		CheckDestroy: testCheckElasticsearchDestinationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccElasticsearchDestination,
+			},
+			{
+				ResourceName:      "elasticsearch_destination.test_destination",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testCheckElasticsearchDestinationExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
