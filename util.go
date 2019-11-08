@@ -91,6 +91,7 @@ func normalizedIndexSettings(settings map[string]interface{}) map[string]interfa
 
 func normalizeIndexLifecyclePolicy(pol map[string]interface{}) {
 	delete(pol, "version")
+	delete(pol, "modified_date")
 	if policy, ok := pol["policy"]; ok {
 		if policyMap, ok := policy.(map[string]interface{}); ok {
 			pol["policy"] = normalizedIndexLifecyclePolicy(policyMap)
