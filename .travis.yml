@@ -29,18 +29,21 @@ install:
   - export ELASTICSEARCH_URL=http://127.0.0.1:9200
   - export TF_LOG=INFO
   - env GO111MODULE=on go mod vendor
-script:
+  # Install linters
+  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.27.0
+before_script:
   - export GO111MODULE=on
   - wget -q --waitretry=1 --retry-connrefused --tries=60 --timeout 60 -O - $ELASTICSEARCH_URL
-  # Opendistro lazily initializes it's indexes, warm it up here :|
+  # Opendistro lazily initializes its indexes, warm it up here :|
   # https://github.com/opendistro-for-elasticsearch/alerting/issues/60
   - |
     if [ -n "$ES_OPENDISTRO_IMAGE" ]; then
       wget -q --waitretry=1 --retry-connrefused --tries=60 --timeout 60 -O - 127.0.0.1:9220
       curl -X POST -H 'Content-type: application/json'  -d '{"name":"_warmup","type":"slack","slack":{"url": "http://www.example.com"}}' http://admin:admin@127.0.0.1:9220/_opendistro/_alerting/destinations
     fi
-  # enforce formatting
-  - FILES_TO_FMT=$(gofmt -l .); [ -z "$FILES_TO_FMT" ] || (echo "$FILES_TO_FMT"; exit $?)
+  # linters and checks
+  - golangci-lint run --new-from-rev=bf51aaa --timeout=10m
+script:
   # run tests
   - TF_ACC=1 go test ./... -v -cover
 before_deploy:
