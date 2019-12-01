@@ -25,41 +25,41 @@ func resourceElasticsearchXpackUser() *schema.Resource {
 		Delete: resourceElasticsearchXpackUserDelete,
 
 		Schema: map[string]*schema.Schema{
-			"username": &schema.Schema{
+			"username": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"fullname": &schema.Schema{
+			"fullname": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Required: false,
 			},
-			"email": &schema.Schema{
+			"email": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Required: false,
 			},
-			"enabled": &schema.Schema{
+			"enabled": {
 				Type:     schema.TypeBool,
 				Default:  true,
 				Optional: true,
 				Required: false,
 			},
-			"password": &schema.Schema{
+			"password": {
 				Type:             schema.TypeString,
 				Sensitive:        true,
 				Required:         false,
 				Optional:         true,
 				DiffSuppressFunc: onlyDiffOnCreate,
 			},
-			"password_hash": &schema.Schema{
+			"password_hash": {
 				Type:             schema.TypeString,
 				Required:         false,
 				Sensitive:        true,
 				Optional:         true,
 				DiffSuppressFunc: onlyDiffOnCreate,
 			},
-			"roles": &schema.Schema{
+			"roles": {
 				Type:     schema.TypeSet,
 				Optional: false,
 				Required: true,
@@ -67,7 +67,7 @@ func resourceElasticsearchXpackUser() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"metadata": &schema.Schema{
+			"metadata": {
 				Type:             schema.TypeString,
 				Default:          "{}",
 				Optional:         true,
@@ -81,7 +81,9 @@ func resourceElasticsearchXpackUserCreate(d *schema.ResourceData, m interface{})
 	name := d.Get("username").(string)
 
 	reqBody, err := buildPutUserBody(d, m)
-
+	if err != nil {
+		return err
+	}
 	err = xpackPutUser(d, m, name, reqBody)
 	if err != nil {
 		return err
@@ -112,19 +114,24 @@ func resourceElasticsearchXpackUserRead(d *schema.ResourceData, m interface{}) e
 		}
 		return err
 	}
-	d.Set("username", user.Username)
-	d.Set("roles", user.Roles)
-	d.Set("fullname", user.Fullname)
-	d.Set("email", user.Email)
-	d.Set("metadata", user.Metadata)
-	d.Set("enabled", user.Enabled)
-	return nil
+
+	ds := &resourceDataSetter{d: d}
+	ds.set("username", user.Username)
+	ds.set("roles", user.Roles)
+	ds.set("fullname", user.Fullname)
+	ds.set("email", user.Email)
+	ds.set("metadata", user.Metadata)
+	ds.set("enabled", user.Enabled)
+	return ds.err
 }
 
 func resourceElasticsearchXpackUserUpdate(d *schema.ResourceData, m interface{}) error {
 	name := d.Get("username").(string)
 
 	reqBody, err := buildPutUserBody(d, m)
+	if err != nil {
+		return err
+	}
 	err = xpackPutUser(d, m, name, reqBody)
 	if err != nil {
 		return err
@@ -183,7 +190,7 @@ func buildPutUserBody(d *schema.ResourceData, m interface{}) (string, error) {
 	body, err := json.Marshal(user)
 	if err != nil {
 		fmt.Printf("Body : %s", body)
-		err = errors.New(fmt.Sprintf("Body Error : %s", body))
+		err = fmt.Errorf("Body Error : %s", body)
 	}
 	log.Printf("[INFO] put body: %+v", body)
 	return string(body[:]), err

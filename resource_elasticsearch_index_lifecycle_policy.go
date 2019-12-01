@@ -18,12 +18,12 @@ func resourceElasticsearchIndexLifecyclePolicy() *schema.Resource {
 		Update: resourceElasticsearchIndexLifecyclePolicyUpdate,
 		Delete: resourceElasticsearchIndexLifecyclePolicyDelete,
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Required: true,
 			},
-			"body": &schema.Schema{
+			"body": {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: diffSuppressIndexLifecyclePolicy,
@@ -50,12 +50,10 @@ func resourceElasticsearchIndexLifecyclePolicyRead(d *schema.ResourceData, meta 
 
 	var result string
 	var err error
-	switch meta.(type) {
+	switch client := meta.(type) {
 	case *elastic7.Client:
-		client := meta.(*elastic7.Client)
 		result, err = elastic7IndexGetLifecyclePolicy(client, id)
 	case *elastic6.Client:
-		client := meta.(*elastic6.Client)
 		result, err = elastic6IndexGetLifecyclePolicy(client, id)
 	default:
 		err = errors.New("Index Lifecycle Management is only supported by the elastic library >= v6!")
@@ -64,9 +62,10 @@ func resourceElasticsearchIndexLifecyclePolicyRead(d *schema.ResourceData, meta 
 		return err
 	}
 
-	d.Set("name", d.Id())
-	d.Set("body", result)
-	return nil
+	ds := &resourceDataSetter{d: d}
+	ds.set("name", d.Id())
+	ds.set("body", result)
+	return ds.err
 }
 
 func elastic7IndexGetLifecyclePolicy(client *elastic7.Client, id string) (string, error) {
@@ -105,12 +104,10 @@ func resourceElasticsearchIndexLifecyclePolicyDelete(d *schema.ResourceData, met
 	id := d.Id()
 
 	var err error
-	switch meta.(type) {
+	switch client := meta.(type) {
 	case *elastic7.Client:
-		client := meta.(*elastic7.Client)
 		err = elastic7IndexDeleteLifecyclePolicy(client, id)
 	case *elastic6.Client:
-		client := meta.(*elastic6.Client)
 		err = elastic6IndexDeleteLifecyclePolicy(client, id)
 	default:
 		err = errors.New("Index Lifecycle Management is only supported by the elastic library >= v6!")
@@ -138,12 +135,10 @@ func resourceElasticsearchPutIndexLifecyclePolicy(d *schema.ResourceData, meta i
 	body := d.Get("body").(string)
 
 	var err error
-	switch meta.(type) {
+	switch client := meta.(type) {
 	case *elastic7.Client:
-		client := meta.(*elastic7.Client)
 		err = elastic7IndexPutLifecyclePolicy(client, name, body)
 	case *elastic6.Client:
-		client := meta.(*elastic6.Client)
 		err = elastic6IndexPutLifecyclePolicy(client, name, body)
 	default:
 		err = errors.New("resourceElasticsearchPutIndexLifecyclePolicy Index Lifecycle Management is only supported by the elastic library >= v6!")

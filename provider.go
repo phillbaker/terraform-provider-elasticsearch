@@ -26,85 +26,85 @@ var awsUrlRegexp = regexp.MustCompile(`([a-z0-9-]+).es.amazonaws.com$`)
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"url": &schema.Schema{
+			"url": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_URL", nil),
 				Description: "Elasticsearch URL",
 			},
-			"sniff": &schema.Schema{
+			"sniff": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_SNIFF", true),
 				Description: "Set the node sniffing option for the elastic client. Client won't work with sniffing if nodes are not routable.",
 			},
-			"healthcheck": &schema.Schema{
+			"healthcheck": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_HEALTH", true),
 				Description: "Set the client healthcheck option for the elastic client. Healthchecking is designed for direct access to the cluster.",
 			},
-			"username": &schema.Schema{
+			"username": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_USERNAME", nil),
 				Description: "Username to use to connect to elasticsearch using basic auth",
 			},
-			"password": &schema.Schema{
+			"password": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_PASSWORD", nil),
 				Description: "Password to use to connect to elasticsearch using basic auth",
 			},
-			"aws_access_key": &schema.Schema{
+			"aws_access_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "",
 				Description: "The access key for use with AWS Elasticsearch Service domains",
 			},
 
-			"aws_secret_key": &schema.Schema{
+			"aws_secret_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "",
 				Description: "The secret key for use with AWS Elasticsearch Service domains",
 			},
 
-			"aws_token": &schema.Schema{
+			"aws_token": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "",
 				Description: "The session token for use with AWS Elasticsearch Service domains",
 			},
 
-			"cacert_file": &schema.Schema{
+			"cacert_file": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "",
 				Description: "A Custom CA certificate",
 			},
 
-			"insecure": &schema.Schema{
+			"insecure": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
 				Description: "Disable SSL verification of API calls",
 			},
-			"client_cert_path": &schema.Schema{
+			"client_cert_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "",
 				Description: "A X509 certificate to connect to elasticsearch",
 				DefaultFunc: schema.EnvDefaultFunc("ES_CLIENT_CERTIFICATE_PATH", ""),
 			},
-			"client_key_path": &schema.Schema{
+			"client_key_path": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "",
 				Description: "A X509 key to connect to elasticsearch",
 				DefaultFunc: schema.EnvDefaultFunc("ES_CLIENT_KEY_PATH", ""),
 			},
-			"sign_aws_requests": &schema.Schema{
+			"sign_aws_requests": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,

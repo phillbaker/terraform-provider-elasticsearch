@@ -22,7 +22,7 @@ func resourceElasticsearchMonitor() *schema.Resource {
 		Update: resourceElasticsearchMonitorUpdate,
 		Delete: resourceElasticsearchMonitorDelete,
 		Schema: map[string]*schema.Schema{
-			"body": &schema.Schema{
+			"body": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.ValidateJsonString,
@@ -88,15 +88,13 @@ func resourceElasticsearchMonitorDelete(d *schema.ResourceData, m interface{}) e
 		return fmt.Errorf("error building URL path for monitor: %+v", err)
 	}
 
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "DELETE",
 			Path:   path,
 		})
 	case *elastic6.Client:
-		client := m.(*elastic6.Client)
 		_, err = client.PerformRequest(context.TODO(), elastic6.PerformRequestOptions{
 			Method: "DELETE",
 			Path:   path,
@@ -120,9 +118,8 @@ func resourceElasticsearchGetMonitor(monitorID string, m interface{}) (*monitorR
 	}
 
 	var body json.RawMessage
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "GET",
@@ -130,7 +127,6 @@ func resourceElasticsearchGetMonitor(monitorID string, m interface{}) (*monitorR
 		})
 		body = res.Body
 	case *elastic6.Client:
-		client := m.(*elastic6.Client)
 		var res *elastic6.Response
 		res, err = client.PerformRequest(context.TODO(), elastic6.PerformRequestOptions{
 			Method: "GET",
@@ -161,9 +157,8 @@ func resourceElasticsearchPostMonitor(d *schema.ResourceData, m interface{}) (*m
 	path := "/_opendistro/_alerting/monitors/"
 
 	var body json.RawMessage
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "POST",
@@ -172,7 +167,6 @@ func resourceElasticsearchPostMonitor(d *schema.ResourceData, m interface{}) (*m
 		})
 		body = res.Body
 	case *elastic6.Client:
-		client := m.(*elastic6.Client)
 		var res *elastic6.Response
 		res, err = client.PerformRequest(context.TODO(), elastic6.PerformRequestOptions{
 			Method: "POST",
@@ -209,9 +203,8 @@ func resourceElasticsearchPutMonitor(d *schema.ResourceData, m interface{}) (*mo
 	}
 
 	var body json.RawMessage
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "PUT",
@@ -220,7 +213,6 @@ func resourceElasticsearchPutMonitor(d *schema.ResourceData, m interface{}) (*mo
 		})
 		body = res.Body
 	case *elastic6.Client:
-		client := m.(*elastic6.Client)
 		var res *elastic6.Response
 		res, err = client.PerformRequest(context.TODO(), elastic6.PerformRequestOptions{
 			Method: "PUT",

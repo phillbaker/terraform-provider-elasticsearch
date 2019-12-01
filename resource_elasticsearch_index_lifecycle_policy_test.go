@@ -40,7 +40,7 @@ func TestAccElasticsearchIndexLifecyclePolicy(t *testing.T) {
 		Providers:    testAccXPackProviders,
 		CheckDestroy: testCheckElasticsearchIndexLifecyclePolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccElasticsearchIndexLifecyclePolicy,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchIndexLifecyclePolicyExists("elasticsearch_index_lifecycle_policy.test"),
@@ -100,12 +100,10 @@ func testCheckElasticsearchIndexLifecyclePolicyExists(name string) resource.Test
 		meta := testAccXPackProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = client.XPackIlmGetLifecycle().Policy(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
 			_, err = client.XPackIlmGetLifecycle().Policy(rs.Primary.ID).Do(context.TODO())
 		default:
 			err = errors.New("Index Lifecycle Management is only supported by the elastic library >= v6!")
@@ -128,12 +126,10 @@ func testCheckElasticsearchIndexLifecyclePolicyDestroy(s *terraform.State) error
 		meta := testAccXPackProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = client.XPackIlmGetLifecycle().Policy(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
 			_, err = client.XPackIlmGetLifecycle().Policy(rs.Primary.ID).Do(context.TODO())
 		default:
 			err = errors.New("Index Lifecycle Management is only supported by the elastic library >= v6!")
