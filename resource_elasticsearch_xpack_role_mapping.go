@@ -21,28 +21,28 @@ func resourceElasticsearchXpackRoleMapping() *schema.Resource {
 		Delete: resourceElasticsearchXpackRoleMappingDelete,
 
 		Schema: map[string]*schema.Schema{
-			"role_mapping_name": &schema.Schema{
+			"role_mapping_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"enabled": &schema.Schema{
+			"enabled": {
 				Type:     schema.TypeBool,
 				Default:  true,
 				Optional: true,
 			},
-			"rules": &schema.Schema{
+			"rules": {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: suppressEquivalentJson,
 			},
-			"roles": &schema.Schema{
+			"roles": {
 				Type: schema.TypeSet,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 				Required: true,
 			},
-			"metadata": &schema.Schema{
+			"metadata": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Default:          "{}",
@@ -56,6 +56,9 @@ func resourceElasticsearchXpackRoleMappingCreate(d *schema.ResourceData, m inter
 	name := d.Get("role_mapping_name").(string)
 
 	reqBody, err := buildPutRoleMappingBody(d, m)
+	if err != nil {
+		return err
+	}
 	err = xpackPutRoleMapping(d, m, name, reqBody)
 	if err != nil {
 		return err
@@ -81,18 +84,23 @@ func resourceElasticsearchXpackRoleMappingRead(d *schema.ResourceData, m interfa
 		}
 		return err
 	}
-	d.Set("name", roleMapping.Name)
-	d.Set("roles", roleMapping.Roles)
-	d.Set("enabled", roleMapping.Enabled)
-	d.Set("rules", roleMapping.Rules)
-	d.Set("metadata", roleMapping.Metadata)
-	return nil
+
+	ds := &resourceDataSetter{d: d}
+	ds.set("name", roleMapping.Name)
+	ds.set("roles", roleMapping.Roles)
+	ds.set("enabled", roleMapping.Enabled)
+	ds.set("rules", roleMapping.Rules)
+	ds.set("metadata", roleMapping.Metadata)
+	return ds.err
 }
 
 func resourceElasticsearchXpackRoleMappingUpdate(d *schema.ResourceData, m interface{}) error {
 	name := d.Get("role_mapping_name").(string)
 
 	reqBody, err := buildPutRoleMappingBody(d, m)
+	if err != nil {
+		return err
+	}
 	err = xpackPutRoleMapping(d, m, name, reqBody)
 	if err != nil {
 		return err
@@ -135,7 +143,7 @@ func buildPutRoleMappingBody(d *schema.ResourceData, m interface{}) (string, err
 
 	body, err := json.Marshal(roleMapping)
 	if err != nil {
-		err = errors.New(fmt.Sprintf("Body Error : %s", body))
+		err = fmt.Errorf("Body Error : %s", body)
 	}
 	return string(body[:]), err
 }

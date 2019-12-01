@@ -13,9 +13,9 @@ import (
 )
 
 func elastic7GetObject(client *elastic7.Client, objectType string, index string, id string) (*json.RawMessage, error) {
+	// types are deprecated in elasticsearch, ignore it for the search here
 	result, err := client.Get().
 		Index(index).
-		Type(objectType).
 		Id(id).
 		Do(context.TODO())
 
@@ -124,18 +124,6 @@ func flattenMap(m map[string]interface{}) map[string]interface{} {
 	return f
 }
 
-func intp(i int) *int {
-	return &i
-}
-
-func stringp(s string) *string {
-	return &s
-}
-
-func boolp(b bool) *bool {
-	return &b
-}
-
 // Takes the result of flatmap.Expand for an array of strings
 // and returns a []string
 func expandStringList(resourcesArray []interface{}) []string {
@@ -190,4 +178,16 @@ func optionalInterfaceJson(input string) interface{} {
 	} else {
 		return json.RawMessage(input)
 	}
+}
+
+type resourceDataSetter struct {
+	d   *schema.ResourceData
+	err error
+}
+
+func (ds *resourceDataSetter) set(key string, value interface{}) {
+	if ds.err != nil {
+		return
+	}
+	ds.err = ds.d.Set(key, value)
 }

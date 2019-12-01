@@ -40,7 +40,7 @@ func TestAccElasticsearchDestination(t *testing.T) {
 		Providers:    testAccOpendistroProviders,
 		CheckDestroy: testCheckElasticsearchDestinationDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccElasticsearchDestination,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchDestinationExists("elasticsearch_destination.test_destination"),
@@ -102,12 +102,10 @@ func testCheckElasticsearchDestinationExists(name string) resource.TestCheckFunc
 		meta := testAccOpendistroProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = resourceElasticsearchGetDestination(rs.Primary.ID, client)
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
 			_, err = resourceElasticsearchGetDestination(rs.Primary.ID, client)
 		default:
 		}
@@ -129,12 +127,10 @@ func testCheckElasticsearchDestinationDestroy(s *terraform.State) error {
 		meta := testAccOpendistroProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = resourceElasticsearchGetDestination(rs.Primary.ID, client)
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
 			_, err = resourceElasticsearchGetDestination(rs.Primary.ID, client)
 		default:
 		}

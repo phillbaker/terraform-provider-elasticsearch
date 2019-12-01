@@ -30,7 +30,10 @@ func init() {
 
 	xPackOriginalConfigureFunc := testAccXPackProvider.ConfigureFunc
 	testAccXPackProvider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
-		d.Set("url", "http://elastic:elastic@127.0.0.1:9210")
+		err := d.Set("url", "http://elastic:elastic@127.0.0.1:9210")
+		if err != nil {
+			return nil, err
+		}
 		return xPackOriginalConfigureFunc(d)
 	}
 
@@ -41,7 +44,10 @@ func init() {
 
 	opendistroOriginalConfigureFunc := testAccOpendistroProvider.ConfigureFunc
 	testAccOpendistroProvider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
-		d.Set("url", "http://elastic:elastic@127.0.0.1:9220")
+		err := d.Set("url", "http://elastic:elastic@127.0.0.1:9220")
+		if err != nil {
+			return nil, err
+		}
 		return opendistroOriginalConfigureFunc(d)
 	}
 }

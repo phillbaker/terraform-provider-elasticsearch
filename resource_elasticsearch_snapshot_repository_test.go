@@ -19,7 +19,7 @@ func TestAccElasticsearchSnapshotRepository(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testCheckElasticsearchSnapshotRepositoryDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccElasticsearchSnapshotRepository,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchSnapshotRepositoryExists("elasticsearch_snapshot_repository.test"),
@@ -42,16 +42,14 @@ func testCheckElasticsearchSnapshotRepositoryExists(name string) resource.TestCh
 		meta := testAccProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
 			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		default:
-			client := meta.(*elastic5.Client)
-			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
+			elastic5Client := meta.(*elastic5.Client)
+			_, err = elastic5Client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		}
 
 		if err != nil {
@@ -71,16 +69,14 @@ func testCheckElasticsearchSnapshotRepositoryDestroy(s *terraform.State) error {
 		meta := testAccProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
 			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		default:
-			client := meta.(*elastic5.Client)
-			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
+			elastic5Client := meta.(*elastic5.Client)
+			_, err = elastic5Client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		}
 
 		if err != nil {

@@ -21,36 +21,36 @@ func resourceElasticsearchXpackRole() *schema.Resource {
 		Delete: resourceElasticsearchXpackRoleDelete,
 
 		Schema: map[string]*schema.Schema{
-			"role_name": &schema.Schema{
+			"role_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"indices": &schema.Schema{
+			"indices": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"names": &schema.Schema{
+						"names": {
 							Type:     schema.TypeSet,
 							Required: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 						},
-						"privileges": &schema.Schema{
+						"privileges": {
 							Type:     schema.TypeSet,
 							Required: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 						},
-						"query": &schema.Schema{
+						"query": {
 							Type:             schema.TypeString,
 							Optional:         true,
 							Default:          "{}",
 							DiffSuppressFunc: suppressEquivalentJson,
 						},
-						"field_security": &schema.Schema{
+						"field_security": {
 							Type:             schema.TypeString,
 							Optional:         true,
 							Default:          "{}",
@@ -59,23 +59,23 @@ func resourceElasticsearchXpackRole() *schema.Resource {
 					},
 				},
 			},
-			"applications": &schema.Schema{
+			"applications": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"application": &schema.Schema{
+						"application": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"privileges": &schema.Schema{
+						"privileges": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 						},
-						"resources": &schema.Schema{
+						"resources": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Elem: &schema.Schema{
@@ -85,26 +85,26 @@ func resourceElasticsearchXpackRole() *schema.Resource {
 					},
 				},
 			},
-			"cluster": &schema.Schema{
+			"cluster": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
-			"global": &schema.Schema{
+			"global": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentJson,
 			},
-			"run_as": &schema.Schema{
+			"run_as": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 			},
-			"metadata": &schema.Schema{
+			"metadata": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Default:          "{}",
@@ -118,6 +118,9 @@ func resourceElasticsearchXpackRoleCreate(d *schema.ResourceData, m interface{})
 	name := d.Get("role_name").(string)
 
 	reqBody, err := buildPutRoleBody(d, m)
+	if err != nil {
+		return err
+	}
 	err = xpackPutRole(d, m, name, reqBody)
 	if err != nil {
 		return err
@@ -148,20 +151,25 @@ func resourceElasticsearchXpackRoleRead(d *schema.ResourceData, m interface{}) e
 		}
 		return err
 	}
-	d.Set("name", role.Name)
-	d.Set("indices", role.Indices)
-	d.Set("cluster", role.Cluster)
-	d.Set("applications", role.Applications)
-	d.Set("global", role.Global)
-	d.Set("run_as", role.RunAs)
-	d.Set("metadata", role.Metadata)
-	return nil
+
+	ds := &resourceDataSetter{d: d}
+	ds.set("name", role.Name)
+	ds.set("indices", role.Indices)
+	ds.set("cluster", role.Cluster)
+	ds.set("applications", role.Applications)
+	ds.set("global", role.Global)
+	ds.set("run_as", role.RunAs)
+	ds.set("metadata", role.Metadata)
+	return ds.err
 }
 
 func resourceElasticsearchXpackRoleUpdate(d *schema.ResourceData, m interface{}) error {
 	name := d.Get("role_name").(string)
 
 	reqBody, err := buildPutRoleBody(d, m)
+	if err != nil {
+		return err
+	}
 	err = xpackPutRole(d, m, name, reqBody)
 	if err != nil {
 		return err
@@ -202,11 +210,7 @@ func buildPutRoleBody(d *schema.ResourceData, m interface{}) (string, error) {
 	}
 	var applicationsBody []PutRoleApplicationPrivileges
 	for _, app := range applications {
-		putApp := PutRoleApplicationPrivileges{
-			Application: app.Application,
-			Privileges:  app.Privileges,
-			Resources:   app.Resources,
-		}
+		putApp := PutRoleApplicationPrivileges(app)
 		applicationsBody = append(applicationsBody, putApp)
 	}
 
@@ -241,7 +245,7 @@ func buildPutRoleBody(d *schema.ResourceData, m interface{}) (string, error) {
 	body, err := json.Marshal(role)
 	if err != nil {
 		fmt.Printf("Body : %s", body)
-		err = errors.New(fmt.Sprintf("Body Error : %s", body))
+		err = fmt.Errorf("Body Error : %s", body)
 	}
 	return string(body[:]), err
 }
