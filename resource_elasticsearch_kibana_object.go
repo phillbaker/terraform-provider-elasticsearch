@@ -165,10 +165,15 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 
 		return err
 	}
+	var resultBody []byte
+	resultBody, err = json.Marshal(&result)
+	if err != nil {
+		return err
+	}
 
 	ds := &resourceDataSetter{d: d}
 	ds.set("index", index)
-	ds.set("body", result)
+	ds.set("body", string(resultBody))
 	return ds.err
 }
 
