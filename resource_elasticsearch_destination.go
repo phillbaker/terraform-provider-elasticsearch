@@ -68,6 +68,7 @@ func resourceElasticsearchDestinationRead(d *schema.ResourceData, m interface{})
 	}
 
 	err = d.Set("body", res)
+	log.Printf("[INFO] err: %+v, %+v", err, res)
 
 	return err
 }

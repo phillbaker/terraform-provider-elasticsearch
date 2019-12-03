@@ -173,7 +173,10 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 
 	ds := &resourceDataSetter{d: d}
 	ds.set("index", index)
-	ds.set("body", string(resultBody))
+	// ds.set("body", string(resultBody))
+	log.Printf("[WARN] Not using: %+v", string(resultBody))
+	// ds.set("body", "")
+	d.Set("body", result)
 	return ds.err
 }
 
@@ -285,4 +288,10 @@ func elastic5PutIndex(client *elastic5.Client, objectType string, index string, 
 		Do(context.TODO())
 
 	return err
+}
+
+type kibanaObject struct {
+	Type     int         `json:"_type"`
+	ID          string      `json:"_id"`
+	Source interface{} `json:"_source"`
 }

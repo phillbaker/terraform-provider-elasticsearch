@@ -86,11 +86,11 @@ func resourceElasticsearchXpackRoleMappingRead(d *schema.ResourceData, m interfa
 	}
 
 	ds := &resourceDataSetter{d: d}
-	ds.set("name", roleMapping.Name)
-	ds.set("roles", roleMapping.Roles)
-	ds.set("enabled", roleMapping.Enabled)
-	ds.set("rules", roleMapping.Rules)
-	ds.set("metadata", roleMapping.Metadata)
+	ds.set("name", &roleMapping.Name)
+	ds.set("roles", &roleMapping.Roles)
+	ds.set("enabled", &roleMapping.Enabled)
+	ds.set("rules", &roleMapping.Rules)
+	ds.set("metadata", &roleMapping.Metadata)
 	return ds.err
 }
 

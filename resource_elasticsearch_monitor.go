@@ -42,6 +42,7 @@ func resourceElasticsearchMonitorCreate(d *schema.ResourceData, m interface{}) e
 
 	d.SetId(res.ID)
 	err = d.Set("body", res.Monitor)
+	log.Printf("[INFO] err: %+v, %+v", err, res.Monitor)
 	if err != nil {
 		return err
 	}

@@ -153,13 +153,13 @@ func resourceElasticsearchXpackRoleRead(d *schema.ResourceData, m interface{}) e
 	}
 
 	ds := &resourceDataSetter{d: d}
-	ds.set("name", role.Name)
-	ds.set("indices", role.Indices)
-	ds.set("cluster", role.Cluster)
-	ds.set("applications", role.Applications)
-	ds.set("global", role.Global)
-	ds.set("run_as", role.RunAs)
-	ds.set("metadata", role.Metadata)
+	ds.set("name", &role.Name)
+	ds.set("indices", &role.Indices)
+	ds.set("cluster", &role.Cluster)
+	ds.set("applications", &role.Applications)
+	ds.set("global", &role.Global)
+	ds.set("run_as", &role.RunAs)
+	ds.set("metadata", &role.Metadata)
 	return ds.err
 }
 

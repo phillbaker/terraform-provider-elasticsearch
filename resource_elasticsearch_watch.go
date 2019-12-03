@@ -79,6 +79,7 @@ func resourceElasticsearchWatchRead(d *schema.ResourceData, m interface{}) error
 	case *elastic6.Client:
 		watchResponse := res.(*elastic6.XPackWatcherGetWatchResponse)
 		ds.set("body", watchResponse.Watch)
+		log.Printf("[INFO] err: %+v, %+v", err, watchResponse.Watch)
 	}
 
 	ds.set("watch_id", d.Id())
