@@ -8,9 +8,9 @@ import (
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccElasticsearchDestination(t *testing.T) {
@@ -45,6 +45,45 @@ func TestAccElasticsearchDestination(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchDestinationExists("elasticsearch_destination.test_destination"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccElasticsearchDestination_importBasic(t *testing.T) {
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var allowed bool
+	switch meta.(type) {
+	case *elastic7.Client:
+		allowed = false
+	case *elastic5.Client:
+		allowed = false
+	default:
+		allowed = true
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+			if !allowed {
+				t.Skip("Destinations only supported on ES 6, https://github.com/opendistro-for-elasticsearch/alerting/issues/66")
+			}
+		},
+		Providers:    testAccOpendistroProviders,
+		CheckDestroy: testCheckElasticsearchDestinationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccElasticsearchDestination,
+			},
+			{
+				ResourceName:      "elasticsearch_destination.test_destination",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

@@ -13,9 +13,9 @@ import (
 	awscredentials "github.com/aws/aws-sdk-go/aws/credentials"
 	awssigv4 "github.com/aws/aws-sdk-go/aws/signer/v4"
 	"github.com/deoxxa/aws_signing_client"
-	"github.com/hashicorp/terraform/helper/pathorcontents"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
@@ -113,18 +113,22 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"elasticsearch_index_template":      resourceElasticsearchIndexTemplate(),
-			"elasticsearch_snapshot_repository": resourceElasticsearchSnapshotRepository(),
-			"elasticsearch_kibana_object":       resourceElasticsearchKibanaObject(),
-			"elasticsearch_xpack_role_mapping":  resourceElasticsearchXpackRoleMapping(),
-			"elasticsearch_xpack_role":          resourceElasticsearchXpackRole(),
-			"elasticsearch_watch":               resourceElasticsearchWatch(),
-			"elasticsearch_monitor":             resourceElasticsearchMonitor(),
-			"elasticsearch_destination":         resourceElasticsearchDestination(),
+			"elasticsearch_index_template":         resourceElasticsearchIndexTemplate(),
+			"elasticsearch_index_lifecycle_policy": resourceElasticsearchIndexLifecyclePolicy(),
+			"elasticsearch_snapshot_repository":    resourceElasticsearchSnapshotRepository(),
+			"elasticsearch_kibana_object":          resourceElasticsearchKibanaObject(),
+			"elasticsearch_watch":                  resourceElasticsearchWatch(),
+			"elasticsearch_monitor":                resourceElasticsearchMonitor(),
+			"elasticsearch_destination":            resourceElasticsearchDestination(),
+			"elasticsearch_xpack_role_mapping":     resourceElasticsearchXpackRoleMapping(),
+			"elasticsearch_xpack_role":             resourceElasticsearchXpackRole(),
+			"elasticsearch_ingest_pipeline":        resourceElasticsearchIngestPipeline(),
+			"elasticsearch_xpack_user":             resourceElasticsearchXpackUser(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
 			"elasticsearch_destination": dataSourceElasticsearchDestination(),
+			"elasticsearch_host":        dataSourceElasticsearchHost(),
 		},
 
 		ConfigureFunc: providerConfigure,

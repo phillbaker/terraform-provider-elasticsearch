@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/olivere/elastic/uritemplates"
 
 	elastic7 "github.com/olivere/elastic/v7"
@@ -25,8 +25,9 @@ func resourceElasticsearchDestination() *schema.Resource {
 		Delete: resourceElasticsearchDestinationDelete,
 		Schema: map[string]*schema.Schema{
 			"body": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:             schema.TypeString,
+				Required:         true,
+				DiffSuppressFunc: diffSuppressDestination,
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -44,8 +45,11 @@ func resourceElasticsearchDestinationCreate(d *schema.ResourceData, m interface{
 	}
 
 	d.SetId(res.ID)
-	d.Set("body", res.Destination)
-	log.Printf("[INFO] Object ID: %s", d.Id())
+	bodyString, err := json.Marshal(res.Destination)
+	if err != nil {
+		return err
+	}
+	d.Set("body", bodyString)
 
 	return nil
 }
@@ -63,8 +67,7 @@ func resourceElasticsearchDestinationRead(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	d.Set("body", res.Destination)
-	d.SetId(res.ID)
+	d.Set("body", res)
 
 	return nil
 }
@@ -109,7 +112,7 @@ func resourceElasticsearchDestinationDelete(d *schema.ResourceData, m interface{
 	return err
 }
 
-func resourceElasticsearchGetDestination(destinationID string, m interface{}) (*destinationResponse, error) {
+func resourceElasticsearchGetDestination(destinationID string, m interface{}) (string, error) {
 	var err error
 	response := new(destinationResponse)
 
@@ -127,15 +130,19 @@ func resourceElasticsearchGetDestination(destinationID string, m interface{}) (*
 	}
 
 	if err != nil {
-		return response, err
+		return "", err
 	}
 
 	if err := json.Unmarshal(*body, response); err != nil {
-		return response, fmt.Errorf("error unmarshalling destination body: %+v: %+v", err, body)
+		return "", fmt.Errorf("error unmarshalling destination body: %+v: %+v", err, body)
 	}
 
-	response.ID = destinationID
-	return response, err
+	tj, err := json.Marshal(response.Destination)
+	if err != nil {
+		return "", err
+	}
+
+	return string(tj), err
 }
 
 func resourceElasticsearchPostDestination(d *schema.ResourceData, m interface{}) (*destinationResponse, error) {

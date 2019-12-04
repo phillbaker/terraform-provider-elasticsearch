@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"github.com/hashicorp/terraform/helper/schema"
-	
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 	elastic5 "gopkg.in/olivere/elastic.v5"
@@ -63,6 +63,10 @@ func elastic5GetObject(client *elastic5.Client, objectType string, index string,
 	return result.Source, nil
 }
 
+func normalizeDestination(tpl map[string]interface{}) {
+	delete(tpl, "last_update_time")
+}
+
 func normalizeIndexTemplate(tpl map[string]interface{}) {
 	delete(tpl, "version")
 	if settings, ok := tpl["settings"]; ok {
@@ -80,6 +84,25 @@ func normalizedIndexSettings(settings map[string]interface{}) map[string]interfa
 			f["index."+k] = fmt.Sprintf("%v", v)
 			delete(f, k)
 		}
+	}
+
+	return f
+}
+
+func normalizeIndexLifecyclePolicy(pol map[string]interface{}) {
+	delete(pol, "version")
+	delete(pol, "modified_date")
+	if policy, ok := pol["policy"]; ok {
+		if policyMap, ok := policy.(map[string]interface{}); ok {
+			pol["policy"] = normalizedIndexLifecyclePolicy(policyMap)
+		}
+	}
+}
+
+func normalizedIndexLifecyclePolicy(policy map[string]interface{}) map[string]interface{} {
+	f := flattenMap(policy)
+	for k, v := range f {
+		f[k] = fmt.Sprintf("%v", v)
 	}
 
 	return f

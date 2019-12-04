@@ -2,19 +2,20 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic6 "gopkg.in/olivere/elastic.v6"
 	elastic5 "gopkg.in/olivere/elastic.v5"
+	elastic6 "gopkg.in/olivere/elastic.v6"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccElasticsearchWatch(t *testing.T) {
+func TestAccElasticsearchIndexLifecyclePolicy(t *testing.T) {
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
 	if err != nil {
@@ -33,30 +34,30 @@ func TestAccElasticsearchWatch(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {
-				t.Skip("Watches only supported on ES >= 6")
+				t.Skip("Destinations only supported on ES >= 6")
 			}
 		},
 		Providers:    testAccXPackProviders,
-		CheckDestroy: testCheckElasticsearchWatchDestroy,
+		CheckDestroy: testCheckElasticsearchIndexLifecyclePolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccElasticsearchWatch,
+				Config: testAccElasticsearchIndexLifecyclePolicy,
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticsearchWatchExists("elasticsearch_watch.test_watch"),
+					testCheckElasticsearchIndexLifecyclePolicyExists("elasticsearch_index_lifecycle_policy.test"),
 				),
 			},
 		},
 	})
 }
 
-func testCheckElasticsearchWatchExists(name string) resource.TestCheckFunc {
+func testCheckElasticsearchIndexLifecyclePolicyExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("Not found: %s", name)
 		}
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No watch ID is set")
+			return fmt.Errorf("No index lifecycle policy ID is set")
 		}
 
 		meta := testAccXPackProvider.Meta()
@@ -65,11 +66,12 @@ func testCheckElasticsearchWatchExists(name string) resource.TestCheckFunc {
 		switch meta.(type) {
 		case *elastic7.Client:
 			client := meta.(*elastic7.Client)
-			_, err = client.XPackWatchGet("my_watch").Do(context.TODO())
+			_, err = client.XPackIlmGetLifecycle().Policy(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
 			client := meta.(*elastic6.Client)
-			_, err = client.XPackWatchGet("my_watch").Do(context.TODO())
+			_, err = client.XPackIlmGetLifecycle().Policy(rs.Primary.ID).Do(context.TODO())
 		default:
+			err = errors.New("Index Lifecycle Management is only supported by the elastic library >= v6!")
 		}
 
 		if err != nil {
@@ -80,9 +82,9 @@ func testCheckElasticsearchWatchExists(name string) resource.TestCheckFunc {
 	}
 }
 
-func testCheckElasticsearchWatchDestroy(s *terraform.State) error {
+func testCheckElasticsearchIndexLifecyclePolicyDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "elasticsearch_watch" {
+		if rs.Type != "elasticsearch_index_lifecycle_policy" {
 			continue
 		}
 
@@ -92,50 +94,44 @@ func testCheckElasticsearchWatchDestroy(s *terraform.State) error {
 		switch meta.(type) {
 		case *elastic7.Client:
 			client := meta.(*elastic7.Client)
-			_, err = client.XPackWatchGet("my_watch").Do(context.TODO())
+			_, err = client.XPackIlmGetLifecycle().Policy(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
 			client := meta.(*elastic6.Client)
-			_, err = client.XPackWatchGet("my_watch").Do(context.TODO())
+			_, err = client.XPackIlmGetLifecycle().Policy(rs.Primary.ID).Do(context.TODO())
 		default:
+			err = errors.New("Index Lifecycle Management is only supported by the elastic library >= v6!")
 		}
 
 		if err != nil {
 			return nil // should be not found error
 		}
 
-		return fmt.Errorf("Watch %q still exists", rs.Primary.ID)
+		return fmt.Errorf("Index lifecycle policy %q still exists", rs.Primary.ID)
 	}
 
 	return nil
 }
 
-var testAccElasticsearchWatch = `
-resource "elasticsearch_watch" "test_watch" {
-  watch_id = "my_watch"
+var testAccElasticsearchIndexLifecyclePolicy = `
+resource "elasticsearch_index_lifecycle_policy" "test" {
+  name = "terraform-test"
   body = <<EOF
 {
-  "input": {
-    "simple": {
-      "payload": {
-        "send": "yes"
-      }
-    }
-  },
-  "condition": {
-    "always": {}
-  },
-  "trigger": {
-    "schedule": {
-      "hourly": {
-        "minute": [0, 5]
-      }
-    }
-  },
-  "actions": {
-    "test_index": {
-      "index": {
-        "index": "test",
-        "doc_type": "test2"
+  "policy": {
+    "phases": {
+      "warm": {
+        "min_age": "10d",
+        "actions": {
+          "forcemerge": {
+            "max_num_segments": 1
+          }
+        }
+      },
+      "delete": {
+        "min_age": "30d",
+        "actions": {
+          "delete": {}
+        }
       }
     }
   }

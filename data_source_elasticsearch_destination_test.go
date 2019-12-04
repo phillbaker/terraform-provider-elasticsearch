@@ -6,9 +6,9 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func TestAccElasticsearchDataSourceDestination_basic(t *testing.T) {
@@ -41,6 +41,7 @@ func TestAccElasticsearchDataSourceDestination_basic(t *testing.T) {
 				Config: testAccElasticsearchDataSourceDestination,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.elasticsearch_destination.test", "id"),
+					resource.TestCheckResourceAttrSet("data.elasticsearch_destination.test", "body.type"),
 				),
 			},
 		},
