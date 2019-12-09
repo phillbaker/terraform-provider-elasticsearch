@@ -16,6 +16,7 @@ import (
 )
 
 func TestAccElasticsearchXpackRoleMapping(t *testing.T) {
+
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
 	if err != nil {
@@ -162,8 +163,8 @@ func testAccRoleMappingResource(resourceName string) string {
 resource "elasticsearch_xpack_role_mapping" "test" {
   role_mapping_name = "%s"
   roles = [
-      "admin",
-      "user",
+    "admin",
+    "user",
   ]
   rules = <<-EOF
   {
@@ -191,9 +192,9 @@ func testAccRoleMappingResource_Updated(resourceName string) string {
 resource "elasticsearch_xpack_role_mapping" "test" {
   role_mapping_name = "%s"
   roles = [
-      "admin",
-			"user",
-			"guest",
+    "admin",
+	"user",
+	"guest",
   ]
   rules = <<-EOF
   {
