@@ -41,7 +41,9 @@ func init() {
 
 	opendistroOriginalConfigureFunc := testAccOpendistroProvider.ConfigureFunc
 	testAccOpendistroProvider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
-		d.Set("url", "http://elastic:elastic@127.0.0.1:9220")
+		d.Set("url", "http://127.0.0.1:9220")
+		d.Set("username", "admin")
+		d.Set("password", "admin")
 		return opendistroOriginalConfigureFunc(d)
 	}
 }

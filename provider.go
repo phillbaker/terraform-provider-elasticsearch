@@ -118,6 +118,8 @@ func Provider() terraform.ResourceProvider {
 			"elasticsearch_xpack_role":             resourceElasticsearchXpackRole(),
 			"elasticsearch_ingest_pipeline":        resourceElasticsearchIngestPipeline(),
 			"elasticsearch_xpack_user":             resourceElasticsearchXpackUser(),
+			"elasticsearch_odfe_roles_mapping":     resourceElasticsearchOdfeRolesMapping(),
+			"elasticsearch_odfe_role":              resourceElasticsearchOdfeRole(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
