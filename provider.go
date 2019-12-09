@@ -38,6 +38,12 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_SNIFF", true),
 				Description: "Set the node sniffing option for the elastic client. Client won't work with sniffing if nodes are not routable.",
 			},
+			"healthcheck": &schema.Schema{
+				Type:        schema.TypeBool,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_HEALTH", true),
+				Description: "Set the client healthcheck option for the elastic client. Healthchecking is designed for direct access to the cluster.",
+			},
 			"username": &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -133,6 +139,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	rawUrl := d.Get("url").(string)
 	insecure := d.Get("insecure").(bool)
 	sniffing := d.Get("sniff").(bool)
+	healthchecking := d.Get("healthcheck").(bool)
 	cacertFile := d.Get("cacert_file").(string)
 	username := d.Get("username").(string)
 	password := d.Get("password").(string)
@@ -146,6 +153,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		elastic7.SetURL(rawUrl),
 		elastic7.SetScheme(parsedUrl.Scheme),
 		elastic7.SetSniff(sniffing),
+		elastic7.SetHealthcheck(healthchecking),
 	}
 
 	if parsedUrl.User.Username() != "" {
@@ -170,7 +178,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 	relevantClient = client
 
-	// Use the v6 client to ping the cluster to determine the version
+	// Use the v7 client to ping the cluster to determine the version
 	info, _, err := client.Ping(rawUrl).Do(context.TODO())
 	if err != nil {
 		return nil, err
@@ -182,6 +190,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 			elastic6.SetURL(rawUrl),
 			elastic6.SetScheme(parsedUrl.Scheme),
 			elastic6.SetSniff(sniffing),
+			elastic6.SetHealthcheck(healthchecking),
 		}
 
 		if parsedUrl.User.Username() != "" {
@@ -208,6 +217,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 			elastic5.SetURL(rawUrl),
 			elastic5.SetScheme(parsedUrl.Scheme),
 			elastic5.SetSniff(sniffing),
+			elastic5.SetHealthcheck(healthchecking),
 		}
 
 		if parsedUrl.User.Username() != "" {
