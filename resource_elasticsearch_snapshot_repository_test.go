@@ -29,6 +29,24 @@ func TestAccElasticsearchSnapshotRepository(t *testing.T) {
 	})
 }
 
+func TestAccElasticsearchSnapshotRepository_importBasic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testCheckElasticsearchSnapshotRepositoryDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccElasticsearchSnapshotRepository,
+			},
+			{
+				ResourceName:      "elasticsearch_snapshot_repository.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testCheckElasticsearchSnapshotRepositoryExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
