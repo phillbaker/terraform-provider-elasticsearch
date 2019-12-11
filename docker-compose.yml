@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   elasticsearch:
@@ -57,7 +57,7 @@ services:
       - bootstrap.memory_lock=true
       - discovery.type=single-node
       - path.repo=/tmp
-      - opendistro_security.disabled=true
+      - opendistro_security.ssl.http.enabled=false
       - http.port=9220
       - network.publish_host=127.0.0.1
       - logger.org.elasticsearch=warn
