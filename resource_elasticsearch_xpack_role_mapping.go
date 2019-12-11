@@ -69,6 +69,11 @@ func resourceElasticsearchXpackRoleMappingRead(d *schema.ResourceData, m interfa
 	roleMapping, err := xpackGetRoleMapping(d, m, d.Id())
 	if err != nil {
 		fmt.Println("Error during read")
+		if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
+			fmt.Printf("[WARN] Role mapping %s not found. Removing from state\n", d.Id())
+			d.SetId("")
+			return nil
+		}
 		if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
 			fmt.Printf("[WARN] Role mapping %s not found. Removing from state\n", d.Id())
 			d.SetId("")
@@ -105,6 +110,11 @@ func resourceElasticsearchXpackRoleMappingDelete(d *schema.ResourceData, m inter
 	err := xpackDeleteRoleMapping(d, m, d.Id())
 	if err != nil {
 		fmt.Println("Error during destroy")
+		if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
+			fmt.Printf("[WARN] Role mapping %s not found. Resource removed from state\n", d.Id())
+			d.SetId("")
+			return nil
+		}
 		if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
 			fmt.Printf("[WARN] Role mapping %s not found. Resource removed from state\n", d.Id())
 			d.SetId("")
