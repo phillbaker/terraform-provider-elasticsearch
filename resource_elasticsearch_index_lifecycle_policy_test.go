@@ -34,7 +34,7 @@ func TestAccElasticsearchIndexLifecyclePolicy(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {
-				t.Skip("Destinations only supported on ES >= 6")
+				t.Skip("Index lifecycles only supported on ES >= 6")
 			}
 		},
 		Providers:    testAccXPackProviders,
@@ -45,6 +45,43 @@ func TestAccElasticsearchIndexLifecyclePolicy(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchIndexLifecyclePolicyExists("elasticsearch_index_lifecycle_policy.test"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccElasticsearchIndexLifecyclePolicy_importBasic(t *testing.T) {
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var allowed bool
+	switch meta.(type) {
+	case *elastic5.Client:
+		allowed = false
+	default:
+		allowed = true
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+			if !allowed {
+				t.Skip("Index lifecycles only supported on ES >= 6")
+			}
+		},
+		Providers:    testAccXPackProviders,
+		CheckDestroy: testCheckElasticsearchIndexLifecyclePolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccElasticsearchIndexLifecyclePolicy,
+			},
+			{
+				ResourceName:      "elasticsearch_index_lifecycle_policy.test",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

@@ -28,6 +28,9 @@ func resourceElasticsearchIndexTemplate() *schema.Resource {
 				DiffSuppressFunc: diffSuppressIndexTemplate,
 			},
 		},
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 	}
 }
 

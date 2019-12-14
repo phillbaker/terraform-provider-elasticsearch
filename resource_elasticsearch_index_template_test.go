@@ -47,6 +47,42 @@ func TestAccElasticsearchIndexTemplate(t *testing.T) {
 	})
 }
 
+func TestAccElasticsearchIndexTemplate_importBasic(t *testing.T) {
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var config string
+	switch meta.(type) {
+	case *elastic7.Client:
+		config = testAccElasticsearchIndexTemplateV7
+	case *elastic6.Client:
+		config = testAccElasticsearchIndexTemplateV6
+	default:
+		config = testAccElasticsearchIndexTemplateV5
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testCheckElasticsearchIndexTemplateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+			},
+			{
+				ResourceName:      "elasticsearch_index_template.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testCheckElasticsearchIndexTemplateExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]

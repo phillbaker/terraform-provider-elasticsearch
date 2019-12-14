@@ -47,6 +47,42 @@ func TestAccElasticsearchIngestPipeline(t *testing.T) {
 	})
 }
 
+func TestAccElasticsearchIngestPipeline_importBasic(t *testing.T) {
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var config string
+	switch meta.(type) {
+	case *elastic7.Client:
+		config = testAccElasticsearchIngestPipelineV7
+	case *elastic6.Client:
+		config = testAccElasticsearchIngestPipelineV6
+	default:
+		config = testAccElasticsearchIngestPipelineV5
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testCheckElasticsearchIngestPipelineDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+			},
+			{
+				ResourceName:      "elasticsearch_ingest_pipeline.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testCheckElasticsearchIngestPipelineExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]

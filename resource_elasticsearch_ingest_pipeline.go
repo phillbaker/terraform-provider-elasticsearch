@@ -28,6 +28,9 @@ func resourceElasticsearchIngestPipeline() *schema.Resource {
 				Required:         true,
 			},
 		},
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 	}
 }
 

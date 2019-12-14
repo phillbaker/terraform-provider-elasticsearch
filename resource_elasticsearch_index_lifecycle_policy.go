@@ -28,6 +28,9 @@ func resourceElasticsearchIndexLifecyclePolicy() *schema.Resource {
 				DiffSuppressFunc: diffSuppressIndexLifecyclePolicy,
 			},
 		},
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 	}
 }
 
