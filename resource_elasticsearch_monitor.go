@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/olivere/elastic/uritemplates"
 
 	elastic7 "github.com/olivere/elastic/v7"
@@ -22,8 +23,9 @@ func resourceElasticsearchMonitor() *schema.Resource {
 		Delete: resourceElasticsearchMonitorDelete,
 		Schema: map[string]*schema.Schema{
 			"body": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.ValidateJsonString,
 			},
 		},
 		Importer: &schema.ResourceImporter{
