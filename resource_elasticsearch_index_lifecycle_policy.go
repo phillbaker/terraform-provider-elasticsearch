@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
@@ -26,6 +27,7 @@ func resourceElasticsearchIndexLifecyclePolicy() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: diffSuppressIndexLifecyclePolicy,
+				ValidateFunc:     validation.ValidateJsonString,
 			},
 		},
 		Importer: &schema.ResourceImporter{

@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
@@ -25,8 +26,9 @@ func resourceElasticsearchWatch() *schema.Resource {
 				ForceNew: true,
 			},
 			"body": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.ValidateJsonString,
 			},
 		},
 		Importer: &schema.ResourceImporter{

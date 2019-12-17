@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
@@ -21,8 +22,9 @@ func resourceElasticsearchKibanaObject() *schema.Resource {
 		Delete: resourceElasticsearchKibanaObjectDelete,
 		Schema: map[string]*schema.Schema{
 			"body": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.ValidateJsonString,
 			},
 			"index": &schema.Schema{
 				Type:     schema.TypeString,
