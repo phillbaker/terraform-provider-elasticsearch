@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
@@ -33,31 +32,44 @@ resource "elasticsearch_index" "test" {
 )
 
 func TestAccElasticsearchIndex(t *testing.T) {
-	provider := Provider().(*schema.Provider)
-	err := provider.Configure(&terraform.ResourceConfig{
-		Config: map[string]interface{}{"url": "http://localhost:9200"},
-	})
-
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: checkElasticsearchIndexDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccElasticsearchIndex,
 				Check: resource.ComposeTestCheckFunc(
 					checkElasticsearchIndexExists("elasticsearch_index.test"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccElasticsearchIndexUpdate1,
 				Check: resource.ComposeTestCheckFunc(
 					checkElasticsearchIndexUpdated("elasticsearch_index.test"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccElasticsearchIndex_importBasic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: checkElasticsearchIndexDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccElasticsearchIndex,
+			},
+			{
+				ResourceName:      "elasticsearch_index.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					// not returned from the API
+					"force_destroy",
+				},
 			},
 		},
 	})
@@ -76,16 +88,14 @@ func checkElasticsearchIndexExists(name string) resource.TestCheckFunc {
 		meta := testAccProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
 			_, err = client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 		default:
-			client := meta.(*elastic5.Client)
-			_, err = client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
+			elastic5Client := meta.(*elastic5.Client)
+			_, err = elastic5Client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 		}
 
 		return err
@@ -105,19 +115,15 @@ func checkElasticsearchIndexUpdated(name string) resource.TestCheckFunc {
 		meta := testAccProvider.Meta()
 		settings := make(map[string]interface{})
 
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			resp, err := client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 			if err != nil {
 				return err
 			}
-			// fmt.Println(resp)
 			settings = resp[rs.Primary.ID].Settings["index"].(map[string]interface{})
 
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
-			// _, err = client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 			resp, err := client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 			if err != nil {
 				return err
@@ -125,9 +131,8 @@ func checkElasticsearchIndexUpdated(name string) resource.TestCheckFunc {
 			settings = resp[rs.Primary.ID].Settings["index"].(map[string]interface{})
 
 		default:
-			client := meta.(*elastic5.Client)
-			// _, err = client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
-			resp, err := client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
+			elastic5Client := meta.(*elastic5.Client)
+			resp, err := elastic5Client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 			if err != nil {
 				return err
 			}
@@ -135,7 +140,6 @@ func checkElasticsearchIndexUpdated(name string) resource.TestCheckFunc {
 
 		}
 
-		// fmt.Println(settings)
 		r, ok := settings["number_of_replicas"]
 		if ok {
 			if ir := r.(string); ir != "2" {
@@ -157,16 +161,14 @@ func checkElasticsearchIndexDestroy(s *terraform.State) error {
 		meta := testAccProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
 			_, err = client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 		default:
-			client := meta.(*elastic5.Client)
-			_, err = client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
+			elastic5Client := meta.(*elastic5.Client)
+			_, err = elastic5Client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 		}
 
 		if err != nil {
