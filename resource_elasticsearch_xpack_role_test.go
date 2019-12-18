@@ -159,11 +159,11 @@ func testAccRoleResource(resourceName string) string {
 		role_name = "%s"
 		indices {
 			names 	   = ["testIndice"]
-			privileges = ["testPrivilege"]
+			privileges = ["read"]
 		}
 		indices {
 			names 	   = ["testIndice2"]
-			privileges = ["testPrivilege2"]
+			privileges = ["write"]
 		}
 		cluster = [
 		"all"
@@ -171,7 +171,7 @@ func testAccRoleResource(resourceName string) string {
 		applications {
 			application = "testapp"
 			privileges = [
-			"admin",
+			"write",
 			"read"
 			]
 			resources = [
@@ -188,11 +188,11 @@ func testAccRoleResource_Updated(resourceName string) string {
 		role_name = "%s"
 		indices {
 			names 	 = ["testIndice"]
-			privileges = ["testPrivilege"]
+			privileges = ["read"]
 		}
 		indices {
 			names 	 = ["testIndice2"]
-			privileges = ["testPrivilege2"]
+			privileges = ["write"]
 		}
 		cluster = [
 		"all"
@@ -200,7 +200,7 @@ func testAccRoleResource_Updated(resourceName string) string {
 		applications {
 			application = "testapp"
 			privileges = [
-			"admin",
+			"write",
 			"read",
 			"delete",
 			]
@@ -223,11 +223,11 @@ func testAccRoleResource_Global(resourceName string) string {
 		role_name = "%s"
 		indices {
 			names 	 = ["testIndice"]
-			privileges = ["testPrivilege"]
+			privileges = ["read"]
 		}
 		indices {
 			names 	 = ["testIndice2"]
-			privileges = ["testPrivilege2"]
+			privileges = ["write"]
 		}
 		cluster = [
 		"all",
@@ -235,7 +235,7 @@ func testAccRoleResource_Global(resourceName string) string {
 		applications {
 			application = "testapp"
 			privileges = [
-			"admin",
+			"write",
 			"read",
 			"delete",
 			]
