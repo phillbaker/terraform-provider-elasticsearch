@@ -219,3 +219,15 @@ func expandTenantPermissionsSet(resourcesArray []interface{}) ([]TenantPermissio
 	}
 	return vperm, nil
 }
+
+type resourceDataSetter struct {
+	d   *schema.ResourceData
+	err error
+}
+
+func (ds *resourceDataSetter) set(key string, value interface{}) {
+	if ds.err != nil {
+		return
+	}
+	ds.err = ds.d.Set(key, value)
+}
