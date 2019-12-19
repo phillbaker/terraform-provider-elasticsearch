@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
@@ -17,16 +18,20 @@ func resourceElasticsearchIndexTemplate() *schema.Resource {
 		Update: resourceElasticsearchIndexTemplateUpdate,
 		Delete: resourceElasticsearchIndexTemplateDelete,
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Required: true,
 			},
-			"body": &schema.Schema{
+			"body": {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: diffSuppressIndexTemplate,
+				ValidateFunc:     validation.ValidateJsonString,
 			},
+		},
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
 		},
 	}
 }
@@ -45,24 +50,23 @@ func resourceElasticsearchIndexTemplateRead(d *schema.ResourceData, meta interfa
 
 	var result string
 	var err error
-	switch meta.(type) {
+	switch client := meta.(type) {
 	case *elastic7.Client:
-		client := meta.(*elastic7.Client)
 		result, err = elastic7IndexGetTemplate(client, id)
 	case *elastic6.Client:
-		client := meta.(*elastic6.Client)
 		result, err = elastic6IndexGetTemplate(client, id)
 	default:
-		client := meta.(*elastic5.Client)
-		result, err = elastic5IndexGetTemplate(client, id)
+		elastic5Client := meta.(*elastic5.Client)
+		result, err = elastic5IndexGetTemplate(elastic5Client, id)
 	}
 	if err != nil {
 		return err
 	}
 
-	d.Set("name", d.Id())
-	d.Set("body", result)
-	return nil
+	ds := &resourceDataSetter{d: d}
+	ds.set("name", d.Id())
+	ds.set("body", result)
+	return ds.err
 }
 
 func elastic7IndexGetTemplate(client *elastic7.Client, id string) (string, error) {
@@ -116,16 +120,14 @@ func resourceElasticsearchIndexTemplateDelete(d *schema.ResourceData, meta inter
 	id := d.Id()
 
 	var err error
-	switch meta.(type) {
+	switch client := meta.(type) {
 	case *elastic7.Client:
-		client := meta.(*elastic7.Client)
 		err = elastic7IndexDeleteTemplate(client, id)
 	case *elastic6.Client:
-		client := meta.(*elastic6.Client)
 		err = elastic6IndexDeleteTemplate(client, id)
 	default:
-		client := meta.(*elastic5.Client)
-		err = elastic5IndexDeleteTemplate(client, id)
+		elastic5Client := meta.(*elastic5.Client)
+		err = elastic5IndexDeleteTemplate(elastic5Client, id)
 	}
 
 	if err != nil {
@@ -155,16 +157,14 @@ func resourceElasticsearchPutIndexTemplate(d *schema.ResourceData, meta interfac
 	body := d.Get("body").(string)
 
 	var err error
-	switch meta.(type) {
+	switch client := meta.(type) {
 	case *elastic7.Client:
-		client := meta.(*elastic7.Client)
 		err = elastic7IndexPutTemplate(client, name, body, create)
 	case *elastic6.Client:
-		client := meta.(*elastic6.Client)
 		err = elastic6IndexPutTemplate(client, name, body, create)
 	default:
-		client := meta.(*elastic5.Client)
-		err = elastic5IndexPutTemplate(client, name, body, create)
+		elastic5Client := meta.(*elastic5.Client)
+		err = elastic5IndexPutTemplate(elastic5Client, name, body, create)
 	}
 
 	return err

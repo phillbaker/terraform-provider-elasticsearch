@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/olivere/elastic/uritemplates"
 
 	elastic7 "github.com/olivere/elastic/v7"
@@ -24,10 +25,11 @@ func resourceElasticsearchDestination() *schema.Resource {
 		Update: resourceElasticsearchDestinationUpdate,
 		Delete: resourceElasticsearchDestinationDelete,
 		Schema: map[string]*schema.Schema{
-			"body": &schema.Schema{
+			"body": {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: diffSuppressDestination,
+				ValidateFunc:     validation.ValidateJsonString,
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -92,15 +94,13 @@ func resourceElasticsearchDestinationDelete(d *schema.ResourceData, m interface{
 		return fmt.Errorf("error building URL path for destination: %+v", err)
 	}
 
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "DELETE",
 			Path:   path,
 		})
 	case *elastic6.Client:
-		client := m.(*elastic6.Client)
 		_, err = client.PerformRequest(context.TODO(), elastic6.PerformRequestOptions{
 			Method: "DELETE",
 			Path:   path,
@@ -118,12 +118,10 @@ func resourceElasticsearchGetDestination(destinationID string, m interface{}) (s
 
 	// See https://github.com/opendistro-for-elasticsearch/alerting/issues/56, no API endpoint for retrieving destination
 	var body *json.RawMessage
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		body, err = elastic7GetObject(client, DESTINATION_TYPE, DESTINATION_INDEX, destinationID)
 	case *elastic6.Client:
-		client := m.(*elastic6.Client)
 		body, err = elastic6GetObject(client, DESTINATION_TYPE, DESTINATION_INDEX, destinationID)
 	default:
 		err = errors.New("destination resource not implemented prior to Elastic v6")
@@ -154,9 +152,8 @@ func resourceElasticsearchPostDestination(d *schema.ResourceData, m interface{})
 	path := "/_opendistro/_alerting/destinations/"
 
 	var body json.RawMessage
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "POST",
@@ -165,7 +162,6 @@ func resourceElasticsearchPostDestination(d *schema.ResourceData, m interface{})
 		})
 		body = res.Body
 	case *elastic6.Client:
-		client := m.(*elastic6.Client)
 		var res *elastic6.Response
 		res, err = client.PerformRequest(context.TODO(), elastic6.PerformRequestOptions{
 			Method: "POST",
@@ -202,9 +198,8 @@ func resourceElasticsearchPutDestination(d *schema.ResourceData, m interface{}) 
 	}
 
 	var body json.RawMessage
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "PUT",
@@ -213,7 +208,6 @@ func resourceElasticsearchPutDestination(d *schema.ResourceData, m interface{}) 
 		})
 		body = res.Body
 	case *elastic6.Client:
-		client := m.(*elastic6.Client)
 		var res *elastic6.Response
 		res, err = client.PerformRequest(context.TODO(), elastic6.PerformRequestOptions{
 			Method: "PUT",

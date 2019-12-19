@@ -8,14 +8,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic6 "gopkg.in/olivere/elastic.v6"
 	elastic5 "gopkg.in/olivere/elastic.v5"
+	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
 func elastic7GetObject(client *elastic7.Client, objectType string, index string, id string) (*json.RawMessage, error) {
+	// types are deprecated in elasticsearch, ignore it for the search here
 	result, err := client.Get().
 		Index(index).
-		Type(objectType).
 		Id(id).
 		Do(context.TODO())
 
@@ -65,6 +65,12 @@ func elastic5GetObject(client *elastic5.Client, objectType string, index string,
 
 func normalizeDestination(tpl map[string]interface{}) {
 	delete(tpl, "last_update_time")
+}
+
+func normalizePolicy(tpl map[string]interface{}) {
+	delete(tpl, "last_updated_time")
+	delete(tpl, "error_notification")
+	delete(tpl, "policy_id")
 }
 
 func normalizeIndexTemplate(tpl map[string]interface{}) {
@@ -122,18 +128,6 @@ func flattenMap(m map[string]interface{}) map[string]interface{} {
 	}
 
 	return f
-}
-
-func intp(i int) *int {
-	return &i
-}
-
-func stringp(s string) *string {
-	return &s
-}
-
-func boolp(b bool) *bool {
-	return &b
 }
 
 // Takes the result of flatmap.Expand for an array of strings
