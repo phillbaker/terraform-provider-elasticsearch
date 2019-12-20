@@ -21,27 +21,22 @@ func TestAccElasticsearchKibanaObject(t *testing.T) {
 	if err != nil {
 		t.Skipf("err: %s", err)
 	}
-	meta := provider.Meta()
-	var allowed bool
+
+	var resourceConfig string
+	meta := testAccProvider.Meta()
 	switch meta.(type) {
 	case *elastic7.Client:
-		allowed = false
+		resourceConfig = testAccElasticsearch7KibanaObject
 	default:
-		allowed = true
+		resourceConfig = testAccElasticsearchKibanaObject
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			testAccPreCheck(t)
-			if !allowed {
-				t.Skip("Need to implement saved object API on ES >= 6")
-			}
-		},
 		Providers:    testAccProviders,
 		CheckDestroy: testCheckElasticsearchKibanaObjectDestroy,
 		Steps: []resource.TestStep{
-			{
-				Config: testAccElasticsearchKibanaObject,
+			resource.TestStep{
+				Config: resourceConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchKibanaObjectExists("elasticsearch_kibana_object.test_visualization"),
 				),
@@ -65,7 +60,8 @@ func testCheckElasticsearchKibanaObjectExists(name string) resource.TestCheckFun
 		var err error
 		switch client := meta.(type) {
 		case *elastic7.Client:
-			// not implemented
+			client := meta.(*elastic7.Client)
+			_, err = client.Get().Index(".kibana").Id("response-time-percentile").Do(context.TODO())
 		case *elastic6.Client:
 			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
 		default:
@@ -92,7 +88,8 @@ func testCheckElasticsearchKibanaObjectDestroy(s *terraform.State) error {
 		var err error
 		switch client := meta.(type) {
 		case *elastic7.Client:
-			// not implemented
+			client := meta.(*elastic7.Client)
+			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
 		case *elastic6.Client:
 			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
 		default:
@@ -101,7 +98,12 @@ func testCheckElasticsearchKibanaObjectDestroy(s *terraform.State) error {
 		}
 
 		if err != nil {
-			return nil // should be not found error
+			if elastic7.IsNotFound(err) || elastic6.IsNotFound(err) || elastic5.IsNotFound(err) {
+				return nil // should be not found error
+			}
+
+			// Fail on any other error
+			return fmt.Errorf("Unexpected error %s", err)
 		}
 
 		return fmt.Errorf("Kibana object %q still exists", rs.Primary.ID)
@@ -126,6 +128,29 @@ resource "elasticsearch_kibana_object" "test_visualization" {
       "kibanaSavedObjectMeta": {
         "searchSourceJSON": "{\"index\":\"filebeat-*\",\"query\":{\"query_string\":{\"query\":\"*\",\"analyze_wildcard\":true}},\"filter\":[]}"
       }
+    }
+  }
+]
+EOF
+}
+`
+
+var testAccElasticsearch7KibanaObject = `
+resource "elasticsearch_kibana_object" "test_visualization" {
+  body = <<EOF
+[
+  {
+    "_id": "response-time-percentile",
+    "_source": {
+      "title": "Total response time percentiles",
+      "visState": "{\"title\":\"Total response time percentiles\",\"type\":\"line\",\"params\":{\"addTooltip\":true,\"addLegend\":true,\"legendPosition\":\"right\",\"showCircles\":true,\"interpolate\":\"linear\",\"scale\":\"linear\",\"drawLinesBetweenPoints\":true,\"radiusRatio\":9,\"times\":[],\"addTimeMarker\":false,\"defaultYExtents\":false,\"setYExtents\":false},\"aggs\":[{\"id\":\"1\",\"enabled\":true,\"type\":\"percentiles\",\"schema\":\"metric\",\"params\":{\"field\":\"app.total_time\",\"percents\":[50,90,95]}},{\"id\":\"2\",\"enabled\":true,\"type\":\"date_histogram\",\"schema\":\"segment\",\"params\":{\"field\":\"@timestamp\",\"interval\":\"auto\",\"customInterval\":\"2h\",\"min_doc_count\":1,\"extended_bounds\":{}}},{\"id\":\"3\",\"enabled\":true,\"type\":\"terms\",\"schema\":\"group\",\"params\":{\"field\":\"system.syslog.program\",\"size\":5,\"order\":\"desc\",\"orderBy\":\"_term\"}}],\"listeners\":{}}",
+      "uiStateJSON": "{}",
+      "description": "",
+      "version": 1,
+      "kibanaSavedObjectMeta": {
+        "searchSourceJSON": "{\"index\":\"filebeat-*\",\"query\":{\"query_string\":{\"query\":\"*\",\"analyze_wildcard\":true}},\"filter\":[]}"
+      },
+      "type": "visualization"
     }
   }
 ]

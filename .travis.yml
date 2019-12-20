@@ -67,7 +67,7 @@ jobs:
     - stage: deploy go-releaser
       name: "Deploy to Github with GoReleaser"
       before_install: skip
-      script: if [ "${TRAVIS_TAG::1}" = "v" ]; then ;git checkout go.mod ;curl -sL https://git.io/goreleaser | bash; fi
+      script: if [ "${TRAVIS_TAG::1}" = "v" ]; then git checkout go.mod ; curl -sL https://git.io/goreleaser | bash; fi
     - stage: deploy gox
       name: "Deploy with Releases"
       before_install: skip
