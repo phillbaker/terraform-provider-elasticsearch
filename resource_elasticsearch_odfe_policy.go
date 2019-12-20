@@ -71,6 +71,7 @@ func resourceElasticsearchOdfePolicyRead(d *schema.ResourceData, m interface{}) 
 			d.SetId("")
 			return nil
 		}
+		return err
 	}
 
 	bodyString, err := json.Marshal(policyResponse.Policy)

@@ -58,11 +58,6 @@ func resourceElasticsearchOdfePolicyMapping() *schema.Resource {
 
 func resourceElasticsearchOdfePolicyMappingCreate(d *schema.ResourceData, m interface{}) error {
 	if _, err := resourceElasticsearchPostOdfePolicyMapping(d, m, "add"); err != nil {
-		if elastic7.IsNotFound(err) {
-			log.Printf("[WARN] OdfePolicyMapping (%s) not found, removing from state", d.Id())
-			d.SetId("")
-			return nil
-		}
 		return err
 	}
 
