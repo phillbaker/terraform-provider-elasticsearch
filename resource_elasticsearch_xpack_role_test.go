@@ -16,7 +16,7 @@ import (
 )
 
 func TestAccElasticsearchXpackRole(t *testing.T) {
-	
+
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
 	if err != nil {
@@ -154,7 +154,7 @@ func testCheckRoleExists(name string) resource.TestCheckFunc {
 }
 			
 func testAccRoleResource(resourceName string) string {
-	return fmt.Sprintf(` 
+	return fmt.Sprintf(`
 	resource "elasticsearch_xpack_role" "test" {
 		role_name = "%s"
 		indices {
@@ -170,18 +170,18 @@ func testAccRoleResource(resourceName string) string {
 		]
 		applications {
 			application = "testapp"
-			privileges = [ 
-			"admin", 
-			"read" 
+			privileges = [
+			"admin",
+			"read"
 			]
-			resources = [ 
-			"*" 
+			resources = [
+			"*"
 			]
 		}
 	}
 	`, resourceName)
 }
-			
+
 func testAccRoleResource_Updated(resourceName string) string {
 	return fmt.Sprintf(`
 	resource "elasticsearch_xpack_role" "test" {
@@ -199,13 +199,13 @@ func testAccRoleResource_Updated(resourceName string) string {
 		]
 		applications {
 			application = "testapp"
-			privileges = [ 
-			"admin", 
+			privileges = [
+			"admin",
 			"read",
-			"delete", 
+			"delete",
 			]
-			resources = [ 
-			"*" 
+			resources = [
+			"*"
 			]
 		}
 		metadata = <<-EOF
@@ -234,28 +234,28 @@ func testAccRoleResource_Global(resourceName string) string {
 		]
 		applications {
 			application = "testapp"
-			privileges = [ 
-			"admin", 
+			privileges = [
+			"admin",
 			"read",
-			"delete", 
+			"delete",
 			]
-			resources = [ 
+			resources = [
 			"*" ,
 			]
 		}
-		
+
 		metadata = <<-EOF
 		{
 			"foo": "bar"
 		}
 		EOF
-		
-		
+
+
 		global = <<-EOF
 		{
 			"application": {
-				"manage": {    
-					"applications": ["testapp"] 
+				"manage": {
+					"applications": ["testapp"]
 				}
 			}
 		}

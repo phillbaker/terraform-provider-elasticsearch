@@ -39,7 +39,7 @@ func TestAccElasticsearchWatch(t *testing.T) {
 		Providers:    testAccXPackProviders,
 		CheckDestroy: testCheckElasticsearchWatchDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccElasticsearchWatch,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchWatchExists("elasticsearch_watch.test_watch"),
@@ -62,12 +62,10 @@ func testCheckElasticsearchWatchExists(name string) resource.TestCheckFunc {
 		meta := testAccXPackProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = client.XPackWatchGet("my_watch").Do(context.TODO())
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
 			_, err = client.XPackWatchGet("my_watch").Do(context.TODO())
 		default:
 		}
@@ -89,12 +87,10 @@ func testCheckElasticsearchWatchDestroy(s *terraform.State) error {
 		meta := testAccXPackProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = client.XPackWatchGet("my_watch").Do(context.TODO())
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
 			_, err = client.XPackWatchGet("my_watch").Do(context.TODO())
 		default:
 		}

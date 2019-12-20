@@ -58,16 +58,14 @@ func testCheckElasticsearchKibanaObjectExists(name string) resource.TestCheckFun
 		meta := testAccProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = client.Get().Index(".kibana").Id("response-time-percentile").Do(context.TODO())
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
 			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
 		default:
-			client := meta.(*elastic5.Client)
-			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
+			elastic5Client := meta.(*elastic5.Client)
+			_, err = elastic5Client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
 		}
 
 		if err != nil {
@@ -87,16 +85,14 @@ func testCheckElasticsearchKibanaObjectDestroy(s *terraform.State) error {
 		meta := testAccProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
 			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
 		default:
-			client := meta.(*elastic5.Client)
-			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
+			elastic5Client := meta.(*elastic5.Client)
+			_, err = elastic5Client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
 		}
 
 		if err != nil {

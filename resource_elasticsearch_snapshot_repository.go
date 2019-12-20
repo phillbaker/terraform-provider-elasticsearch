@@ -16,19 +16,22 @@ func resourceElasticsearchSnapshotRepository() *schema.Resource {
 		Update: resourceElasticsearchSnapshotRepositoryUpdate,
 		Delete: resourceElasticsearchSnapshotRepositoryDelete,
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				ForceNew: true,
 				Required: true,
 			},
-			"type": &schema.Schema{
+			"type": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"settings": &schema.Schema{
+			"settings": {
 				Type:     schema.TypeMap,
 				Optional: true,
 			},
+		},
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
 		},
 	}
 }
@@ -48,25 +51,25 @@ func resourceElasticsearchSnapshotRepositoryRead(d *schema.ResourceData, meta in
 	var repositoryType string
 	var settings map[string]interface{}
 	var err error
-	switch meta.(type) {
+	switch client := meta.(type) {
 	case *elastic7.Client:
-		client := meta.(*elastic7.Client)
 		repositoryType, settings, err = elastic7SnapshotGetRepository(client, id)
 	case *elastic6.Client:
-		client := meta.(*elastic6.Client)
 		repositoryType, settings, err = elastic6SnapshotGetRepository(client, id)
 	default:
-		client := meta.(*elastic5.Client)
-		repositoryType, settings, err = elastic5SnapshotGetRepository(client, id)
+		elastic5Client := meta.(*elastic5.Client)
+		repositoryType, settings, err = elastic5SnapshotGetRepository(elastic5Client, id)
 	}
 
 	if err != nil {
 		return err
 	}
-	d.Set("name", id)
-	d.Set("type", repositoryType)
-	d.Set("settings", settings)
-	return nil
+
+	ds := &resourceDataSetter{d: d}
+	ds.set("name", id)
+	ds.set("type", repositoryType)
+	ds.set("settings", settings)
+	return ds.err
 }
 
 func elastic7SnapshotGetRepository(client *elastic7.Client, id string) (string, map[string]interface{}, error) {
@@ -107,16 +110,14 @@ func resourceElasticsearchSnapshotRepositoryUpdate(d *schema.ResourceData, meta 
 	}
 
 	var err error
-	switch meta.(type) {
+	switch client := meta.(type) {
 	case *elastic7.Client:
-		client := meta.(*elastic7.Client)
 		err = elastic7SnapshotCreateRepository(client, name, repositoryType, settings)
 	case *elastic6.Client:
-		client := meta.(*elastic6.Client)
 		err = elastic6SnapshotCreateRepository(client, name, repositoryType, settings)
 	default:
-		client := meta.(*elastic5.Client)
-		err = elastic5SnapshotCreateRepository(client, name, repositoryType, settings)
+		elastic5Client := meta.(*elastic5.Client)
+		err = elastic5SnapshotCreateRepository(elastic5Client, name, repositoryType, settings)
 	}
 
 	return err
@@ -156,16 +157,14 @@ func resourceElasticsearchSnapshotRepositoryDelete(d *schema.ResourceData, meta 
 	id := d.Id()
 
 	var err error
-	switch meta.(type) {
+	switch client := meta.(type) {
 	case *elastic7.Client:
-		client := meta.(*elastic7.Client)
 		err = elastic7SnapshotDeleteRepository(client, id)
 	case *elastic6.Client:
-		client := meta.(*elastic6.Client)
 		err = elastic6SnapshotDeleteRepository(client, id)
 	default:
-		client := meta.(*elastic5.Client)
-		err = elastic5SnapshotDeleteRepository(client, id)
+		elastic5Client := meta.(*elastic5.Client)
+		err = elastic5SnapshotDeleteRepository(elastic5Client, id)
 	}
 
 	if err != nil {

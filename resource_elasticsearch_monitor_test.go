@@ -40,7 +40,7 @@ func TestAccElasticsearchMonitor(t *testing.T) {
 		Providers:    testAccOpendistroProviders,
 		CheckDestroy: testCheckElasticsearchMonitorDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccElasticsearchMonitor,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchMonitorExists("elasticsearch_monitor.test_monitor"),
@@ -63,12 +63,10 @@ func testCheckElasticsearchMonitorExists(name string) resource.TestCheckFunc {
 		meta := testAccOpendistroProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = resourceElasticsearchGetMonitor(rs.Primary.ID, client)
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
 			_, err = resourceElasticsearchGetMonitor(rs.Primary.ID, client)
 		default:
 		}
@@ -90,13 +88,11 @@ func testCheckElasticsearchMonitorDestroy(s *terraform.State) error {
 		meta := testAccOpendistroProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = resourceElasticsearchGetMonitor(rs.Primary.ID, client)
 
 		case *elastic6.Client:
-			client := meta.(*elastic6.Client)
 			_, err = resourceElasticsearchGetMonitor(rs.Primary.ID, client)
 		default:
 		}

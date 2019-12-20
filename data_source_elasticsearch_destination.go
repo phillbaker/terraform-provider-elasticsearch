@@ -20,11 +20,11 @@ func dataSourceElasticsearchDestination() *schema.Resource {
 		Read: dataSourceElasticsearchDestinationRead,
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"body": &schema.Schema{
+			"body": {
 				Type:     schema.TypeMap,
 				Computed: true,
 			},
@@ -41,12 +41,10 @@ func dataSourceElasticsearchDestinationRead(d *schema.ResourceData, m interface{
 	var id string
 	var body *json.RawMessage
 	var err error
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		id, body, err = elastic7Search(client, DESTINATION_INDEX, destinationName)
 	case *elastic6.Client:
-		client := m.(*elastic6.Client)
 		id, body, err = elastic6Search(client, DESTINATION_INDEX, destinationName)
 	default:
 		err = errors.New("destination resource not implemented prior to Elastic v6")
@@ -77,7 +75,7 @@ func dataSourceElasticsearchDestinationRead(d *schema.ResourceData, m interface{
 	}
 	d.Set("body", simplifiedBody)
 
-	return err
+	return nil
 }
 
 func elastic7Search(client *elastic7.Client, index string, name string) (string, *json.RawMessage, error) {
