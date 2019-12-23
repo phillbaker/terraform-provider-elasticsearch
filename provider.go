@@ -126,6 +126,7 @@ func Provider() terraform.ResourceProvider {
 			"elasticsearch_xpack_user":             resourceElasticsearchXpackUser(),
 			"elasticsearch_odfe_roles_mapping":     resourceElasticsearchOdfeRolesMapping(),
 			"elasticsearch_odfe_role":              resourceElasticsearchOdfeRole(),
+			"elasticsearch_odfe_user":              resourceElasticsearchOdfeUser(),
 			"elasticsearch_odfe_policy":            resourceElasticsearchOdfePolicy(),
 			"elasticsearch_odfe_policy_mapping":    resourceElasticsearchOdfePolicyMapping(),
 		},
