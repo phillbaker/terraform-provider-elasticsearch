@@ -150,6 +150,7 @@ func Provider() terraform.ResourceProvider {
 			"elasticsearch_opendistro_monitor":              resourceElasticsearchOpenDistroMonitor(),
 			"elasticsearch_opendistro_roles_mapping":        resourceElasticsearchOpenDistroRolesMapping(),
 			"elasticsearch_opendistro_role":                 resourceElasticsearchOpenDistroRole(),
+			"elasticsearch_opendistro_user":                 resourceElasticsearchOpenDistroUser(),
 			"elasticsearch_xpack_role":                      resourceElasticsearchXpackRole(),
 			"elasticsearch_xpack_role_mapping":              resourceElasticsearchXpackRoleMapping(),
 			"elasticsearch_xpack_snapshot_lifecycle_policy": resourceElasticsearchXpackSnapshotLifecyclePolicy(),
