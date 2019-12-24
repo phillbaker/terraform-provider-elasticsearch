@@ -86,6 +86,27 @@ func TestAccElasticsearchOdfeRole(t *testing.T) {
 					),
 				),
 			},
+			{
+				Config: testAccOdfeRoleResourceMinimal(randomName),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckElasticSearchOdfeRoleExists("elasticsearch_odfe_role.test"),
+					resource.TestCheckResourceAttr(
+						"elasticsearch_odfe_role.test",
+						"tenant_permissions.#",
+						"0",
+					),
+					resource.TestCheckResourceAttr(
+						"elasticsearch_odfe_role.test",
+						"index_permissions.#",
+						"0",
+					),
+					resource.TestCheckResourceAttr(
+						"elasticsearch_odfe_role.test",
+						"cluster_permissions.#",
+						"0",
+					),
+				),
+			},
 		},
 	})
 }
@@ -209,6 +230,14 @@ func testAccOdfeRoleResourceUpdated(resourceName string) string {
 		}
 	
 		cluster_permissions = ["*"]
+	}
+	`, resourceName)
+}
+
+func testAccOdfeRoleResourceMinimal(resourceName string) string {
+	return fmt.Sprintf(`
+	resource "elasticsearch_odfe_role" "test" {
+		role_name = "%s"
 	}
 	`, resourceName)
 }
