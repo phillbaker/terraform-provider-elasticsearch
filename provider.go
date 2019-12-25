@@ -11,6 +11,9 @@ import (
 	"regexp"
 
 	awscredentials "github.com/aws/aws-sdk-go/aws/credentials"
+	awsec2rolecreds "github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
+	awsec2metadata "github.com/aws/aws-sdk-go/aws/ec2metadata"
+	awssession "github.com/aws/aws-sdk-go/aws/session"
 	awssigv4 "github.com/aws/aws-sdk-go/aws/signer/v4"
 	"github.com/deoxxa/aws_signing_client"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
@@ -255,6 +258,9 @@ func awsHttpClient(region string, d *schema.ResourceData) *http.Client {
 		},
 		&awscredentials.EnvProvider{},
 		&awscredentials.SharedCredentialsProvider{},
+		&awsec2rolecreds.EC2RoleProvider{
+			Client: awsec2metadata.New(awssession.Must(awssession.NewSession())),
+		},
 	})
 	signer := awssigv4.NewSigner(creds)
 	client, _ := aws_signing_client.New(signer, nil, "es", region)
