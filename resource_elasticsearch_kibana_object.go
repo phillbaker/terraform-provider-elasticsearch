@@ -40,6 +40,8 @@ const (
 	INDEX_CREATION_FAILED
 )
 
+const deprecatedDocType = "_doc"
+
 func resourceElasticsearchKibanaObjectCreate(d *schema.ResourceData, meta interface{}) error {
 	index := d.Get("index").(string)
 	mapping_index := d.Get("index").(string)
@@ -161,14 +163,14 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 	}
 	// TODO handle multiple objects in json
 	id := body[0]["_id"].(string)
-	objectType := body[0]["_type"].(string) // objectType is deprecated
+	objectType := objectTypeOrDefault(body[0])
 	index := d.Get("index").(string)
 
 	var result *json.RawMessage
 	var err error
 	switch client := meta.(type) {
 	case *elastic7.Client:
-		result, err = elastic7GetObject(client, "_doc", index, id)
+		result, err = elastic7GetObject(client, index, id)
 	case *elastic6.Client:
 		result, err = elastic6GetObject(client, objectType, index, id)
 	default:
@@ -206,7 +208,7 @@ func resourceElasticsearchKibanaObjectDelete(d *schema.ResourceData, meta interf
 	}
 	// TODO handle multiple objects in json
 	id := body[0]["_id"].(string)
-	objectType := body[0]["_type"].(string) // objectType is deprecated
+	objectType := objectTypeOrDefault(body[0])
 	index := d.Get("index").(string)
 
 	var err error
@@ -268,7 +270,7 @@ func resourceElasticsearchPutKibanaObject(d *schema.ResourceData, meta interface
 	}
 	// TODO handle multiple objects in json
 	id := body[0]["_id"].(string)
-	objectType := body[0]["_type"].(string) // objectType is deprecated
+	objectType := objectTypeOrDefault(body[0])
 	data := body[0]["_source"]
 	index := d.Get("index").(string)
 
@@ -320,4 +322,13 @@ func elastic5PutIndex(client *elastic5.Client, objectType string, index string, 
 		Do(context.TODO())
 
 	return err
+}
+
+// objectType is deprecated
+func objectTypeOrDefault(document map[string]interface{}) string {
+	if document["_type"] != nil {
+		return document["_type"].(string)
+	}
+
+	return deprecatedDocType
 }

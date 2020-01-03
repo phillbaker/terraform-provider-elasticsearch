@@ -120,7 +120,7 @@ func resourceElasticsearchGetDestination(destinationID string, m interface{}) (s
 	var body *json.RawMessage
 	switch client := m.(type) {
 	case *elastic7.Client:
-		body, err = elastic7GetObject(client, DESTINATION_TYPE, DESTINATION_INDEX, destinationID)
+		body, err = elastic7GetObject(client, DESTINATION_INDEX, destinationID)
 	case *elastic6.Client:
 		body, err = elastic6GetObject(client, DESTINATION_TYPE, DESTINATION_INDEX, destinationID)
 	default:

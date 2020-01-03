@@ -16,8 +16,7 @@ var (
 	errObjNotFound = fmt.Errorf("object not found")
 )
 
-func elastic7GetObject(client *elastic7.Client, objectType string, index string, id string) (*json.RawMessage, error) {
-	// types are deprecated in elasticsearch, ignore it for the search here
+func elastic7GetObject(client *elastic7.Client, index string, id string) (*json.RawMessage, error) {
 	result, err := client.Get().
 		Index(index).
 		Id(id).
