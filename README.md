@@ -30,7 +30,46 @@ provider "elasticsearch" {
     cacert_file = "/path/to/ca.crt" # when connecting to elastic with self-signed certificate
     sign_aws_requests = true # only needs to be true if your domain access policy includes IAM users or roles
 }
+```
 
+### API Coverage
+
+Examples of resources can be found in the examples directory. The resources currently supported from the: opensource Elasticsearch, XPack and OpenDistro distributions are described below.
+
+#### Elasticsearch
+
+- [x] [Index](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices.html)
+- [x] [Index template](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices.html)
+- [x] [Ingest pipeline](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest-apis.html)
+- [x] [Snapshot repository](https://www.elastic.co/guide/en/elasticsearch/reference/current/snapshot-restore-apis.html)
+
+#### Kibana
+
+- [x] Kibana Object
+  - [ ] Visualization
+  - [ ] Search
+  - [ ] Dashboard
+
+#### XPack
+
+- [ ] [Cross cluster replication](https://www.elastic.co/guide/en/elasticsearch/reference/current/ccr-apis.html)
+- [ ] [Enrich policies](https://www.elastic.co/guide/en/elasticsearch/reference/current/enrich-apis.html)
+- [x] [Index lifecycle management](https://www.elastic.co/guide/en/elasticsearch/reference/current/index-lifecycle-management-api.html)
+- [ ] [License management](https://www.elastic.co/guide/en/elasticsearch/reference/current/licensing-apis.html)
+- [ ] [Rollup jobs](https://www.elastic.co/guide/en/elasticsearch/reference/current/rollup-apis.html)
+- [x] [Security](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api.html) (Role/Role Mapping/User)
+- [x] [Snapshot lifecycle policy](https://www.elastic.co/guide/en/elasticsearch/reference/current/snapshot-lifecycle-management-api.html)
+- [x] [Watch](https://www.elastic.co/guide/en/elasticsearch/reference/current/watcher-api.html)
+
+#### OpenDistro
+
+- [x] [Alerting](https://opendistro.github.io/for-elasticsearch-docs/docs/ism/api/) (Destinations/Monitors)
+- [x] [Security](https://opendistro.github.io/for-elasticsearch-docs/docs/ism/api/) (Role/Role Mapping/User)
+- [x] [Index State Management](https://opendistro.github.io/for-elasticsearch-docs/docs/ism/api/)
+
+### Examples
+
+```tf
 resource "elasticsearch_index_template" "test" {
   name = "terraform-test"
   body = <<EOF
