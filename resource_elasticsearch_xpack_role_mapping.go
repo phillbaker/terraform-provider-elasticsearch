@@ -49,6 +49,9 @@ func resourceElasticsearchXpackRoleMapping() *schema.Resource {
 				DiffSuppressFunc: suppressEquivalentJson,
 			},
 		},
+		Importer: &schema.ResourceImporter{
+		  State: schema.ImportStatePassthrough,
+		},
 	}
 }
 
