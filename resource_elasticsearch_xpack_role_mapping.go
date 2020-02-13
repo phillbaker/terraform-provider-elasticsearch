@@ -50,7 +50,7 @@ func resourceElasticsearchXpackRoleMapping() *schema.Resource {
 			},
 		},
 		Importer: &schema.ResourceImporter{
-		  State: schema.ImportStatePassthrough,
+			State: schema.ImportStatePassthrough,
 		},
 	}
 }

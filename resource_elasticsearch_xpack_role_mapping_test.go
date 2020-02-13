@@ -235,7 +235,7 @@ func TestAccRoleMappingResource_importBasic(t *testing.T) {
 	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	resource.Test(t, resource.TestCase{
-                PreCheck: func() {
+		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {
 				t.Skip("Role Mappings only supported on ES >= 6")
@@ -248,10 +248,10 @@ func TestAccRoleMappingResource_importBasic(t *testing.T) {
 				Config: testAccRoleMappingResource(randomName),
 			},
 			{
-				ResourceName:      "elasticsearch_xpack_role_mapping.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-                                ImportStateVerifyIgnore: []string{"role_mapping_name"}, // we either found it by name or it's not there
+				ResourceName:            "elasticsearch_xpack_role_mapping.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"role_mapping_name"}, // we either found it by name or it's not there
 			},
 		},
 	})
