@@ -74,6 +74,9 @@ func resourceElasticsearchXpackUser() *schema.Resource {
 				DiffSuppressFunc: suppressEquivalentJson,
 			},
 		},
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 	}
 }
 
