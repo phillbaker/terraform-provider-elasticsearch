@@ -103,6 +103,12 @@ var (
 			ForceNew:     true,
 			ValidateFunc: validation.ValidateJsonString,
 		},
+		"settings": {
+			Type:     schema.TypeString,
+			Optional: true,
+			ForceNew:     true,
+			ValidateFunc: validation.ValidateJsonString,
+		},
 	}
 )
 
@@ -148,6 +154,16 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 				return fmt.Errorf("fail to unmarshal: %v", err)
 			}
 			body["mappings"] = mappings
+		}
+
+		if settingsJson, ok := d.GetOk("settings"); ok {
+			var settings map[string]interface{}
+			bytes := []byte(settingsJson.(string))
+			err = json.Unmarshal(bytes, &settings)
+			if err != nil {
+				return fmt.Errorf("fail to unmarshal: %v", err)
+			}
+			body["settings"] = settings
 		}
 	}
 
