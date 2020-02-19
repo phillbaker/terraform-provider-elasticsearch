@@ -62,6 +62,14 @@ func TestAccElasticsearchXpackRole(t *testing.T) {
 						"metadata",
 						"{}",
 					),
+					resource.TestCheckResourceAttrSet(
+						"elasticsearch_xpack_role.test",
+						"indices",
+					),
+					resource.TestCheckResourceAttrSet(
+						"elasticsearch_xpack_role.test",
+						"applications",
+					),
 				),
 			},
 			{
@@ -262,4 +270,43 @@ func testAccRoleResource_Global(resourceName string) string {
 		EOF
 	}
 	`, resourceName)
+}
+
+func TestAccRoleResource_importBasic(t *testing.T) {
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var allowed bool
+	switch meta.(type) {
+	case *elastic5.Client:
+		allowed = false
+	default:
+		allowed = true
+	}
+
+	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+
+	resource.Test(t, resource.TestCase{
+                PreCheck: func() {
+			testAccPreCheck(t)
+			if !allowed {
+				t.Skip("Roles only supported on ES >= 6")
+			}
+		},
+		Providers:    testAccXPackProviders,
+		CheckDestroy: testAccCheckRoleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRoleResource(randomName),
+			},
+			{
+				ResourceName:      "elasticsearch_xpack_role.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
 }
