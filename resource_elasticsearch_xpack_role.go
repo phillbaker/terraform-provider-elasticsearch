@@ -111,6 +111,9 @@ func resourceElasticsearchXpackRole() *schema.Resource {
 				DiffSuppressFunc: suppressEquivalentJson,
 			},
 		},
+		Importer: &schema.ResourceImporter{
+		  State: schema.ImportStatePassthrough,
+		},
 	}
 }
 
@@ -152,7 +155,7 @@ func resourceElasticsearchXpackRoleRead(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 
-	d.Set("name", role.Name)
+	d.Set("role_name", d.Id())
 	d.Set("indices", role.Indices)
 	d.Set("cluster", role.Cluster)
 	d.Set("applications", role.Applications)
