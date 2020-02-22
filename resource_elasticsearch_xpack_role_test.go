@@ -62,14 +62,6 @@ func TestAccElasticsearchXpackRole(t *testing.T) {
 						"metadata",
 						"{}",
 					),
-					resource.TestCheckResourceAttrSet(
-						"elasticsearch_xpack_role.test",
-						"indices",
-					),
-					resource.TestCheckResourceAttrSet(
-						"elasticsearch_xpack_role.test",
-						"applications",
-					),
 				),
 			},
 			{
@@ -168,10 +160,17 @@ func testAccRoleResource(resourceName string) string {
 		indices {
 			names 	   = ["testIndice"]
 			privileges = ["read"]
+                        field_security = {
+                                       grant = "testField1,testField2"
+                        }
 		}
 		indices {
 			names 	   = ["testIndice2"]
 			privileges = ["write"]
+                        field_security = {
+                                       grant = "*"
+                                       except = "testField3"
+                        }
 		}
 		cluster = [
 		"all"
