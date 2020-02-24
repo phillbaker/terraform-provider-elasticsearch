@@ -160,16 +160,16 @@ func testAccRoleResource(resourceName string) string {
 		indices {
 			names 	   = ["testIndice"]
 			privileges = ["read"]
-                        field_security = {
-                                       grant = "testField1,testField2"
+                        field_security {
+                                       grant = ["testField", "testField2"]
                         }
 		}
 		indices {
 			names 	   = ["testIndice2"]
 			privileges = ["write"]
-                        field_security = {
-                                       grant = "*"
-                                       except = "testField3"
+                        field_security {
+                                       grant = ["*"]
+                                       except = ["testField3"]
                         }
 		}
 		cluster = [

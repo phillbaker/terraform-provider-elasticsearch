@@ -127,29 +127,9 @@ func flattenMap(m map[string]interface{}) map[string]interface{} {
 	return f
 }
 
-func flattenIndicesFieldSecurity(rawSettings map[string]interface{}) map[string]string {
-	out := make(map[string]string)
-
-	if rawSettings["grant"] != nil && len(rawSettings["grant"].([]interface{})) > 0 {
-		rsg := make([]string, 0, len(rawSettings["grant"].([]interface{})))
-
-		for _, v := range rawSettings["grant"].([]interface{}) {
-			rsg = append(rsg, v.(string))
-		}
-
-		out["grant"] = strings.Join(rsg, ",")
-	}
-
-	if rawSettings["except"] != nil && len(rawSettings["except"].([]interface{})) > 0 {
-		rse := make([]string, 0, len(rawSettings["except"].([]interface{})))
-
-		for _, v := range rawSettings["except"].([]interface{}) {
-			rse = append(rse, v.(string))
-		}
-
-		out["except"] = strings.Join(rse, ",")
-	}
-
+func flattenIndicesFieldSecurity(rawSettings map[string]interface{}) []map[string]interface{} {
+	out := make([]map[string]interface{}, 0, 1)
+	out = append(out, rawSettings)
 	return out
 }
 
@@ -201,15 +181,17 @@ func flattenIndicesPermissionSetv7(resourcesArray []elastic7.XPackSecurityIndice
 	return vperm, nil
 }
 
-func expandIndicesFieldSecurity(collapsedSettings map[string]interface{}) map[string][]string {
+func expandIndicesFieldSecurity(collapsedSettings []interface{}) map[string][]string {
 	out := make(map[string][]string)
 
-	if collapsedSettings["grant"] != nil {
-		out["grant"] = strings.Split(collapsedSettings["grant"].(string), ",")
-	}
+	if len(collapsedSettings) > 0 {
+		if collapsedSettings[0].(map[string]interface{})["grant"] != nil {
+			out["grant"] = expandStringList(collapsedSettings[0].(map[string]interface{})["grant"].(*schema.Set).List())
+		}
 
-	if collapsedSettings["except"] != nil {
-		out["except"] = strings.Split(collapsedSettings["except"].(string), ",")
+		if collapsedSettings[0].(map[string]interface{})["except"] != nil {
+			out["except"] = expandStringList(collapsedSettings[0].(map[string]interface{})["except"].(*schema.Set).List())
+		}
 	}
 
 	return out
@@ -257,7 +239,7 @@ func expandIndicesPermissionSet(resourcesArray []interface{}) ([]PutRoleIndicesP
 			obj := PutRoleIndicesPermissions{
 				Names:         expandStringList(data["names"].(*schema.Set).List()),
 				Privileges:    expandStringList(data["privileges"].(*schema.Set).List()),
-				FieldSecurity: expandIndicesFieldSecurity(data["field_security"].(map[string]interface{})),
+				FieldSecurity: expandIndicesFieldSecurity(data["field_security"].([]interface{})),
 				Query:         data["query"].(string),
 			}
 			vperm = append(vperm, obj)

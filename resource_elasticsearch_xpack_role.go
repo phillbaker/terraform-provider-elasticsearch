@@ -50,8 +50,27 @@ func resourceElasticsearchXpackRole() *schema.Resource {
 							DiffSuppressFunc: suppressEquivalentJson,
 						},
 						"field_security": {
-							Type:             schema.TypeMap,
+							Type:             schema.TypeList,
+							MaxItems:         1,
 							Optional:         true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"grant": {
+										Type: schema.TypeSet,
+										Optional: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"except": {
+										Type: schema.TypeSet,
+										Optional: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -484,6 +503,6 @@ type XPackSecurityApplicationPrivileges struct {
 type XPackSecurityIndicesPermissions struct {
 	Names         []string `json:"names"`
 	Privileges    []string `json:"privileges"`
-	FieldSecurity map[string]string   `json:"field_security"`
+	FieldSecurity []map[string]interface{}   `json:"field_security"`
 	Query         string   `json:"query"`
 }
