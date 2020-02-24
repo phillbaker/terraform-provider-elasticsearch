@@ -347,9 +347,13 @@ func elastic6GetRole(client *elastic6.Client, name string) (XPackSecurityRole, e
 	role := XPackSecurityRole{}
 	role.Name = name
 	role.Cluster = obj.Cluster
-	if data, err := json.Marshal(obj.Indices); err == nil {
-		if err := json.Unmarshal(data, &role.Indices); err != nil {
-			fmt.Printf("Data : %s\n", data)
+
+	// if we have field security settings, we have to flatten them for tf
+	if len(obj.Indices) > 0 {
+		if data, err := flattenIndicesPermissionSetv6(obj.Indices); err == nil {
+			role.Indices = data
+		} else {
+			fmt.Sprintf("Data: %v\n", data)
 			return role, err
 		}
 	}
@@ -390,7 +394,7 @@ func elastic7GetRole(client *elastic7.Client, name string) (XPackSecurityRole, e
 
 	// if we have field security settings, we have to flatten them for tf
 	if len(obj.Indices) > 0 {
-		if data, err := flattenIndicesPermissionSet(obj.Indices); err == nil {
+		if data, err := flattenIndicesPermissionSetv7(obj.Indices); err == nil {
 			role.Indices = data
 		} else {
 			fmt.Sprintf("Data: %v\n", data)

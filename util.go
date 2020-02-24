@@ -153,7 +153,31 @@ func flattenIndicesFieldSecurity(rawSettings map[string]interface{}) map[string]
 	return out
 }
 
-func flattenIndicesPermissionSet(resourcesArray []elastic7.XPackSecurityIndicesPermissions) ([]XPackSecurityIndicesPermissions, error) {
+func flattenIndicesPermissionSetv6(resourcesArray []elastic6.XPackSecurityIndicesPermissions) ([]XPackSecurityIndicesPermissions, error) {
+	vperm := make([]XPackSecurityIndicesPermissions, 0, len(resourcesArray))
+	for _, item := range resourcesArray {
+		if item.FieldSecurity != nil {
+			obj := XPackSecurityIndicesPermissions{
+				Names:         item.Names,
+				Privileges:    item.Privileges,
+				FieldSecurity: flattenIndicesFieldSecurity(item.FieldSecurity.(map[string]interface{})),
+				Query:         item.Query,
+			}
+			vperm = append(vperm, obj)
+		} else {
+			obj := XPackSecurityIndicesPermissions{
+				Names:         item.Names,
+				Privileges:    item.Privileges,
+				Query:         item.Query,
+			}
+			vperm = append(vperm, obj)
+		}
+	}
+
+	return vperm, nil
+}
+
+func flattenIndicesPermissionSetv7(resourcesArray []elastic7.XPackSecurityIndicesPermissions) ([]XPackSecurityIndicesPermissions, error) {
 	vperm := make([]XPackSecurityIndicesPermissions, 0, len(resourcesArray))
 	for _, item := range resourcesArray {
 		if item.FieldSecurity != nil {
