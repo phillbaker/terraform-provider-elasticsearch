@@ -50,20 +50,20 @@ func resourceElasticsearchXpackRole() *schema.Resource {
 							DiffSuppressFunc: suppressEquivalentJson,
 						},
 						"field_security": {
-							Type:             schema.TypeList,
-							MaxItems:         1,
-							Optional:         true,
+							Type:     schema.TypeList,
+							MaxItems: 1,
+							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"grant": {
-										Type: schema.TypeSet,
+										Type:     schema.TypeSet,
 										Optional: true,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
 									},
 									"except": {
-										Type: schema.TypeSet,
+										Type:     schema.TypeSet,
 										Optional: true,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
@@ -128,7 +128,7 @@ func resourceElasticsearchXpackRole() *schema.Resource {
 			},
 		},
 		Importer: &schema.ResourceImporter{
-		  State: schema.ImportStatePassthrough,
+			State: schema.ImportStatePassthrough,
 		},
 	}
 }
@@ -178,10 +178,10 @@ func resourceElasticsearchXpackRoleRead(d *schema.ResourceData, m interface{}) e
 		indices := make([]map[string]interface{}, 0, len(role.Indices))
 		for _, v := range role.Indices {
 			ip := map[string]interface{}{
-				"names": v.Names,
-				"privileges": v.Privileges,
+				"names":          v.Names,
+				"privileges":     v.Privileges,
 				"field_security": v.FieldSecurity,
-				"query": v.Query,
+				"query":          v.Query,
 			}
 			indices = append(indices, ip)
 		}
@@ -195,8 +195,8 @@ func resourceElasticsearchXpackRoleRead(d *schema.ResourceData, m interface{}) e
 		for _, va := range role.Applications {
 			ap := map[string]interface{}{
 				"application": va.Application,
-				"privileges": va.Privileges,
-				"resources": va.Resources,
+				"privileges":  va.Privileges,
+				"resources":   va.Resources,
 			}
 			applications = append(applications, ap)
 		}
@@ -476,10 +476,10 @@ type PutRoleApplicationPrivileges struct {
 }
 
 type PutRoleIndicesPermissions struct {
-	Names         []string    `json:"names"`
-	Privileges    []string    `json:"privileges"`
+	Names         []string            `json:"names"`
+	Privileges    []string            `json:"privileges"`
 	FieldSecurity map[string][]string `json:"field_security,omitempty"`
-	Query         interface{} `json:"query,omitempty"`
+	Query         interface{}         `json:"query,omitempty"`
 }
 
 type XPackSecurityRole struct {
@@ -501,8 +501,8 @@ type XPackSecurityApplicationPrivileges struct {
 
 // XPackSecurityIndicesPermissions is the indices permission object of Elasticsearch
 type XPackSecurityIndicesPermissions struct {
-	Names         []string `json:"names"`
-	Privileges    []string `json:"privileges"`
-	FieldSecurity []map[string]interface{}   `json:"field_security"`
-	Query         string   `json:"query"`
+	Names         []string                 `json:"names"`
+	Privileges    []string                 `json:"privileges"`
+	FieldSecurity []map[string]interface{} `json:"field_security"`
+	Query         string                   `json:"query"`
 }

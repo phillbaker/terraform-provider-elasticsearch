@@ -146,9 +146,9 @@ func flattenIndicesPermissionSetv6(resourcesArray []elastic6.XPackSecurityIndice
 			vperm = append(vperm, obj)
 		} else {
 			obj := XPackSecurityIndicesPermissions{
-				Names:         item.Names,
-				Privileges:    item.Privileges,
-				Query:         item.Query,
+				Names:      item.Names,
+				Privileges: item.Privileges,
+				Query:      item.Query,
 			}
 			vperm = append(vperm, obj)
 		}
@@ -170,9 +170,9 @@ func flattenIndicesPermissionSetv7(resourcesArray []elastic7.XPackSecurityIndice
 			vperm = append(vperm, obj)
 		} else {
 			obj := XPackSecurityIndicesPermissions{
-				Names:         item.Names,
-				Privileges:    item.Privileges,
-				Query:         item.Query,
+				Names:      item.Names,
+				Privileges: item.Privileges,
+				Query:      item.Query,
 			}
 			vperm = append(vperm, obj)
 		}
@@ -235,7 +235,7 @@ func expandIndicesPermissionSet(resourcesArray []interface{}) ([]PutRoleIndicesP
 			return vperm, fmt.Errorf("Error asserting data as type []byte : %v", item)
 		}
 
-		if len(data["names"].(*schema.Set).List()) > 0 && len(data["privileges"].(*schema.Set).List ()) > 0 {
+		if len(data["names"].(*schema.Set).List()) > 0 && len(data["privileges"].(*schema.Set).List()) > 0 {
 			obj := PutRoleIndicesPermissions{
 				Names:         expandStringList(data["names"].(*schema.Set).List()),
 				Privileges:    expandStringList(data["privileges"].(*schema.Set).List()),
@@ -248,7 +248,6 @@ func expandIndicesPermissionSet(resourcesArray []interface{}) ([]PutRoleIndicesP
 
 	return vperm, nil
 }
-
 
 func optionalInterfaceJson(input string) interface{} {
 	if input == "" || input == "{}" {

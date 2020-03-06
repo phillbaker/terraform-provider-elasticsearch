@@ -289,7 +289,7 @@ func TestAccRoleResource_importBasic(t *testing.T) {
 	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
 	resource.Test(t, resource.TestCase{
-                PreCheck: func() {
+		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {
 				t.Skip("Roles only supported on ES >= 6")
