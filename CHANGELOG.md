@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [1.1.1] - 2020-05-09
+### Added
+- Make ping to elasticsearch during provider config optional
 
 ## [1.1.0] - 2020-05-04
 

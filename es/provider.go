@@ -113,6 +113,12 @@ func Provider() terraform.ResourceProvider {
 				Default:     true,
 				Description: "Enable signing of AWS elasticsearch requests",
 			},
+			"elasticsearch_version": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "ElasticSearch Version",
+			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -154,6 +160,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	password := d.Get("password").(string)
 	parsedUrl, err := url.Parse(rawUrl)
 	signAWSRequests := d.Get("sign_aws_requests").(bool)
+	esVersion := d.Get("elasticsearch_version").(string)
 	if err != nil {
 		return nil, err
 	}
@@ -187,13 +194,16 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 	relevantClient = client
 
-	// Use the v7 client to ping the cluster to determine the version
-	info, _, err := client.Ping(rawUrl).Do(context.TODO())
-	if err != nil {
-		return nil, err
+	// Use the v7 client to ping the cluster to determine the version if one was not provided
+	if esVersion == "" {
+		info, _, err := client.Ping(rawUrl).Do(context.TODO())
+		if err != nil {
+			return nil, err
+		}
+		esVersion = info.Version.Number
 	}
 
-	if info.Version.Number < "7.0.0" && info.Version.Number >= "6.0.0" {
+	if esVersion < "7.0.0" && esVersion >= "6.0.0" {
 		log.Printf("[INFO] Using ES 6")
 		opts := []elastic6.ClientOptionFunc{
 			elastic6.SetURL(rawUrl),
@@ -220,7 +230,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-	} else if info.Version.Number < "6.0.0" && info.Version.Number >= "5.0.0" {
+	} else if esVersion < "6.0.0" && esVersion >= "5.0.0" {
 		log.Printf("[INFO] Using ES 5")
 		opts := []elastic5.ClientOptionFunc{
 			elastic5.SetURL(rawUrl),
@@ -246,7 +256,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-	} else if info.Version.Number < "5.0.0" {
+	} else if esVersion < "5.0.0" {
 		return nil, errors.New("ElasticSearch is older than 5.0.0!")
 	}
 
