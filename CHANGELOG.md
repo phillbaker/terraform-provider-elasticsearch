@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+- Clarify naming, watch resources are from xpack.
 
 ## [1.0.0] - 2020-03-18
 

@@ -13,24 +13,40 @@ import (
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
-func resourceElasticsearchWatch() *schema.Resource {
+var xPackWatchSchema = map[string]*schema.Schema{
+	"watch_id": {
+		Type:     schema.TypeString,
+		Required: true,
+		ForceNew: true,
+	},
+	"body": {
+		Type:         schema.TypeString,
+		Required:     true,
+		ValidateFunc: validation.ValidateJsonString,
+	},
+}
+
+func resourceElasticsearchDeprecatedWatch() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceElasticsearchWatchCreate,
 		Read:   resourceElasticsearchWatchRead,
 		Update: resourceElasticsearchWatchUpdate,
 		Delete: resourceElasticsearchWatchDelete,
-		Schema: map[string]*schema.Schema{
-			"watch_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			"body": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.ValidateJsonString,
-			},
+		Schema: xPackWatchSchema,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
 		},
+		DeprecationMessage: "elasticsearch_watch is deprecated, please use elasticsearch_xpack_watch resource instead.",
+	}
+}
+
+func resourceElasticsearchXpackWatch() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceElasticsearchWatchCreate,
+		Read:   resourceElasticsearchWatchRead,
+		Update: resourceElasticsearchWatchUpdate,
+		Delete: resourceElasticsearchWatchDelete,
+		Schema: xPackWatchSchema,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},

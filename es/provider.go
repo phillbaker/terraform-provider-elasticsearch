@@ -116,18 +116,19 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"elasticsearch_index":                  resourceElasticsearchIndex(),
-			"elasticsearch_index_template":         resourceElasticsearchIndexTemplate(),
-			"elasticsearch_index_lifecycle_policy": resourceElasticsearchIndexLifecyclePolicy(),
-			"elasticsearch_snapshot_repository":    resourceElasticsearchSnapshotRepository(),
-			"elasticsearch_kibana_object":          resourceElasticsearchKibanaObject(),
-			"elasticsearch_watch":                  resourceElasticsearchWatch(),
-			"elasticsearch_monitor":                resourceElasticsearchMonitor(),
 			"elasticsearch_destination":            resourceElasticsearchDestination(),
-			"elasticsearch_xpack_role_mapping":     resourceElasticsearchXpackRoleMapping(),
-			"elasticsearch_xpack_role":             resourceElasticsearchXpackRole(),
+			"elasticsearch_index":                  resourceElasticsearchIndex(),
+			"elasticsearch_index_lifecycle_policy": resourceElasticsearchIndexLifecyclePolicy(),
+			"elasticsearch_index_template":         resourceElasticsearchIndexTemplate(),
 			"elasticsearch_ingest_pipeline":        resourceElasticsearchIngestPipeline(),
+			"elasticsearch_kibana_object":          resourceElasticsearchKibanaObject(),
+			"elasticsearch_monitor":                resourceElasticsearchMonitor(),
+			"elasticsearch_snapshot_repository":    resourceElasticsearchSnapshotRepository(),
+			"elasticsearch_watch":                  resourceElasticsearchDeprecatedWatch(),
+			"elasticsearch_xpack_role":             resourceElasticsearchXpackRole(),
+			"elasticsearch_xpack_role_mapping":     resourceElasticsearchXpackRoleMapping(),
 			"elasticsearch_xpack_user":             resourceElasticsearchXpackUser(),
+			"elasticsearch_xpack_watch":            resourceElasticsearchXpackWatch(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
