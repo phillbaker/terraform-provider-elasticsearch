@@ -167,6 +167,17 @@ $ export AWS_SECRET_ACCESS_KEY="asecretkey"
 $ terraform plan
 ```
 
+#### AWS profile
+
+You can specify a named profile that will be used for credentials (either static, or sts assumed role creds).  eg:
+
+```tf
+provider "elasticsearch" {
+    url         = "https://search-foo-bar-pqrhr4w3u4dzervg41frow4mmy.us-east-1.es.amazonaws.com"
+    aws_profile = "profilename"
+}
+```
+
 #### Shared Credentials file
 
 You can use an AWS credentials file to specify your credentials. The default location is `$HOME/.aws/credentials` on Linux and macOS, or `%USERPROFILE%\.aws\credentials` for Windows users.
