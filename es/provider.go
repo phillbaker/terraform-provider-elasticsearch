@@ -10,9 +10,8 @@ import (
 	"net/url"
 	"regexp"
 
+	"github.com/aws/aws-sdk-go/aws"
 	awscredentials "github.com/aws/aws-sdk-go/aws/credentials"
-	awsec2rolecreds "github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
-	awsec2metadata "github.com/aws/aws-sdk-go/aws/ec2metadata"
 	awssession "github.com/aws/aws-sdk-go/aws/session"
 	awssigv4 "github.com/aws/aws-sdk-go/aws/signer/v4"
 	"github.com/deoxxa/aws_signing_client"
@@ -257,21 +256,30 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 }
 
 func awsHttpClient(region string, d *schema.ResourceData) *http.Client {
-	creds := awscredentials.NewChainCredentials([]awscredentials.Provider{
-		&awscredentials.StaticProvider{
-			Value: awscredentials.Value{
-				AccessKeyID:     d.Get("aws_access_key").(string),
-				SecretAccessKey: d.Get("aws_secret_key").(string),
-				SessionToken:    d.Get("aws_token").(string),
-			},
+	aws_access_key_id := d.Get("aws_access_key").(string)
+	aws_secret_access_key := d.Get("aws_secret_key").(string)
+	aws_session_token := d.Get("aws_token").(string)
+	aws_profile := d.Get("aws_profile").(string)
+
+	sessOpts := awssession.Options{
+		Config: aws.Config{
+			Region: aws.String(region),
 		},
-		&awscredentials.EnvProvider{},
-		&awscredentials.SharedCredentialsProvider{},
-		&awsec2rolecreds.EC2RoleProvider{
-			Client: awsec2metadata.New(awssession.Must(awssession.NewSession())),
-		},
-	})
-	signer := awssigv4.NewSigner(creds)
+	}
+	// 1. access keys take priority
+	// 2. next is a profile (for assume role)
+	// 3. let the default credentials provider figure out the rest (env, ec2, etc..)
+	//
+	// note: if #1 is chosen, then no further providers will be tested, since we've overridden the credentials with just a static provider
+	if aws_access_key_id != "" {
+		sessOpts.Config.Credentials = awscredentials.NewStaticCredentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
+	} else if aws_profile != "" {
+		sessOpts.Profile = aws_profile
+	}
+
+	sess := awssession.Must(awssession.NewSessionWithOptions(sessOpts))
+
+	signer := awssigv4.NewSigner(sess.Config.Credentials)
 	client, _ := aws_signing_client.New(signer, nil, "es", region)
 
 	return client
