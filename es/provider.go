@@ -80,6 +80,13 @@ func Provider() terraform.ResourceProvider {
 				Description: "The session token for use with AWS Elasticsearch Service domains",
 			},
 
+			"aws_profile": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "The AWS profile for use with AWS Elasticsearch Service domains",
+			},
+
 			"cacert_file": {
 				Type:        schema.TypeString,
 				Optional:    true,
