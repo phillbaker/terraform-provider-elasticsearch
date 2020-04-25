@@ -42,7 +42,7 @@ script:
   # enforce formatting
   - FILES_TO_FMT=$(gofmt -l .); [ -z "$FILES_TO_FMT" ] || (echo "$FILES_TO_FMT"; exit $?)
   # run tests
-  - TF_ACC=1 go test -v -cover
+  - TF_ACC=1 go test ./... -v -cover
 before_deploy:
   - export GO111MODULE=on
   - go get github.com/mitchellh/gox
