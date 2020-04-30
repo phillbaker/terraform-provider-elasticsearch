@@ -209,7 +209,7 @@ func resourceElasticsearchPutOdfeRole(d *schema.ResourceData, m interface{}) (*R
 	if err != nil {
 		fmt.Print("Error in index get : ", err)
 	}
-	var indexPermissionsBody []IndexPermissions
+	indexPermissionsBody := []IndexPermissions{}
 	for _, idx := range indexPermissions {
 		putIdx := IndexPermissions{
 			IndexPatterns:  idx.IndexPatterns,
@@ -224,7 +224,7 @@ func resourceElasticsearchPutOdfeRole(d *schema.ResourceData, m interface{}) (*R
 	if err != nil {
 		fmt.Print("Error in tenant get : ", err)
 	}
-	var tenantPermissionsBody []TenantPermissions
+	tenantPermissionsBody := []TenantPermissions{}
 	for _, tenant := range tenantPermissions {
 		putTeanant := TenantPermissions{
 			TenantPatterns: tenant.TenantPatterns,
