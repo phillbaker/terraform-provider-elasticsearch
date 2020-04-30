@@ -13,12 +13,12 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 )
 
-func resourceElasticsearchOdfePolicyMapping() *schema.Resource {
+func resourceElasticsearchOpendistroPolicyMapping() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceElasticsearchOdfePolicyMappingCreate,
-		Read:   resourceElasticsearchOdfePolicyMappingRead,
-		Update: resourceElasticsearchOdfePolicyMappingUpdate,
-		Delete: resourceElasticsearchOdfePolicyMappingDelete,
+		Create: resourceElasticsearchOpendistroPolicyMappingCreate,
+		Read:   resourceElasticsearchOpendistroPolicyMappingRead,
+		Update: resourceElasticsearchOpendistroPolicyMappingUpdate,
+		Delete: resourceElasticsearchOpendistroPolicyMappingDelete,
 		Schema: map[string]*schema.Schema{
 			"policy_id": &schema.Schema{
 				Type:     schema.TypeString,
@@ -56,16 +56,16 @@ func resourceElasticsearchOdfePolicyMapping() *schema.Resource {
 	}
 }
 
-func resourceElasticsearchOdfePolicyMappingCreate(d *schema.ResourceData, m interface{}) error {
-	if _, err := resourceElasticsearchPostOdfePolicyMapping(d, m, "add"); err != nil {
+func resourceElasticsearchOpendistroPolicyMappingCreate(d *schema.ResourceData, m interface{}) error {
+	if _, err := resourceElasticsearchPostOpendistroPolicyMapping(d, m, "add"); err != nil {
 		return err
 	}
 
-	return resourceElasticsearchOdfePolicyMappingRead(d, m)
+	return resourceElasticsearchOpendistroPolicyMappingRead(d, m)
 }
 
-func resourceElasticsearchOdfePolicyMappingRead(d *schema.ResourceData, m interface{}) error {
-	indexesList, err := resourceElasticsearchGetOdfePolicyMapping(d, m)
+func resourceElasticsearchOpendistroPolicyMappingRead(d *schema.ResourceData, m interface{}) error {
+	indexesList, err := resourceElasticsearchGetOpendistroPolicyMapping(d, m)
 	concernIndexes := []string{}
 	policyName := d.Get("policy_id").(string)
 
@@ -92,21 +92,21 @@ func resourceElasticsearchOdfePolicyMappingRead(d *schema.ResourceData, m interf
 	return nil
 }
 
-func resourceElasticsearchOdfePolicyMappingUpdate(d *schema.ResourceData, m interface{}) error {
-	if _, err := resourceElasticsearchPostOdfePolicyMapping(d, m, "update_policy"); err != nil {
+func resourceElasticsearchOpendistroPolicyMappingUpdate(d *schema.ResourceData, m interface{}) error {
+	if _, err := resourceElasticsearchPostOpendistroPolicyMapping(d, m, "update_policy"); err != nil {
 		if elastic7.IsNotFound(err) {
-			log.Printf("[WARN] OdfePolicyMapping (%s) not found, removing from state", d.Id())
+			log.Printf("[WARN] OpendistroPolicyMapping (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}
 		return err
 	}
 
-	return resourceElasticsearchOdfePolicyMappingRead(d, m)
+	return resourceElasticsearchOpendistroPolicyMappingRead(d, m)
 }
 
-func resourceElasticsearchOdfePolicyMappingDelete(d *schema.ResourceData, m interface{}) error {
-	if _, err := resourceElasticsearchPostOdfePolicyMapping(d, m, "remove"); err != nil {
+func resourceElasticsearchOpendistroPolicyMappingDelete(d *schema.ResourceData, m interface{}) error {
+	if _, err := resourceElasticsearchPostOpendistroPolicyMapping(d, m, "remove"); err != nil {
 		return err
 	}
 
@@ -115,7 +115,7 @@ func resourceElasticsearchOdfePolicyMappingDelete(d *schema.ResourceData, m inte
 	return nil
 }
 
-func resourceElasticsearchPostOdfePolicyMapping(d *schema.ResourceData, m interface{}, action string) (*PolicyMappingResponse, error) {
+func resourceElasticsearchPostOpendistroPolicyMapping(d *schema.ResourceData, m interface{}, action string) (*PolicyMappingResponse, error) {
 
 	response := new(PolicyMappingResponse)
 	requestBody := ""
@@ -185,7 +185,7 @@ func resourceElasticsearchPostOdfePolicyMapping(d *schema.ResourceData, m interf
 	return response, nil
 }
 
-func resourceElasticsearchGetOdfePolicyMapping(d *schema.ResourceData, m interface{}) (map[string]interface{}, error) {
+func resourceElasticsearchGetOpendistroPolicyMapping(d *schema.ResourceData, m interface{}) (map[string]interface{}, error) {
 
 	response := new(map[string]interface{})
 	path, err := uritemplates.Expand("/_opendistro/_ism/explain/{indexes}", map[string]string{

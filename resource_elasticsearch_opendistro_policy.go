@@ -16,12 +16,12 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 )
 
-func resourceElasticsearchOdfePolicy() *schema.Resource {
+func resourceElasticsearchOpendistroPolicy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceElasticsearchOdfePolicyCreate,
-		Read:   resourceElasticsearchOdfePolicyRead,
-		Update: resourceElasticsearchOdfePolicyCreate,
-		Delete: resourceElasticsearchOdfePolicyDelete,
+		Create: resourceElasticsearchOpendistroPolicyCreate,
+		Read:   resourceElasticsearchOpendistroPolicyRead,
+		Update: resourceElasticsearchOpendistroPolicyCreate,
+		Delete: resourceElasticsearchOpendistroPolicyDelete,
 		Schema: map[string]*schema.Schema{
 			"policy_id": &schema.Schema{
 				Type:     schema.TypeString,
@@ -53,21 +53,21 @@ func resourceElasticsearchOdfePolicy() *schema.Resource {
 	}
 }
 
-func resourceElasticsearchOdfePolicyCreate(d *schema.ResourceData, m interface{}) error {
-	if _, err := resourceElasticsearchPutOdfePolicy(d, m); err != nil {
+func resourceElasticsearchOpendistroPolicyCreate(d *schema.ResourceData, m interface{}) error {
+	if _, err := resourceElasticsearchPutOpendistroPolicy(d, m); err != nil {
 		return err
 	}
 
-	return resourceElasticsearchOdfePolicyRead(d, m)
+	return resourceElasticsearchOpendistroPolicyRead(d, m)
 }
 
-func resourceElasticsearchOdfePolicyRead(d *schema.ResourceData, m interface{}) error {
+func resourceElasticsearchOpendistroPolicyRead(d *schema.ResourceData, m interface{}) error {
 	policyID := d.Get("policy_id").(string)
-	policyResponse, err := resourceElasticsearchGetOdfePolicy(policyID, m)
+	policyResponse, err := resourceElasticsearchGetOpendistroPolicy(policyID, m)
 
 	if err != nil {
 		if elastic7.IsNotFound(err) {
-			log.Printf("[WARN] OdfePolicy (%s) not found, removing from state", policyID)
+			log.Printf("[WARN] OpendistroPolicy (%s) not found, removing from state", policyID)
 			d.SetId("")
 			return nil
 		}
@@ -89,7 +89,7 @@ func resourceElasticsearchOdfePolicyRead(d *schema.ResourceData, m interface{}) 
 	return nil
 }
 
-func resourceElasticsearchOdfePolicyDelete(d *schema.ResourceData, m interface{}) error {
+func resourceElasticsearchOpendistroPolicyDelete(d *schema.ResourceData, m interface{}) error {
 	var err error
 
 	path, err := uritemplates.Expand("/_opendistro/_ism/policies/{policy_id}", map[string]string{
@@ -117,7 +117,7 @@ func resourceElasticsearchOdfePolicyDelete(d *schema.ResourceData, m interface{}
 	return err
 }
 
-func resourceElasticsearchGetOdfePolicy(policyID string, m interface{}) (GetPolicyResponse, error) {
+func resourceElasticsearchGetOpendistroPolicy(policyID string, m interface{}) (GetPolicyResponse, error) {
 	var err error
 	response := new(GetPolicyResponse)
 
@@ -160,7 +160,7 @@ func resourceElasticsearchGetOdfePolicy(policyID string, m interface{}) (GetPoli
 	return *response, err
 }
 
-func resourceElasticsearchPutOdfePolicy(d *schema.ResourceData, m interface{}) (*PutPolicyResponse, error) {
+func resourceElasticsearchPutOpendistroPolicy(d *schema.ResourceData, m interface{}) (*PutPolicyResponse, error) {
 	response := new(PutPolicyResponse)
 	policyJSON := d.Get("body").(string)
 	seq := d.Get("seq_no").(int)

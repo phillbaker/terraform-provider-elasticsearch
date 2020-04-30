@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccElasticsearchOdfeRole(t *testing.T) {
+func TestAccElasticsearchOpendistroRole(t *testing.T) {
 
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
@@ -42,66 +42,66 @@ func TestAccElasticsearchOdfeRole(t *testing.T) {
 			}
 		},
 		Providers:    testAccOpendistroProviders,
-		CheckDestroy: testAccCheckElasticsearchOdfeRoleDestroy,
+		CheckDestroy: testAccCheckElasticsearchOpendistroRoleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOdfeRoleResource(randomName),
+				Config: testAccOpendistroRoleResource(randomName),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticSearchOdfeRoleExists("elasticsearch_odfe_role.test"),
+					testCheckElasticSearchOpendistroRoleExists("elasticsearch_opendistro_role.test"),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_role.test",
+						"elasticsearch_opendistro_role.test",
 						"id",
 						randomName,
 					),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_role.test",
+						"elasticsearch_opendistro_role.test",
 						"cluster_permissions.#",
 						"1",
 					),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_role.test",
+						"elasticsearch_opendistro_role.test",
 						"tenant_permissions.#",
 						"1",
 					),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_role.test",
+						"elasticsearch_opendistro_role.test",
 						"index_permissions.#",
 						"1",
 					),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_role.test",
+						"elasticsearch_opendistro_role.test",
 						"description",
 						"test",
 					),
 				),
 			},
 			{
-				Config: testAccOdfeRoleResourceUpdated(randomName),
+				Config: testAccOpendistroRoleResourceUpdated(randomName),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticSearchOdfeRoleExists("elasticsearch_odfe_role.test"),
+					testCheckElasticSearchOpendistroRoleExists("elasticsearch_opendistro_role.test"),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_role.test",
+						"elasticsearch_opendistro_role.test",
 						"tenant_permissions.#",
 						"2",
 					),
 				),
 			},
 			{
-				Config: testAccOdfeRoleResourceMinimal(randomName),
+				Config: testAccOpendistroRoleResourceMinimal(randomName),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticSearchOdfeRoleExists("elasticsearch_odfe_role.test"),
+					testCheckElasticSearchOpendistroRoleExists("elasticsearch_opendistro_role.test"),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_role.test",
+						"elasticsearch_opendistro_role.test",
 						"tenant_permissions.#",
 						"0",
 					),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_role.test",
+						"elasticsearch_opendistro_role.test",
 						"index_permissions.#",
 						"0",
 					),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_role.test",
+						"elasticsearch_opendistro_role.test",
 						"cluster_permissions.#",
 						"0",
 					),
@@ -111,9 +111,9 @@ func TestAccElasticsearchOdfeRole(t *testing.T) {
 	})
 }
 
-func testAccCheckElasticsearchOdfeRoleDestroy(s *terraform.State) error {
+func testAccCheckElasticsearchOpendistroRoleDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "elasticsearch_odfe_role" {
+		if rs.Type != "elasticsearch_opendistro_role" {
 			continue
 		}
 
@@ -123,7 +123,7 @@ func testAccCheckElasticsearchOdfeRoleDestroy(s *terraform.State) error {
 		switch meta.(type) {
 		case *elastic7.Client:
 			client := meta.(*elastic7.Client)
-			_, err = resourceElasticsearchGetOdfeRole(rs.Primary.ID, client)
+			_, err = resourceElasticsearchGetOpendistroRole(rs.Primary.ID, client)
 		default:
 		}
 
@@ -136,10 +136,10 @@ func testAccCheckElasticsearchOdfeRoleDestroy(s *terraform.State) error {
 
 	return nil
 }
-func testCheckElasticSearchOdfeRoleExists(name string) resource.TestCheckFunc {
+func testCheckElasticSearchOpendistroRoleExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "elasticsearch_odfe_role" {
+			if rs.Type != "elasticsearch_opendistro_role" {
 				continue
 			}
 
@@ -149,7 +149,7 @@ func testCheckElasticSearchOdfeRoleExists(name string) resource.TestCheckFunc {
 			switch meta.(type) {
 			case *elastic7.Client:
 				client := meta.(*elastic7.Client)
-				_, err = resourceElasticsearchGetOdfeRole(rs.Primary.ID, client)
+				_, err = resourceElasticsearchGetOpendistroRole(rs.Primary.ID, client)
 			default:
 			}
 
@@ -164,9 +164,9 @@ func testCheckElasticSearchOdfeRoleExists(name string) resource.TestCheckFunc {
 	}
 }
 
-func testAccOdfeRoleResource(resourceName string) string {
+func testAccOpendistroRoleResource(resourceName string) string {
 	return fmt.Sprintf(` 
-	resource "elasticsearch_odfe_role" "test" {
+	resource "elasticsearch_opendistro_role" "test" {
 		role_name = "%s"
 		description = "test"
 		index_permissions {
@@ -194,9 +194,9 @@ func testAccOdfeRoleResource(resourceName string) string {
 	`, resourceName)
 }
 
-func testAccOdfeRoleResourceUpdated(resourceName string) string {
+func testAccOpendistroRoleResourceUpdated(resourceName string) string {
 	return fmt.Sprintf(` 
-	resource "elasticsearch_odfe_role" "test" {
+	resource "elasticsearch_opendistro_role" "test" {
 		role_name = "%s"
 		description = "test"
 		index_permissions {
@@ -234,9 +234,9 @@ func testAccOdfeRoleResourceUpdated(resourceName string) string {
 	`, resourceName)
 }
 
-func testAccOdfeRoleResourceMinimal(resourceName string) string {
+func testAccOpendistroRoleResourceMinimal(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_odfe_role" "test" {
+	resource "elasticsearch_opendistro_role" "test" {
 		role_name = "%s"
 	}
 	`, resourceName)

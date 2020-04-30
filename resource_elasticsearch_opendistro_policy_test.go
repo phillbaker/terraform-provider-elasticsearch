@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccElasticsearchOdfePolicy(t *testing.T) {
+func TestAccElasticsearchOpendistroPolicy(t *testing.T) {
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
 	if err != nil {
@@ -34,18 +34,18 @@ func TestAccElasticsearchOdfePolicy(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {
-				t.Skip("OdfePolicys only supported on ES 7.")
+				t.Skip("OpendistroPolicys only supported on ES 7.")
 			}
 		},
 		Providers:    testAccOpendistroProviders,
-		CheckDestroy: testCheckElasticsearchOdfePolicyDestroy,
+		CheckDestroy: testCheckElasticsearchOpendistroPolicyDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccElasticsearchOdfePolicy,
+				Config: testAccElasticsearchOpendistroPolicy,
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticsearchOdfePolicyExists("elasticsearch_odfe_policy.test_policy"),
+					testCheckElasticsearchOpendistroPolicyExists("elasticsearch_opendistro_policy.test_policy"),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_policy.test_policy",
+						"elasticsearch_opendistro_policy.test_policy",
 						"policy_id",
 						"test_policy",
 					),
@@ -55,7 +55,7 @@ func TestAccElasticsearchOdfePolicy(t *testing.T) {
 	})
 }
 
-func testCheckElasticsearchOdfePolicyExists(name string) resource.TestCheckFunc {
+func testCheckElasticsearchOpendistroPolicyExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -71,7 +71,7 @@ func testCheckElasticsearchOdfePolicyExists(name string) resource.TestCheckFunc 
 		switch meta.(type) {
 		case *elastic7.Client:
 			client := meta.(*elastic7.Client)
-			_, err = resourceElasticsearchGetOdfePolicy(rs.Primary.ID, client)
+			_, err = resourceElasticsearchGetOpendistroPolicy(rs.Primary.ID, client)
 		default:
 		}
 
@@ -83,9 +83,9 @@ func testCheckElasticsearchOdfePolicyExists(name string) resource.TestCheckFunc 
 	}
 }
 
-func testCheckElasticsearchOdfePolicyDestroy(s *terraform.State) error {
+func testCheckElasticsearchOpendistroPolicyDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "elasticsearch_odfe_policy" {
+		if rs.Type != "elasticsearch_opendistro_policy" {
 			continue
 		}
 
@@ -95,7 +95,7 @@ func testCheckElasticsearchOdfePolicyDestroy(s *terraform.State) error {
 		switch meta.(type) {
 		case *elastic7.Client:
 			client := meta.(*elastic7.Client)
-			_, err = resourceElasticsearchGetOdfePolicy(rs.Primary.ID, client)
+			_, err = resourceElasticsearchGetOpendistroPolicy(rs.Primary.ID, client)
 		default:
 		}
 
@@ -103,14 +103,14 @@ func testCheckElasticsearchOdfePolicyDestroy(s *terraform.State) error {
 			return nil // should be not found error
 		}
 
-		return fmt.Errorf("OdfePolicy %q still exists", rs.Primary.ID)
+		return fmt.Errorf("OpendistroPolicy %q still exists", rs.Primary.ID)
 	}
 
 	return nil
 }
 
-var testAccElasticsearchOdfePolicy = `
-resource "elasticsearch_odfe_policy" "test_policy" {
+var testAccElasticsearchOpendistroPolicy = `
+resource "elasticsearch_opendistro_policy" "test_policy" {
 	policy_id = "test_policy"
 	body      = <<EOF
   {

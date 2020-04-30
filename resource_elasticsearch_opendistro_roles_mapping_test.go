@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccElasticsearchOdfeRolesMapping(t *testing.T) {
+func TestAccElasticsearchOpendistroRolesMapping(t *testing.T) {
 
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
@@ -42,35 +42,35 @@ func TestAccElasticsearchOdfeRolesMapping(t *testing.T) {
 			}
 		},
 		Providers:    testAccOpendistroProviders,
-		CheckDestroy: testAccCheckElasticsearchOdfeRolesMappingDestroy,
+		CheckDestroy: testAccCheckElasticsearchOpendistroRolesMappingDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOdfeRolesMappingResource(randomName),
+				Config: testAccOpendistroRolesMappingResource(randomName),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticSearchOdfeRolesMappingExists("elasticsearch_odfe_roles_mapping.test"),
+					testCheckElasticSearchOpendistroRolesMappingExists("elasticsearch_opendistro_roles_mapping.test"),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_roles_mapping.test",
+						"elasticsearch_opendistro_roles_mapping.test",
 						"id",
 						randomName,
 					),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_roles_mapping.test",
+						"elasticsearch_opendistro_roles_mapping.test",
 						"backend_roles.#",
 						"1",
 					),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_roles_mapping.test",
+						"elasticsearch_opendistro_roles_mapping.test",
 						"description",
 						"test",
 					),
 				),
 			},
 			{
-				Config: testAccOdfeRoleMappingResourceUpdated(randomName),
+				Config: testAccOpendistroRoleMappingResourceUpdated(randomName),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticSearchOdfeRolesMappingExists("elasticsearch_odfe_roles_mapping.test"),
+					testCheckElasticSearchOpendistroRolesMappingExists("elasticsearch_opendistro_roles_mapping.test"),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_roles_mapping.test",
+						"elasticsearch_opendistro_roles_mapping.test",
 						"backend_roles.#",
 						"2",
 					),
@@ -80,9 +80,9 @@ func TestAccElasticsearchOdfeRolesMapping(t *testing.T) {
 	})
 }
 
-func testAccCheckElasticsearchOdfeRolesMappingDestroy(s *terraform.State) error {
+func testAccCheckElasticsearchOpendistroRolesMappingDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "elasticsearch_odfe_roles_mappings_mapping" {
+		if rs.Type != "elasticsearch_opendistro_roles_mappings_mapping" {
 			continue
 		}
 
@@ -92,7 +92,7 @@ func testAccCheckElasticsearchOdfeRolesMappingDestroy(s *terraform.State) error 
 		switch meta.(type) {
 		case *elastic7.Client:
 			client := meta.(*elastic7.Client)
-			_, err = resourceElasticsearchGetOdfeRolesMapping(rs.Primary.ID, client)
+			_, err = resourceElasticsearchGetOpendistroRolesMapping(rs.Primary.ID, client)
 		default:
 		}
 
@@ -105,10 +105,10 @@ func testAccCheckElasticsearchOdfeRolesMappingDestroy(s *terraform.State) error 
 
 	return nil
 }
-func testCheckElasticSearchOdfeRolesMappingExists(name string) resource.TestCheckFunc {
+func testCheckElasticSearchOpendistroRolesMappingExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "elasticsearch_odfe_roles_mapping" {
+			if rs.Type != "elasticsearch_opendistro_roles_mapping" {
 				continue
 			}
 
@@ -118,7 +118,7 @@ func testCheckElasticSearchOdfeRolesMappingExists(name string) resource.TestChec
 			switch meta.(type) {
 			case *elastic7.Client:
 				client := meta.(*elastic7.Client)
-				_, err = resourceElasticsearchGetOdfeRolesMapping(rs.Primary.ID, client)
+				_, err = resourceElasticsearchGetOpendistroRolesMapping(rs.Primary.ID, client)
 			default:
 			}
 
@@ -133,9 +133,9 @@ func testCheckElasticSearchOdfeRolesMappingExists(name string) resource.TestChec
 	}
 }
 
-func testAccOdfeRolesMappingResource(resourceName string) string {
+func testAccOpendistroRolesMappingResource(resourceName string) string {
 	return fmt.Sprintf(` 
-	resource "elasticsearch_odfe_roles_mapping" "test" {
+	resource "elasticsearch_opendistro_roles_mapping" "test" {
 		role_name = "%s"
 		backend_roles = [
 			"active_directory",
@@ -146,9 +146,9 @@ func testAccOdfeRolesMappingResource(resourceName string) string {
 	`, resourceName)
 }
 
-func testAccOdfeRoleMappingResourceUpdated(resourceName string) string {
+func testAccOpendistroRoleMappingResourceUpdated(resourceName string) string {
 	return fmt.Sprintf(` 
-	resource "elasticsearch_odfe_roles_mapping" "test" {
+	resource "elasticsearch_opendistro_roles_mapping" "test" {
 		role_name = "%s"
 		backend_roles = [
 			"active_directory",

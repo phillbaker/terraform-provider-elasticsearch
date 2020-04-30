@@ -13,12 +13,12 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 )
 
-func resourceElasticsearchOdfeRolesMapping() *schema.Resource {
+func resourceElasticsearchOpendistroRolesMapping() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceElasticsearchOdfeRolesMappingCreate,
-		Read:   resourceElasticsearchOdfeRolesMappingRead,
-		Update: resourceElasticsearchOdfeRolesMappingUpdate,
-		Delete: resourceElasticsearchOdfeRolesMappingDelete,
+		Create: resourceElasticsearchOpendistroRolesMappingCreate,
+		Read:   resourceElasticsearchOpendistroRolesMappingRead,
+		Update: resourceElasticsearchOpendistroRolesMappingUpdate,
+		Delete: resourceElasticsearchOpendistroRolesMappingDelete,
 		Schema: map[string]*schema.Schema{
 			"role_name": &schema.Schema{
 				Type:     schema.TypeString,
@@ -55,8 +55,8 @@ func resourceElasticsearchOdfeRolesMapping() *schema.Resource {
 	}
 }
 
-func resourceElasticsearchOdfeRolesMappingCreate(d *schema.ResourceData, m interface{}) error {
-	if _, err := resourceElasticsearchPutOdfeRolesMapping(d, m); err != nil {
+func resourceElasticsearchOpendistroRolesMappingCreate(d *schema.ResourceData, m interface{}) error {
+	if _, err := resourceElasticsearchPutOpendistroRolesMapping(d, m); err != nil {
 		log.Printf("[INFO] Failed to put role mapping: %+v", err)
 		return err
 	}
@@ -64,15 +64,15 @@ func resourceElasticsearchOdfeRolesMappingCreate(d *schema.ResourceData, m inter
 	name := d.Get("role_name").(string)
 
 	d.SetId(name)
-	return resourceElasticsearchOdfeRolesMappingRead(d, m)
+	return resourceElasticsearchOpendistroRolesMappingRead(d, m)
 }
 
-func resourceElasticsearchOdfeRolesMappingRead(d *schema.ResourceData, m interface{}) error {
-	res, err := resourceElasticsearchGetOdfeRolesMapping(d.Id(), m)
+func resourceElasticsearchOpendistroRolesMappingRead(d *schema.ResourceData, m interface{}) error {
+	res, err := resourceElasticsearchGetOpendistroRolesMapping(d.Id(), m)
 
 	if err != nil {
 		if elastic7.IsNotFound(err) {
-			log.Printf("[WARN] OdfeRolesMapping (%s) not found, removing from state", d.Id())
+			log.Printf("[WARN] OpendistroRolesMapping (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}
@@ -88,15 +88,15 @@ func resourceElasticsearchOdfeRolesMappingRead(d *schema.ResourceData, m interfa
 	return nil
 }
 
-func resourceElasticsearchOdfeRolesMappingUpdate(d *schema.ResourceData, m interface{}) error {
-	if _, err := resourceElasticsearchPutOdfeRolesMapping(d, m); err != nil {
+func resourceElasticsearchOpendistroRolesMappingUpdate(d *schema.ResourceData, m interface{}) error {
+	if _, err := resourceElasticsearchPutOpendistroRolesMapping(d, m); err != nil {
 		return err
 	}
 
-	return resourceElasticsearchOdfeRolesMappingRead(d, m)
+	return resourceElasticsearchOpendistroRolesMappingRead(d, m)
 }
 
-func resourceElasticsearchOdfeRolesMappingDelete(d *schema.ResourceData, m interface{}) error {
+func resourceElasticsearchOpendistroRolesMappingDelete(d *schema.ResourceData, m interface{}) error {
 	path, err := uritemplates.Expand("/_opendistro/_security/api/rolesmapping/{name}", map[string]string{
 		"name": d.Get("role_name").(string),
 	})
@@ -118,7 +118,7 @@ func resourceElasticsearchOdfeRolesMappingDelete(d *schema.ResourceData, m inter
 	return err
 }
 
-func resourceElasticsearchGetOdfeRolesMapping(roleID string, m interface{}) (RolesMapping, error) {
+func resourceElasticsearchGetOpendistroRolesMapping(roleID string, m interface{}) (RolesMapping, error) {
 	var err error
 	var roleMapping = new(RolesMapping)
 
@@ -157,7 +157,7 @@ func resourceElasticsearchGetOdfeRolesMapping(roleID string, m interface{}) (Rol
 	return *roleMapping, err
 }
 
-func resourceElasticsearchPutOdfeRolesMapping(d *schema.ResourceData, m interface{}) (*RoleMappingResponse, error) {
+func resourceElasticsearchPutOpendistroRolesMapping(d *schema.ResourceData, m interface{}) (*RoleMappingResponse, error) {
 	var err error
 	response := new(RoleMappingResponse)
 

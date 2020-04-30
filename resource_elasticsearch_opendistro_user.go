@@ -13,12 +13,12 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 )
 
-func resourceElasticsearchOdfeUser() *schema.Resource {
+func resourceElasticsearchOpendistroUser() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceElasticsearchOdfeUserCreate,
-		Read:   resourceElasticsearchOdfeUserRead,
-		Update: resourceElasticsearchOdfeUserUpdate,
-		Delete: resourceElasticsearchOdfeUserDelete,
+		Create: resourceElasticsearchOpendistroUserCreate,
+		Read:   resourceElasticsearchOpendistroUserRead,
+		Update: resourceElasticsearchOpendistroUserUpdate,
+		Delete: resourceElasticsearchOpendistroUserDelete,
 		Schema: map[string]*schema.Schema{
 			"username": &schema.Schema{
 				Type:     schema.TypeString,
@@ -50,8 +50,8 @@ func resourceElasticsearchOdfeUser() *schema.Resource {
 	}
 }
 
-func resourceElasticsearchOdfeUserCreate(d *schema.ResourceData, m interface{}) error {
-	_, err := resourceElasticsearchPutOdfeUser(d, m)
+func resourceElasticsearchOpendistroUserCreate(d *schema.ResourceData, m interface{}) error {
+	_, err := resourceElasticsearchPutOpendistroUser(d, m)
 
 	if err != nil {
 		return err
@@ -59,15 +59,15 @@ func resourceElasticsearchOdfeUserCreate(d *schema.ResourceData, m interface{}) 
 
 	name := d.Get("username").(string)
 	d.SetId(name)
-	return resourceElasticsearchOdfeUserRead(d, m)
+	return resourceElasticsearchOpendistroUserRead(d, m)
 }
 
-func resourceElasticsearchOdfeUserRead(d *schema.ResourceData, m interface{}) error {
-	res, err := resourceElasticsearchGetOdfeUser(d.Id(), m)
+func resourceElasticsearchOpendistroUserRead(d *schema.ResourceData, m interface{}) error {
+	res, err := resourceElasticsearchGetOpendistroUser(d.Id(), m)
 
 	if err != nil {
 		if elastic7.IsNotFound(err) {
-			log.Printf("[WARN] OdfeUser (%s) not found, removing from state", d.Id())
+			log.Printf("[WARN] OpendistroUser (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}
@@ -81,15 +81,15 @@ func resourceElasticsearchOdfeUserRead(d *schema.ResourceData, m interface{}) er
 	return nil
 }
 
-func resourceElasticsearchOdfeUserUpdate(d *schema.ResourceData, m interface{}) error {
-	if _, err := resourceElasticsearchPutOdfeUser(d, m); err != nil {
+func resourceElasticsearchOpendistroUserUpdate(d *schema.ResourceData, m interface{}) error {
+	if _, err := resourceElasticsearchPutOpendistroUser(d, m); err != nil {
 		return err
 	}
 
-	return resourceElasticsearchOdfeUserRead(d, m)
+	return resourceElasticsearchOpendistroUserRead(d, m)
 }
 
-func resourceElasticsearchOdfeUserDelete(d *schema.ResourceData, m interface{}) error {
+func resourceElasticsearchOpendistroUserDelete(d *schema.ResourceData, m interface{}) error {
 	var err error
 
 	path, err := uritemplates.Expand("/_opendistro/_security/api/internalusers/{name}", map[string]string{
@@ -113,7 +113,7 @@ func resourceElasticsearchOdfeUserDelete(d *schema.ResourceData, m interface{}) 
 	return err
 }
 
-func resourceElasticsearchGetOdfeUser(userID string, m interface{}) (UserBody, error) {
+func resourceElasticsearchGetOpendistroUser(userID string, m interface{}) (UserBody, error) {
 	var err error
 	user := new(UserBody)
 
@@ -153,7 +153,7 @@ func resourceElasticsearchGetOdfeUser(userID string, m interface{}) (UserBody, e
 	return *user, err
 }
 
-func resourceElasticsearchPutOdfeUser(d *schema.ResourceData, m interface{}) (*UserResponse, error) {
+func resourceElasticsearchPutOpendistroUser(d *schema.ResourceData, m interface{}) (*UserResponse, error) {
 	response := new(UserResponse)
 
 	userDefinition := UserBody{
@@ -201,7 +201,7 @@ func resourceElasticsearchPutOdfeUser(d *schema.ResourceData, m interface{}) (*U
 	return response, nil
 }
 
-// UserBody used by the odfe's API
+// UserBody used by the opendistro's API
 type UserBody struct {
 	BackendRoles []interface{}          `json:"backend_roles"`
 	Attributes   map[string]interface{} `json:"attributes"`
@@ -209,7 +209,7 @@ type UserBody struct {
 	Password     string                 `json:"password"`
 }
 
-// UserResponse sent by the odfe's API
+// UserResponse sent by the opendistro's API
 type UserResponse struct {
 	Message string `json:"message"`
 	Status  string `json:"status"`

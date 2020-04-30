@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccElasticsearchOdfeUser(t *testing.T) {
+func TestAccElasticsearchOpendistroUser(t *testing.T) {
 
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
@@ -44,52 +44,52 @@ func TestAccElasticsearchOdfeUser(t *testing.T) {
 			}
 		},
 		Providers:    testAccOpendistroProviders,
-		CheckDestroy: testAccCheckElasticsearchOdfeUserDestroy,
+		CheckDestroy: testAccCheckElasticsearchOpendistroUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOdfeUserResource(randomName),
+				Config: testAccOpendistroUserResource(randomName),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticSearchOdfeUserExists("elasticsearch_odfe_user.test"),
+					testCheckElasticSearchOpendistroUserExists("elasticsearch_opendistro_user.test"),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_user.test",
+						"elasticsearch_opendistro_user.test",
 						"id",
 						randomName,
 					),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_user.test",
+						"elasticsearch_opendistro_user.test",
 						"backend_roles.#",
 						"1",
 					),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_user.test",
+						"elasticsearch_opendistro_user.test",
 						"attributes.some_attribute",
 						"alpha",
 					),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_user.test",
+						"elasticsearch_opendistro_user.test",
 						"description",
 						"test",
 					),
 				),
 			},
 			{
-				Config: testAccOdfeUserResourceUpdated(randomName),
+				Config: testAccOpendistroUserResourceUpdated(randomName),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticSearchOdfeUserExists("elasticsearch_odfe_user.test"),
-					testCheckElasticSearchOdfeUserConnects("elasticsearch_odfe_user.test"),
+					testCheckElasticSearchOpendistroUserExists("elasticsearch_opendistro_user.test"),
+					testCheckElasticSearchOpendistroUserConnects("elasticsearch_opendistro_user.test"),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_user.test",
+						"elasticsearch_opendistro_user.test",
 						"backend_roles.#",
 						"2",
 					),
 				),
 			},
 			{
-				Config: testAccOdfeUserResourceMinimal(randomName),
+				Config: testAccOpendistroUserResourceMinimal(randomName),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticSearchOdfeUserExists("elasticsearch_odfe_user.test"),
+					testCheckElasticSearchOpendistroUserExists("elasticsearch_opendistro_user.test"),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_odfe_user.test",
+						"elasticsearch_opendistro_user.test",
 						"backend_roles.#",
 						"0",
 					),
@@ -99,9 +99,9 @@ func TestAccElasticsearchOdfeUser(t *testing.T) {
 	})
 }
 
-func testAccCheckElasticsearchOdfeUserDestroy(s *terraform.State) error {
+func testAccCheckElasticsearchOpendistroUserDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "elasticsearch_odfe_user" {
+		if rs.Type != "elasticsearch_opendistro_user" {
 			continue
 		}
 
@@ -111,7 +111,7 @@ func testAccCheckElasticsearchOdfeUserDestroy(s *terraform.State) error {
 		switch meta.(type) {
 		case *elastic7.Client:
 			client := meta.(*elastic7.Client)
-			_, err = resourceElasticsearchGetOdfeUser(rs.Primary.ID, client)
+			_, err = resourceElasticsearchGetOpendistroUser(rs.Primary.ID, client)
 		default:
 		}
 
@@ -125,10 +125,10 @@ func testAccCheckElasticsearchOdfeUserDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testCheckElasticSearchOdfeUserExists(name string) resource.TestCheckFunc {
+func testCheckElasticSearchOpendistroUserExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "elasticsearch_odfe_user" {
+			if rs.Type != "elasticsearch_opendistro_user" {
 				continue
 			}
 
@@ -138,7 +138,7 @@ func testCheckElasticSearchOdfeUserExists(name string) resource.TestCheckFunc {
 			switch meta.(type) {
 			case *elastic7.Client:
 				client := meta.(*elastic7.Client)
-				_, err = resourceElasticsearchGetOdfeUser(rs.Primary.ID, client)
+				_, err = resourceElasticsearchGetOpendistroUser(rs.Primary.ID, client)
 			default:
 			}
 
@@ -153,10 +153,10 @@ func testCheckElasticSearchOdfeUserExists(name string) resource.TestCheckFunc {
 	}
 }
 
-func testCheckElasticSearchOdfeUserConnects(name string) resource.TestCheckFunc {
+func testCheckElasticSearchOpendistroUserConnects(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "elasticsearch_odfe_user" {
+			if rs.Type != "elasticsearch_opendistro_user" {
 				continue
 			}
 
@@ -188,9 +188,9 @@ func testCheckElasticSearchOdfeUserConnects(name string) resource.TestCheckFunc 
 	}
 }
 
-func testAccOdfeUserResource(resourceName string) string {
+func testAccOpendistroUserResource(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_odfe_user" "test" {
+	resource "elasticsearch_opendistro_user" "test" {
 		username      = "%s"
 		password      = "passw0rd"
 		description   = "test"
@@ -203,9 +203,9 @@ func testAccOdfeUserResource(resourceName string) string {
 	`, resourceName)
 }
 
-func testAccOdfeUserResourceUpdated(resourceName string) string {
+func testAccOpendistroUserResourceUpdated(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_odfe_user" "test" {
+	resource "elasticsearch_opendistro_user" "test" {
 		username      = "%s"
 		password      = "passw0rd"
 		description   = "test"
@@ -217,20 +217,20 @@ func testAccOdfeUserResourceUpdated(resourceName string) string {
 		}
 	}
 
-	resource "elasticsearch_odfe_role" "monitor_role" {
+	resource "elasticsearch_opendistro_role" "monitor_role" {
 		role_name           = "monitor_role"
 		cluster_permissions = ["cluster_monitor"]
 	}
 
-	resource "elasticsearch_odfe_roles_mapping" "monitor_role" {
+	resource "elasticsearch_opendistro_roles_mapping" "monitor_role" {
 		role_name = "monitor_role"
 	}
 	`, resourceName)
 }
 
-func testAccOdfeUserResourceMinimal(resourceName string) string {
+func testAccOpendistroUserResourceMinimal(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_odfe_user" "test" {
+	resource "elasticsearch_opendistro_user" "test" {
 		username = "%s"
 		password = "passw0rd"
 	}
