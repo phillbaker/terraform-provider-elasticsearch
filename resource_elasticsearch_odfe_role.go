@@ -13,12 +13,12 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 )
 
-func resourceElasticsearchOdfeRole() *schema.Resource {
+func resourceElasticsearchOpendistroRole() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceElasticsearchOdfeRoleCreate,
-		Read:   resourceElasticsearchOdfeRoleRead,
-		Update: resourceElasticsearchOdfeRoleUpdate,
-		Delete: resourceElasticsearchOdfeRoleDelete,
+		Create: resourceElasticsearchOpendistroRoleCreate,
+		Read:   resourceElasticsearchOpendistroRoleRead,
+		Update: resourceElasticsearchOpendistroRoleUpdate,
+		Delete: resourceElasticsearchOpendistroRoleDelete,
 		Schema: map[string]*schema.Schema{
 			"role_name": &schema.Schema{
 				Type:     schema.TypeString,
@@ -98,8 +98,8 @@ func resourceElasticsearchOdfeRole() *schema.Resource {
 	}
 }
 
-func resourceElasticsearchOdfeRoleCreate(d *schema.ResourceData, m interface{}) error {
-	_, err := resourceElasticsearchPutOdfeRole(d, m)
+func resourceElasticsearchOpendistroRoleCreate(d *schema.ResourceData, m interface{}) error {
+	_, err := resourceElasticsearchPutOpendistroRole(d, m)
 
 	if err != nil {
 		return err
@@ -107,15 +107,15 @@ func resourceElasticsearchOdfeRoleCreate(d *schema.ResourceData, m interface{}) 
 
 	name := d.Get("role_name").(string)
 	d.SetId(name)
-	return resourceElasticsearchOdfeRoleRead(d, m)
+	return resourceElasticsearchOpendistroRoleRead(d, m)
 }
 
-func resourceElasticsearchOdfeRoleRead(d *schema.ResourceData, m interface{}) error {
-	res, err := resourceElasticsearchGetOdfeRole(d.Id(), m)
+func resourceElasticsearchOpendistroRoleRead(d *schema.ResourceData, m interface{}) error {
+	res, err := resourceElasticsearchGetOpendistroRole(d.Id(), m)
 
 	if err != nil {
 		if elastic7.IsNotFound(err) {
-			log.Printf("[WARN] OdfeRole (%s) not found, removing from state", d.Id())
+			log.Printf("[WARN] OpendistroRole (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}
@@ -130,15 +130,15 @@ func resourceElasticsearchOdfeRoleRead(d *schema.ResourceData, m interface{}) er
 	return nil
 }
 
-func resourceElasticsearchOdfeRoleUpdate(d *schema.ResourceData, m interface{}) error {
-	if _, err := resourceElasticsearchPutOdfeRole(d, m); err != nil {
+func resourceElasticsearchOpendistroRoleUpdate(d *schema.ResourceData, m interface{}) error {
+	if _, err := resourceElasticsearchPutOpendistroRole(d, m); err != nil {
 		return err
 	}
 
-	return resourceElasticsearchOdfeRoleRead(d, m)
+	return resourceElasticsearchOpendistroRoleRead(d, m)
 }
 
-func resourceElasticsearchOdfeRoleDelete(d *schema.ResourceData, m interface{}) error {
+func resourceElasticsearchOpendistroRoleDelete(d *schema.ResourceData, m interface{}) error {
 	var err error
 
 	path, err := uritemplates.Expand("/_opendistro/_security/api/roles/{name}", map[string]string{
@@ -162,7 +162,7 @@ func resourceElasticsearchOdfeRoleDelete(d *schema.ResourceData, m interface{}) 
 	return err
 }
 
-func resourceElasticsearchGetOdfeRole(roleID string, m interface{}) (RoleBody, error) {
+func resourceElasticsearchGetOpendistroRole(roleID string, m interface{}) (RoleBody, error) {
 	var err error
 	role := new(RoleBody)
 
@@ -202,7 +202,7 @@ func resourceElasticsearchGetOdfeRole(roleID string, m interface{}) (RoleBody, e
 	return *role, err
 }
 
-func resourceElasticsearchPutOdfeRole(d *schema.ResourceData, m interface{}) (*RoleResponse, error) {
+func resourceElasticsearchPutOpendistroRole(d *schema.ResourceData, m interface{}) (*RoleResponse, error) {
 	response := new(RoleResponse)
 
 	indexPermissions, err := expandIndexPermissionsSet(d.Get("index_permissions").(*schema.Set).List())
