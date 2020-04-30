@@ -1,4 +1,4 @@
-package main
+package es
 
 import (
 	"context"
@@ -73,6 +73,9 @@ func resourceElasticsearchXpackUser() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentJson,
 			},
+		},
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
 		},
 	}
 }

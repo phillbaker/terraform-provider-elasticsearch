@@ -1,4 +1,4 @@
-package main
+package es
 
 import (
 	"context"
@@ -47,14 +47,30 @@ func resourceElasticsearchXpackRole() *schema.Resource {
 						"query": {
 							Type:             schema.TypeString,
 							Optional:         true,
-							Default:          "{}",
 							DiffSuppressFunc: suppressEquivalentJson,
 						},
 						"field_security": {
-							Type:             schema.TypeString,
-							Optional:         true,
-							Default:          "{}",
-							DiffSuppressFunc: suppressEquivalentJson,
+							Type:     schema.TypeList,
+							MaxItems: 1,
+							Optional: true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"grant": {
+										Type:     schema.TypeSet,
+										Optional: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+									"except": {
+										Type:     schema.TypeSet,
+										Optional: true,
+										Elem: &schema.Schema{
+											Type: schema.TypeString,
+										},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -111,6 +127,9 @@ func resourceElasticsearchXpackRole() *schema.Resource {
 				DiffSuppressFunc: suppressEquivalentJson,
 			},
 		},
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 	}
 }
 
@@ -132,6 +151,7 @@ func resourceElasticsearchXpackRoleCreate(d *schema.ResourceData, m interface{})
 func resourceElasticsearchXpackRoleRead(d *schema.ResourceData, m interface{}) error {
 
 	role, err := xpackGetRole(d, m, d.Id())
+
 	if err != nil {
 		fmt.Println("Error during read")
 		if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
@@ -152,10 +172,37 @@ func resourceElasticsearchXpackRoleRead(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 
-	d.Set("name", role.Name)
-	d.Set("indices", role.Indices)
+	d.Set("role_name", d.Id())
+
+	if len(role.Indices) > 0 {
+		indices := make([]map[string]interface{}, 0, len(role.Indices))
+		for _, v := range role.Indices {
+			ip := map[string]interface{}{
+				"names":          v.Names,
+				"privileges":     v.Privileges,
+				"field_security": v.FieldSecurity,
+				"query":          v.Query,
+			}
+			indices = append(indices, ip)
+		}
+		d.Set("indices", indices)
+	}
+
 	d.Set("cluster", role.Cluster)
-	d.Set("applications", role.Applications)
+
+	if len(role.Applications) > 0 {
+		applications := make([]map[string]interface{}, 0, len(role.Applications))
+		for _, va := range role.Applications {
+			ap := map[string]interface{}{
+				"application": va.Application,
+				"privileges":  va.Privileges,
+				"resources":   va.Resources,
+			}
+			applications = append(applications, ap)
+		}
+		d.Set("applications", applications)
+	}
+
 	d.Set("global", role.Global)
 	d.Set("run_as", role.RunAs)
 	d.Set("metadata", role.Metadata)
@@ -217,13 +264,14 @@ func buildPutRoleBody(d *schema.ResourceData, m interface{}) (string, error) {
 	if err != nil {
 		fmt.Print("Error in indices get : ", err)
 	}
+
 	var indicesBody []PutRoleIndicesPermissions
 	for _, indice := range indicesPrivileges {
 		putIndex := PutRoleIndicesPermissions{
 			Names:         indice.Names,
 			Privileges:    indice.Privileges,
-			FieldSecurity: optionalInterfaceJson(indice.FieldSecurity),
-			Query:         optionalInterfaceJson(indice.Query),
+			FieldSecurity: indice.FieldSecurity,
+			Query:         optionalInterfaceJson(indice.Query.(string)),
 		}
 		indicesBody = append(indicesBody, putIndex)
 	}
@@ -318,9 +366,13 @@ func elastic6GetRole(client *elastic6.Client, name string) (XPackSecurityRole, e
 	role := XPackSecurityRole{}
 	role.Name = name
 	role.Cluster = obj.Cluster
-	if data, err := json.Marshal(obj.Indices); err == nil {
-		if err := json.Unmarshal(data, &role.Indices); err != nil {
-			fmt.Printf("Data : %s\n", data)
+
+	// if we have field security settings, we have to flatten them for tf
+	if len(obj.Indices) > 0 {
+		if data, err := flattenIndicesPermissionSetv6(obj.Indices); err == nil {
+			role.Indices = data
+		} else {
+			fmt.Sprintf("Data: %v\n", data)
 			return role, err
 		}
 	}
@@ -358,9 +410,13 @@ func elastic7GetRole(client *elastic7.Client, name string) (XPackSecurityRole, e
 	role := XPackSecurityRole{}
 	role.Name = name
 	role.Cluster = obj.Cluster
-	if data, err := json.Marshal(obj.Indices); err == nil {
-		if err := json.Unmarshal(data, &role.Indices); err != nil {
-			fmt.Printf("Data : %s\n", data)
+
+	// if we have field security settings, we have to flatten them for tf
+	if len(obj.Indices) > 0 {
+		if data, err := flattenIndicesPermissionSetv7(obj.Indices); err == nil {
+			role.Indices = data
+		} else {
+			fmt.Sprintf("Data: %v\n", data)
 			return role, err
 		}
 	}
@@ -420,10 +476,10 @@ type PutRoleApplicationPrivileges struct {
 }
 
 type PutRoleIndicesPermissions struct {
-	Names         []string    `json:"names"`
-	Privileges    []string    `json:"privileges"`
-	FieldSecurity interface{} `json:"field_security,omitempty"`
-	Query         interface{} `json:"query,omitempty"`
+	Names         []string            `json:"names"`
+	Privileges    []string            `json:"privileges"`
+	FieldSecurity map[string][]string `json:"field_security,omitempty"`
+	Query         interface{}         `json:"query,omitempty"`
 }
 
 type XPackSecurityRole struct {
@@ -445,8 +501,8 @@ type XPackSecurityApplicationPrivileges struct {
 
 // XPackSecurityIndicesPermissions is the indices permission object of Elasticsearch
 type XPackSecurityIndicesPermissions struct {
-	Names         []string `json:"names"`
-	Privileges    []string `json:"privileges"`
-	FieldSecurity string   `json:"field_security"`
-	Query         string   `json:"query"`
+	Names         []string                 `json:"names"`
+	Privileges    []string                 `json:"privileges"`
+	FieldSecurity []map[string]interface{} `json:"field_security"`
+	Query         string                   `json:"query"`
 }

@@ -1,4 +1,4 @@
-package main
+package es
 
 import (
 	"context"
@@ -12,8 +12,11 @@ import (
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
-func elastic7GetObject(client *elastic7.Client, objectType string, index string, id string) (*json.RawMessage, error) {
-	// types are deprecated in elasticsearch, ignore it for the search here
+var (
+	errObjNotFound = fmt.Errorf("object not found")
+)
+
+func elastic7GetObject(client *elastic7.Client, index string, id string) (*json.RawMessage, error) {
 	result, err := client.Get().
 		Index(index).
 		Id(id).
@@ -23,7 +26,7 @@ func elastic7GetObject(client *elastic7.Client, objectType string, index string,
 		return nil, err
 	}
 	if !result.Found {
-		return nil, fmt.Errorf("Object not found.")
+		return nil, errObjNotFound
 	}
 
 	return &result.Source, nil
@@ -40,7 +43,7 @@ func elastic6GetObject(client *elastic6.Client, objectType string, index string,
 		return nil, err
 	}
 	if !result.Found {
-		return nil, fmt.Errorf("Object not found.")
+		return nil, errObjNotFound
 	}
 
 	return result.Source, nil
@@ -57,7 +60,7 @@ func elastic5GetObject(client *elastic5.Client, objectType string, index string,
 		return nil, err
 	}
 	if !result.Found {
-		return nil, fmt.Errorf("Object not found.")
+		return nil, errObjNotFound
 	}
 
 	return result.Source, nil
@@ -130,6 +133,76 @@ func flattenMap(m map[string]interface{}) map[string]interface{} {
 	return f
 }
 
+func flattenIndicesFieldSecurity(rawSettings map[string]interface{}) []map[string]interface{} {
+	out := make([]map[string]interface{}, 0, 1)
+	out = append(out, rawSettings)
+	return out
+}
+
+func flattenIndicesPermissionSetv6(resourcesArray []elastic6.XPackSecurityIndicesPermissions) ([]XPackSecurityIndicesPermissions, error) {
+	vperm := make([]XPackSecurityIndicesPermissions, 0, len(resourcesArray))
+	for _, item := range resourcesArray {
+		if item.FieldSecurity != nil {
+			obj := XPackSecurityIndicesPermissions{
+				Names:         item.Names,
+				Privileges:    item.Privileges,
+				FieldSecurity: flattenIndicesFieldSecurity(item.FieldSecurity.(map[string]interface{})),
+				Query:         item.Query,
+			}
+			vperm = append(vperm, obj)
+		} else {
+			obj := XPackSecurityIndicesPermissions{
+				Names:      item.Names,
+				Privileges: item.Privileges,
+				Query:      item.Query,
+			}
+			vperm = append(vperm, obj)
+		}
+	}
+
+	return vperm, nil
+}
+
+func flattenIndicesPermissionSetv7(resourcesArray []elastic7.XPackSecurityIndicesPermissions) ([]XPackSecurityIndicesPermissions, error) {
+	vperm := make([]XPackSecurityIndicesPermissions, 0, len(resourcesArray))
+	for _, item := range resourcesArray {
+		if item.FieldSecurity != nil {
+			obj := XPackSecurityIndicesPermissions{
+				Names:         item.Names,
+				Privileges:    item.Privileges,
+				FieldSecurity: flattenIndicesFieldSecurity(item.FieldSecurity.(map[string]interface{})),
+				Query:         item.Query,
+			}
+			vperm = append(vperm, obj)
+		} else {
+			obj := XPackSecurityIndicesPermissions{
+				Names:      item.Names,
+				Privileges: item.Privileges,
+				Query:      item.Query,
+			}
+			vperm = append(vperm, obj)
+		}
+	}
+
+	return vperm, nil
+}
+
+func expandIndicesFieldSecurity(collapsedSettings []interface{}) map[string][]string {
+	out := make(map[string][]string)
+
+	if len(collapsedSettings) > 0 {
+		if collapsedSettings[0].(map[string]interface{})["grant"] != nil {
+			out["grant"] = expandStringList(collapsedSettings[0].(map[string]interface{})["grant"].(*schema.Set).List())
+		}
+
+		if collapsedSettings[0].(map[string]interface{})["except"] != nil {
+			out["except"] = expandStringList(collapsedSettings[0].(map[string]interface{})["except"].(*schema.Set).List())
+		}
+	}
+
+	return out
+}
+
 // Takes the result of flatmap.Expand for an array of strings
 // and returns a []string
 func expandStringList(resourcesArray []interface{}) []string {
@@ -160,21 +233,25 @@ func expandApplicationPermissionSet(resourcesArray []interface{}) ([]XPackSecuri
 	return vperm, nil
 }
 
-func expandIndicesPermissionSet(resourcesArray []interface{}) ([]XPackSecurityIndicesPermissions, error) {
-	vperm := make([]XPackSecurityIndicesPermissions, 0, len(resourcesArray))
+func expandIndicesPermissionSet(resourcesArray []interface{}) ([]PutRoleIndicesPermissions, error) {
+	vperm := make([]PutRoleIndicesPermissions, 0, len(resourcesArray))
 	for _, item := range resourcesArray {
 		data, ok := item.(map[string]interface{})
 		if !ok {
 			return vperm, fmt.Errorf("Error asserting data as type []byte : %v", item)
 		}
-		obj := XPackSecurityIndicesPermissions{
-			Names:         expandStringList(data["names"].(*schema.Set).List()),
-			Privileges:    expandStringList(data["privileges"].(*schema.Set).List()),
-			FieldSecurity: data["field_security"].(string),
-			Query:         data["query"].(string),
+
+		if len(data["names"].(*schema.Set).List()) > 0 && len(data["privileges"].(*schema.Set).List()) > 0 {
+			obj := PutRoleIndicesPermissions{
+				Names:         expandStringList(data["names"].(*schema.Set).List()),
+				Privileges:    expandStringList(data["privileges"].(*schema.Set).List()),
+				FieldSecurity: expandIndicesFieldSecurity(data["field_security"].([]interface{})),
+				Query:         data["query"].(string),
+			}
+			vperm = append(vperm, obj)
 		}
-		vperm = append(vperm, obj)
 	}
+
 	return vperm, nil
 }
 

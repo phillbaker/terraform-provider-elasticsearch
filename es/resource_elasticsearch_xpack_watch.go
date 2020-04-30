@@ -1,4 +1,4 @@
-package main
+package es
 
 import (
 	"context"
@@ -13,24 +13,40 @@ import (
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
-func resourceElasticsearchWatch() *schema.Resource {
+var xPackWatchSchema = map[string]*schema.Schema{
+	"watch_id": {
+		Type:     schema.TypeString,
+		Required: true,
+		ForceNew: true,
+	},
+	"body": {
+		Type:         schema.TypeString,
+		Required:     true,
+		ValidateFunc: validation.ValidateJsonString,
+	},
+}
+
+func resourceElasticsearchDeprecatedWatch() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceElasticsearchWatchCreate,
 		Read:   resourceElasticsearchWatchRead,
 		Update: resourceElasticsearchWatchUpdate,
 		Delete: resourceElasticsearchWatchDelete,
-		Schema: map[string]*schema.Schema{
-			"watch_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			"body": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.ValidateJsonString,
-			},
+		Schema: xPackWatchSchema,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
 		},
+		DeprecationMessage: "elasticsearch_watch is deprecated, please use elasticsearch_xpack_watch resource instead.",
+	}
+}
+
+func resourceElasticsearchXpackWatch() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceElasticsearchWatchCreate,
+		Read:   resourceElasticsearchWatchRead,
+		Update: resourceElasticsearchWatchUpdate,
+		Delete: resourceElasticsearchWatchDelete,
+		Schema: xPackWatchSchema,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -38,12 +54,16 @@ func resourceElasticsearchWatch() *schema.Resource {
 }
 
 func resourceElasticsearchWatchCreate(d *schema.ResourceData, m interface{}) error {
-	// Determine whether the watch already exists.
+	// Determine whether the watch already exists, otherwise the API will
+	// override an existing watch with the name.
 	watchID := d.Get("watch_id").(string)
 	_, err := resourceElasticsearchGetWatch(watchID, m)
-	if !elastic6.IsNotFound(err) && !elastic7.IsNotFound(err) {
+
+	if err == nil {
 		log.Printf("[INFO] watch exists: %+v", err)
 		return fmt.Errorf("watch already exists with ID: %v", watchID)
+	} else if err != nil && !elastic6.IsNotFound(err) && !elastic7.IsNotFound(err) {
+		return err
 	}
 
 	watchID, err = resourceElasticsearchPutWatch(d, m)

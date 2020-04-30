@@ -1,4 +1,4 @@
-package main
+package es
 
 import (
 	"context"
@@ -42,7 +42,7 @@ func TestAccElasticsearchWatch(t *testing.T) {
 			{
 				Config: testAccElasticsearchWatch,
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticsearchWatchExists("elasticsearch_watch.test_watch"),
+					testCheckElasticsearchWatchExists("elasticsearch_xpack_watch.test_watch"),
 				),
 			},
 		},
@@ -80,7 +80,7 @@ func testCheckElasticsearchWatchExists(name string) resource.TestCheckFunc {
 
 func testCheckElasticsearchWatchDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "elasticsearch_watch" {
+		if rs.Type != "elasticsearch_xpack_watch" {
 			continue
 		}
 
@@ -106,7 +106,7 @@ func testCheckElasticsearchWatchDestroy(s *terraform.State) error {
 }
 
 var testAccElasticsearchWatch = `
-resource "elasticsearch_watch" "test_watch" {
+resource "elasticsearch_xpack_watch" "test_watch" {
   watch_id = "my_watch"
   body = <<EOF
 {

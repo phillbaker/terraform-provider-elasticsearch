@@ -1,4 +1,4 @@
-package main
+package es
 
 import (
 	"context"
@@ -48,6 +48,9 @@ func resourceElasticsearchXpackRoleMapping() *schema.Resource {
 				Default:          "{}",
 				DiffSuppressFunc: suppressEquivalentJson,
 			},
+		},
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
 		},
 	}
 }

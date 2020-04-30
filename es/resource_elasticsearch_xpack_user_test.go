@@ -1,4 +1,4 @@
-package main
+package es
 
 import (
 	"context"
@@ -178,4 +178,46 @@ resource "elasticsearch_xpack_user" "test" {
 	roles    = []
 }
 `, resourceName)
+}
+
+func TestAccUserResource_importBasic(t *testing.T) {
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var allowed bool
+	switch meta.(type) {
+	case *elastic5.Client:
+		allowed = false
+	case *elastic6.Client:
+		allowed = false
+	default:
+		allowed = true
+	}
+
+	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+			if !allowed {
+				t.Skip("Users only supported on ES >= 6")
+			}
+		},
+		Providers:    testAccXPackProviders,
+		CheckDestroy: testAccCheckUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccUserResource(randomName),
+			},
+			{
+				ResourceName:            "elasticsearch_xpack_user.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password"}, // because ES doesn't return this field
+			},
+		},
+	})
 }

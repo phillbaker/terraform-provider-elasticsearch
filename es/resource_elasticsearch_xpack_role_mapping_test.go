@@ -1,4 +1,4 @@
-package main
+package es
 
 import (
 	"context"
@@ -215,4 +215,44 @@ resource "elasticsearch_xpack_role_mapping" "test" {
   enabled = false
 }
 `, resourceName)
+}
+
+func TestAccRoleMappingResource_importBasic(t *testing.T) {
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var allowed bool
+	switch meta.(type) {
+	case *elastic5.Client:
+		allowed = false
+	default:
+		allowed = true
+	}
+
+	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+			if !allowed {
+				t.Skip("Role Mappings only supported on ES >= 6")
+			}
+		},
+		Providers:    testAccXPackProviders,
+		CheckDestroy: testAccCheckRoleMappingDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRoleMappingResource(randomName),
+			},
+			{
+				ResourceName:            "elasticsearch_xpack_role_mapping.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"role_mapping_name"}, // we either found it by name or it's not there
+			},
+		},
+	})
 }
