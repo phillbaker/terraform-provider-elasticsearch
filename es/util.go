@@ -274,3 +274,37 @@ func (ds *resourceDataSetter) set(key string, value interface{}) {
 	}
 	ds.err = ds.d.Set(key, value)
 }
+
+func expandIndexPermissionsSet(resourcesArray []interface{}) ([]IndexPermissions, error) {
+	vperm := make([]IndexPermissions, 0, len(resourcesArray))
+	for _, item := range resourcesArray {
+		data, ok := item.(map[string]interface{})
+		if !ok {
+			return vperm, fmt.Errorf("Error asserting data as type []byte : %v", item)
+		}
+		obj := IndexPermissions{
+			IndexPatterns:  expandStringList(data["index_patterns"].(*schema.Set).List()),
+			Fls:            expandStringList(data["fls"].(*schema.Set).List()),
+			MaskedFields:   expandStringList(data["masked_fields"].(*schema.Set).List()),
+			AllowedActions: expandStringList(data["allowed_actions"].(*schema.Set).List()),
+		}
+		vperm = append(vperm, obj)
+	}
+	return vperm, nil
+}
+
+func expandTenantPermissionsSet(resourcesArray []interface{}) ([]TenantPermissions, error) {
+	vperm := make([]TenantPermissions, 0, len(resourcesArray))
+	for _, item := range resourcesArray {
+		data, ok := item.(map[string]interface{})
+		if !ok {
+			return vperm, fmt.Errorf("Error asserting data as type []byte : %v", item)
+		}
+		obj := TenantPermissions{
+			TenantPatterns: expandStringList(data["tenant_patterns"].(*schema.Set).List()),
+			AllowedActions: expandStringList(data["allowed_actions"].(*schema.Set).List()),
+		}
+		vperm = append(vperm, obj)
+	}
+	return vperm, nil
+}

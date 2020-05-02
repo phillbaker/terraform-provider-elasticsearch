@@ -127,6 +127,8 @@ func Provider() terraform.ResourceProvider {
 			"elasticsearch_watch":                         resourceElasticsearchDeprecatedWatch(),
 			"elasticsearch_opendistro_ism_policy":         resourceElasticsearchOpenDistroISMPolicy(),
 			"elasticsearch_opendistro_ism_policy_mapping": resourceElasticsearchOpenDistroISMPolicyMapping(),
+			"elasticsearch_opendistro_roles_mapping":      resourceElasticsearchOpenDistroRolesMapping(),
+			"elasticsearch_opendistro_role":               resourceElasticsearchOpenDistroRole(),
 			"elasticsearch_xpack_role":                    resourceElasticsearchXpackRole(),
 			"elasticsearch_xpack_role_mapping":            resourceElasticsearchXpackRoleMapping(),
 			"elasticsearch_xpack_user":                    resourceElasticsearchXpackUser(),
