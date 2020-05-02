@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+- Add OpenDistro Index State Management (https://opendistro.github.io/for-elasticsearch-docs/docs/ism/api/).
 - Clarify naming, watch resources are from xpack.
 
 ## [1.0.0] - 2020-03-18

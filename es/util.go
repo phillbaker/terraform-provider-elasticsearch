@@ -70,6 +70,12 @@ func normalizeDestination(tpl map[string]interface{}) {
 	delete(tpl, "last_update_time")
 }
 
+func normalizePolicy(tpl map[string]interface{}) {
+	delete(tpl, "last_updated_time")
+	delete(tpl, "error_notification")
+	delete(tpl, "policy_id")
+}
+
 func normalizeIndexTemplate(tpl map[string]interface{}) {
 	delete(tpl, "version")
 	if settings, ok := tpl["settings"]; ok {
