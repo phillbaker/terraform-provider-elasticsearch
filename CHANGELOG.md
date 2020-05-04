@@ -1,8 +1,17 @@
 # Changelog
 
 ## [Unreleased]
+
+
+## [1.1.0] - 2020-05-04
+
+### Added
 - Add OpenDistro Index State Management (https://opendistro.github.io/for-elasticsearch-docs/docs/ism/api/).
+- Add OpenDistro Roles and Role Mappings.
+
+### Changed
 - Clarify naming, watch resources are from xpack.
+
 
 ## [1.0.0] - 2020-03-18
 
