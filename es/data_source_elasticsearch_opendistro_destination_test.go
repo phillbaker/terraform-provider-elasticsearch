@@ -3,7 +3,6 @@ package es
 import (
 	"testing"
 
-	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -20,8 +19,6 @@ func TestAccElasticsearchDataSourceDestination_basic(t *testing.T) {
 	meta := provider.Meta()
 	var allowed bool
 	switch meta.(type) {
-	case *elastic7.Client:
-		allowed = false
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -32,7 +29,7 @@ func TestAccElasticsearchDataSourceDestination_basic(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {
-				t.Skip("Destinations only supported on ES 6, https://github.com/opendistro-for-elasticsearch/alerting/issues/66")
+				t.Skip("Destinations only supported on >= ES 6")
 			}
 		},
 		Providers: testAccOpendistroProviders,

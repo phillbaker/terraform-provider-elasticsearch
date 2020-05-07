@@ -71,11 +71,13 @@ func elastic5GetObject(client *elastic5.Client, objectType string, index string,
 
 func normalizeDestination(tpl map[string]interface{}) {
 	delete(tpl, "last_update_time")
+	delete(tpl, "schema_version")
 }
 
 func normalizeMonitor(tpl map[string]interface{}) {
 	delete(tpl, "last_update_time")
 	delete(tpl, "enabled_time")
+	delete(tpl, "schema_version")
 }
 
 func normalizePolicy(tpl map[string]interface{}) {

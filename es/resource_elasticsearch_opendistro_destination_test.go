@@ -22,8 +22,6 @@ func TestAccElasticsearchOpenDistroDestination(t *testing.T) {
 	meta := provider.Meta()
 	var allowed bool
 	switch meta.(type) {
-	case *elastic7.Client:
-		allowed = false
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -34,7 +32,7 @@ func TestAccElasticsearchOpenDistroDestination(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {
-				t.Skip("Destinations only supported on ES 6, https://github.com/opendistro-for-elasticsearch/alerting/issues/66")
+				t.Skip("Destinations only supported on >= ES 6")
 			}
 		},
 		Providers:    testAccOpendistroProviders,
@@ -59,8 +57,6 @@ func TestAccElasticsearchOpenDistroDestination_importBasic(t *testing.T) {
 	meta := provider.Meta()
 	var allowed bool
 	switch meta.(type) {
-	case *elastic7.Client:
-		allowed = false
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -71,7 +67,7 @@ func TestAccElasticsearchOpenDistroDestination_importBasic(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {
-				t.Skip("Destinations only supported on ES 6, https://github.com/opendistro-for-elasticsearch/alerting/issues/66")
+				t.Skip("Destinations only supported on >= ES 6")
 			}
 		},
 		Providers:    testAccOpendistroProviders,
