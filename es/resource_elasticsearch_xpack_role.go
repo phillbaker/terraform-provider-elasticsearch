@@ -153,19 +153,19 @@ func resourceElasticsearchXpackRoleRead(d *schema.ResourceData, m interface{}) e
 	role, err := xpackGetRole(d, m, d.Id())
 
 	if err != nil {
-		fmt.Println("Error during read")
+		log.Print("Error during read")
 		if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
-			fmt.Printf("[WARN] Role %s not found. Removing from state\n", d.Id())
+			log.Printf("[WARN] Role %s not found. Removing from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
 		if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
-			fmt.Printf("[WARN] Role %s not found. Removing from state\n", d.Id())
+			log.Printf("[WARN] Role %s not found. Removing from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
 		if elasticErr, ok := err.(*elastic5.Error); ok && elasticErr.Status == 404 {
-			fmt.Printf("[WARN] Role %s not found. Removing from state\n", d.Id())
+			log.Printf("[WARN] Role %s not found. Removing from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
@@ -227,19 +227,19 @@ func resourceElasticsearchXpackRoleDelete(d *schema.ResourceData, m interface{})
 
 	err := xpackDeleteRole(d, m, d.Id())
 	if err != nil {
-		fmt.Println("Error during destroy")
+		log.Print("Error during destroy")
 		if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
-			fmt.Printf("[WARN] Role %s not found. Resource removed from state\n", d.Id())
+			log.Printf("[WARN] Role %s not found. Resource removed from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
 		if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
-			fmt.Printf("[WARN] Role %s not found. Resource removed from state\n", d.Id())
+			log.Printf("[WARN] Role %s not found. Resource removed from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
 		if elasticErr, ok := err.(*elastic5.Error); ok && elasticErr.Status == 404 {
-			fmt.Printf("[WARN] Role %s not found. Resource removed from state\n", d.Id())
+			log.Printf("[WARN] Role %s not found. Resource removed from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
@@ -252,7 +252,8 @@ func buildPutRoleBody(d *schema.ResourceData, m interface{}) (string, error) {
 	clusterPrivileges := expandStringList(d.Get("cluster").(*schema.Set).List())
 	applications, err := expandApplicationPermissionSet(d.Get("applications").(*schema.Set).List())
 	if err != nil {
-		fmt.Print("Error in application get : ", err)
+		log.Printf("Error in application get : %v", err)
+		return "", err
 	}
 	var applicationsBody []PutRoleApplicationPrivileges
 	for _, app := range applications {
@@ -262,7 +263,8 @@ func buildPutRoleBody(d *schema.ResourceData, m interface{}) (string, error) {
 
 	indicesPrivileges, err := expandIndicesPermissionSet(d.Get("indices").(*schema.Set).List())
 	if err != nil {
-		fmt.Print("Error in indices get : ", err)
+		log.Printf("Error in indices get : %v", err)
+		return "", err
 	}
 
 	var indicesBody []PutRoleIndicesPermissions
@@ -291,7 +293,7 @@ func buildPutRoleBody(d *schema.ResourceData, m interface{}) (string, error) {
 
 	body, err := json.Marshal(role)
 	if err != nil {
-		fmt.Printf("Body : %s", body)
+		log.Printf("Body : %s", body)
 		err = fmt.Errorf("Body Error : %s", body)
 	}
 	return string(body[:]), err
@@ -372,14 +374,14 @@ func elastic6GetRole(client *elastic6.Client, name string) (XPackSecurityRole, e
 		if data, err := flattenIndicesPermissionSetv6(obj.Indices); err == nil {
 			role.Indices = data
 		} else {
-			fmt.Sprintf("Data: %v\n", data)
+			log.Printf("[INFO] Data: %+v", data)
 			return role, err
 		}
 	}
 
 	if data, err := json.Marshal(obj.Applications); err == nil {
 		if err := json.Unmarshal(data, &role.Applications); err != nil {
-			fmt.Printf("Data : %s\n", data)
+			log.Printf("[INFO] Data: %+v", data)
 			return role, err
 		}
 	}
@@ -416,14 +418,15 @@ func elastic7GetRole(client *elastic7.Client, name string) (XPackSecurityRole, e
 		if data, err := flattenIndicesPermissionSetv7(obj.Indices); err == nil {
 			role.Indices = data
 		} else {
-			fmt.Sprintf("Data: %v\n", data)
+			log.Printf("Data: %v\n", data)
+
 			return role, err
 		}
 	}
 
 	if data, err := json.Marshal(obj.Applications); err == nil {
 		if err := json.Unmarshal(data, &role.Applications); err != nil {
-			fmt.Printf("Data : %s\n", data)
+			log.Printf("Data : %s\n", data)
 			return role, err
 		}
 	}

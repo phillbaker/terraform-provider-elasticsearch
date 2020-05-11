@@ -20,11 +20,11 @@ func resourceElasticsearchOpenDistroISMPolicyMapping() *schema.Resource {
 		Update: resourceElasticsearchOpenDistroISMPolicyMappingUpdate,
 		Delete: resourceElasticsearchOpenDistroISMPolicyMappingDelete,
 		Schema: map[string]*schema.Schema{
-			"policy_id": &schema.Schema{
+			"policy_id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"indexes": &schema.Schema{
+			"indexes": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -157,9 +157,8 @@ func resourceElasticsearchPostOpendistroPolicyMapping(d *schema.ResourceData, m 
 	}
 
 	var body *json.RawMessage
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "POST",
@@ -196,9 +195,8 @@ func resourceElasticsearchGetOpendistroPolicyMapping(d *schema.ResourceData, m i
 	}
 
 	var body *json.RawMessage
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "GET",

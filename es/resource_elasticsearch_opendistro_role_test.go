@@ -99,9 +99,8 @@ func testAccCheckElasticsearchOpenDistroRoleDestroy(s *terraform.State) error {
 		meta := testAccOpendistroProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = resourceElasticsearchGetOpenDistroRole(rs.Primary.ID, client)
 		default:
 		}
@@ -125,9 +124,8 @@ func testCheckElasticSearchOpenDistroRoleExists(name string) resource.TestCheckF
 			meta := testAccOpendistroProvider.Meta()
 
 			var err error
-			switch meta.(type) {
+			switch client := meta.(type) {
 			case *elastic7.Client:
-				client := meta.(*elastic7.Client)
 				_, err = resourceElasticsearchGetOpenDistroRole(rs.Primary.ID, client)
 			default:
 			}

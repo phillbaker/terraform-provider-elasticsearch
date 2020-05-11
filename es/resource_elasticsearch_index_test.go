@@ -113,7 +113,7 @@ func checkElasticsearchIndexUpdated(name string) resource.TestCheckFunc {
 		}
 
 		meta := testAccProvider.Meta()
-		settings := make(map[string]interface{})
+		var settings map[string]interface{}
 
 		switch client := meta.(type) {
 		case *elastic7.Client:

@@ -40,7 +40,7 @@ func TestAccElasticsearchOpenDistroISMPolicy(t *testing.T) {
 		Providers:    testAccOpendistroProviders,
 		CheckDestroy: testCheckElasticsearchOpenDistroISMPolicyDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccElasticsearchOpenDistroISMPolicy,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchOpenDistroISMPolicyExists("elasticsearch_opendistro_ism_policy.test_policy"),
@@ -68,9 +68,8 @@ func testCheckElasticsearchOpenDistroISMPolicyExists(name string) resource.TestC
 		meta := testAccOpendistroProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = resourceElasticsearchGetOpenDistroISMPolicy(rs.Primary.ID, client)
 		default:
 		}
@@ -92,9 +91,8 @@ func testCheckElasticsearchOpenDistroISMPolicyDestroy(s *terraform.State) error 
 		meta := testAccOpendistroProvider.Meta()
 
 		var err error
-		switch meta.(type) {
+		switch client := meta.(type) {
 		case *elastic7.Client:
-			client := meta.(*elastic7.Client)
 			_, err = resourceElasticsearchGetOpenDistroISMPolicy(rs.Primary.ID, client)
 		default:
 		}

@@ -20,42 +20,42 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 		Update: resourceElasticsearchOpenDistroRoleUpdate,
 		Delete: resourceElasticsearchOpenDistroRoleDelete,
 		Schema: map[string]*schema.Schema{
-			"role_name": &schema.Schema{
+			"role_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"cluster_permissions": &schema.Schema{
+			"cluster_permissions": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"index_permissions": &schema.Schema{
+			"index_permissions": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"index_patterns": &schema.Schema{
+						"index_patterns": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 						},
-						"fls": &schema.Schema{
+						"fls": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 						},
-						"masked_fields": &schema.Schema{
+						"masked_fields": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 						},
-						"allowed_actions": &schema.Schema{
+						"allowed_actions": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Elem: &schema.Schema{
@@ -65,19 +65,19 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 					},
 				},
 			},
-			"tenant_permissions": &schema.Schema{
+			"tenant_permissions": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"tenant_patterns": &schema.Schema{
+						"tenant_patterns": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 						},
-						"allowed_actions": &schema.Schema{
+						"allowed_actions": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Elem: &schema.Schema{
@@ -87,7 +87,7 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 					},
 				},
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -148,9 +148,8 @@ func resourceElasticsearchOpenDistroRoleDelete(d *schema.ResourceData, m interfa
 		return fmt.Errorf("error building URL path for role: %+v", err)
 	}
 
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "DELETE",
 			Path:   path,
@@ -175,9 +174,8 @@ func resourceElasticsearchGetOpenDistroRole(roleID string, m interface{}) (RoleB
 	}
 
 	var body json.RawMessage
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "GET",
@@ -253,9 +251,8 @@ func resourceElasticsearchPutOpenDistroRole(d *schema.ResourceData, m interface{
 	}
 
 	var body json.RawMessage
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "PUT",

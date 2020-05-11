@@ -20,30 +20,30 @@ func resourceElasticsearchOpenDistroRolesMapping() *schema.Resource {
 		Update: resourceElasticsearchOpenDistroRolesMappingUpdate,
 		Delete: resourceElasticsearchOpenDistroRolesMappingDelete,
 		Schema: map[string]*schema.Schema{
-			"role_name": &schema.Schema{
+			"role_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"backend_roles": &schema.Schema{
+			"backend_roles": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"hosts": &schema.Schema{
+			"hosts": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"users": &schema.Schema{
+			"users": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"and_backend_roles": &schema.Schema{
+			"and_backend_roles": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -104,9 +104,8 @@ func resourceElasticsearchOpenDistroRolesMappingDelete(d *schema.ResourceData, m
 		return fmt.Errorf("error building URL path for role mapping: %+v", err)
 	}
 
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "DELETE",
 			Path:   path,
@@ -130,9 +129,8 @@ func resourceElasticsearchGetOpenDistroRolesMapping(roleID string, m interface{}
 		return *roleMapping, fmt.Errorf("error building URL path for role mapping: %+v", err)
 	}
 	var body json.RawMessage
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "GET",
@@ -183,9 +181,8 @@ func resourceElasticsearchPutOpenDistroRolesMapping(d *schema.ResourceData, m in
 	}
 
 	var body json.RawMessage
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "PUT",

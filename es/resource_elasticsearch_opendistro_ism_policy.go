@@ -23,11 +23,11 @@ func resourceElasticsearchOpenDistroISMPolicy() *schema.Resource {
 		Update: resourceElasticsearchOpenDistroISMPolicyCreate,
 		Delete: resourceElasticsearchOpenDistroISMPolicyDelete,
 		Schema: map[string]*schema.Schema{
-			"policy_id": &schema.Schema{
+			"policy_id": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"body": &schema.Schema{
+			"body": {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: diffSuppressPolicy,
@@ -99,9 +99,8 @@ func resourceElasticsearchOpenDistroISMPolicyDelete(d *schema.ResourceData, m in
 		return fmt.Errorf("error building URL path for policy: %+v", err)
 	}
 
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "DELETE",
 			Path:   path,
@@ -130,9 +129,8 @@ func resourceElasticsearchGetOpenDistroISMPolicy(policyID string, m interface{})
 	}
 
 	var body *json.RawMessage
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "GET",
@@ -180,9 +178,8 @@ func resourceElasticsearchPutOpendistroPolicy(d *schema.ResourceData, m interfac
 	}
 
 	var body *json.RawMessage
-	switch m.(type) {
+	switch client := m.(type) {
 	case *elastic7.Client:
-		client := m.(*elastic7.Client)
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "PUT",
