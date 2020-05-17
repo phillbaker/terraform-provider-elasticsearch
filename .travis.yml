@@ -1,7 +1,7 @@
 sudo: required # required for docker
 language: go
 go:
-  - '1.13'
+  - '1.14'
   - master
 cache:
   directories:
@@ -63,4 +63,4 @@ deploy:
   on:
     tags: true
     branch: master
-    go: '1.13'
+    go: '1.14'
