@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- Bump terraform plugin sdk to 1.12.0.
+- Add aws profile authentication option
 
 ## [1.1.1] - 2020-05-09
 ### Added
