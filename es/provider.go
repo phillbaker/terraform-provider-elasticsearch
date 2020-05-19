@@ -255,7 +255,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	return relevantClient, nil
 }
 
-func awsHttpClient(region string, d *schema.ResourceData) *http.Client {
+func awsSession(region string, d *schema.ResourceData) *awssession.Session {
 	aws_access_key_id := d.Get("aws_access_key").(string)
 	aws_secret_access_key := d.Get("aws_secret_key").(string)
 	aws_session_token := d.Get("aws_token").(string)
@@ -277,9 +277,11 @@ func awsHttpClient(region string, d *schema.ResourceData) *http.Client {
 		sessOpts.Profile = aws_profile
 	}
 
-	sess := awssession.Must(awssession.NewSessionWithOptions(sessOpts))
+	return awssession.Must(awssession.NewSessionWithOptions(sessOpts))
+}
 
-	signer := awssigv4.NewSigner(sess.Config.Credentials)
+func awsHttpClient(region string, d *schema.ResourceData) *http.Client {
+	signer := awssigv4.NewSigner(awsSession(region, d).Config.Credentials)
 	client, _ := aws_signing_client.New(signer, nil, "es", region)
 
 	return client
