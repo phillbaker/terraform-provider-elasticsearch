@@ -1,0 +1,3 @@
+[profile testing]
+aws_access_key_id = PROFILE_ACCESS_KEY
+aws_secret_access_key = PROFILE_SECRET_KEY 
