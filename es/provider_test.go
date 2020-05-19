@@ -110,6 +110,7 @@ func TestAWSCredsNamedProfile(t *testing.T) {
 	profileAccessKeyID := "PROFILE_ACCESS_KEY"
 
 	os.Setenv("AWS_CONFIG_FILE", "../test_aws_config") // set config file so we can ensure the profile we want to test exists
+	os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
 	os.Setenv("AWS_ACCESS_KEY_ID", envAccessKeyID)
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "ENV_SECRET")
 
@@ -126,6 +127,7 @@ func TestAWSCredsNamedProfile(t *testing.T) {
 	os.Unsetenv("AWS_ACCESS_KEY_ID")
 	os.Unsetenv("AWS_SECRET_ACCESS_KEY")
 	os.Unsetenv("AWS_CONFIG_FILE")
+	os.Unsetenv("AWS_SDK_LOAD_CONFIG")
 }
 
 // Given:
@@ -159,6 +161,7 @@ func TestAWSCredsEnvNamedProfile(t *testing.T) {
 	profileAccessKeyID := "PROFILE_ACCESS_KEY"
 
 	os.Setenv("AWS_PROFILE", namedProfile)
+	os.Setenv("AWS_SDK_LOAD_CONFIG", "1")
 	os.Setenv("AWS_CONFIG_FILE", "../test_aws_config") // set config file so we can ensure the profile we want to test exists
 
 	testConfig := map[string]interface{}{}
@@ -170,6 +173,7 @@ func TestAWSCredsEnvNamedProfile(t *testing.T) {
 	}
 	os.Unsetenv("AWS_PROFILE")
 	os.Unsetenv("AWS_CONFIG_FILE")
+	os.Unsetenv("AWS_SDK_LOAD_CONFIG")
 }
 
 func getCreds(t *testing.T, region string, config map[string]interface{}) credentials.Value {
