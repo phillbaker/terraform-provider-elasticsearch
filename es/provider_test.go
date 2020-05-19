@@ -75,7 +75,7 @@ func TestAWSCreds(t *testing.T) {
 	envAccessKeyID := "ENV_ACCESS_KEY"
 	profileAccessKeyID := "PROFILE_ACCESS_KEY"
 
-	os.Setenv("AWS_CONFIG_FILE", "./test_aws_config")
+	os.Setenv("AWS_CONFIG_FILE", "../test_aws_config")
 	os.Setenv("AWS_ACCESS_KEY_ID", envAccessKeyID)
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "ENV_SECRET")
 
