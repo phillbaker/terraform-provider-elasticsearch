@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Added
+- Rename and deprecate elasticsearch_{monitor,destination} to be under opendistro, elasticsearch_{monitor,destination}
 - Bump terraform plugin sdk to 1.12.0.
 - Add aws profile authentication option
 

@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccElasticsearchMonitor(t *testing.T) {
+func TestAccElasticsearchOpenDistroMonitor(t *testing.T) {
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
 	if err != nil {
@@ -41,16 +41,16 @@ func TestAccElasticsearchMonitor(t *testing.T) {
 		CheckDestroy: testCheckElasticsearchMonitorDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccElasticsearchMonitor,
+				Config: testAccElasticsearchOpenDistroMonitor,
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticsearchMonitorExists("elasticsearch_monitor.test_monitor"),
+					testCheckElasticsearchOpenDistroMonitorExists("elasticsearch_opendistro_monitor.test_monitor"),
 				),
 			},
 		},
 	})
 }
 
-func testCheckElasticsearchMonitorExists(name string) resource.TestCheckFunc {
+func testCheckElasticsearchOpenDistroMonitorExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -65,9 +65,9 @@ func testCheckElasticsearchMonitorExists(name string) resource.TestCheckFunc {
 		var err error
 		switch client := meta.(type) {
 		case *elastic7.Client:
-			_, err = resourceElasticsearchGetMonitor(rs.Primary.ID, client)
+			_, err = resourceElasticsearchOpenDistroGetMonitor(rs.Primary.ID, client)
 		case *elastic6.Client:
-			_, err = resourceElasticsearchGetMonitor(rs.Primary.ID, client)
+			_, err = resourceElasticsearchOpenDistroGetMonitor(rs.Primary.ID, client)
 		default:
 		}
 
@@ -81,7 +81,7 @@ func testCheckElasticsearchMonitorExists(name string) resource.TestCheckFunc {
 
 func testCheckElasticsearchMonitorDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "elasticsearch_monitor" {
+		if rs.Type != "elasticsearch_opendistro_monitor" {
 			continue
 		}
 
@@ -90,10 +90,10 @@ func testCheckElasticsearchMonitorDestroy(s *terraform.State) error {
 		var err error
 		switch client := meta.(type) {
 		case *elastic7.Client:
-			_, err = resourceElasticsearchGetMonitor(rs.Primary.ID, client)
+			_, err = resourceElasticsearchOpenDistroGetMonitor(rs.Primary.ID, client)
 
 		case *elastic6.Client:
-			_, err = resourceElasticsearchGetMonitor(rs.Primary.ID, client)
+			_, err = resourceElasticsearchOpenDistroGetMonitor(rs.Primary.ID, client)
 		default:
 		}
 
@@ -107,8 +107,8 @@ func testCheckElasticsearchMonitorDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccElasticsearchMonitor = `
-resource "elasticsearch_monitor" "test_monitor" {
+var testAccElasticsearchOpenDistroMonitor = `
+resource "elasticsearch_opendistro_monitor" "test_monitor" {
   body = <<EOF
 {
   "name": "test-monitor",

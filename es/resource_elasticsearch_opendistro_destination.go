@@ -18,28 +18,44 @@ import (
 const DESTINATION_TYPE = "_doc"
 const DESTINATION_INDEX = ".opendistro-alerting-config"
 
-func resourceElasticsearchDestination() *schema.Resource {
+var openDistroDestinationSchema = map[string]*schema.Schema{
+	"body": {
+		Type:             schema.TypeString,
+		Required:         true,
+		DiffSuppressFunc: diffSuppressDestination,
+		ValidateFunc:     validation.StringIsJSON,
+	},
+}
+
+func resourceElasticsearchDeprecatedDestination() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceElasticsearchDestinationCreate,
-		Read:   resourceElasticsearchDestinationRead,
-		Update: resourceElasticsearchDestinationUpdate,
-		Delete: resourceElasticsearchDestinationDelete,
-		Schema: map[string]*schema.Schema{
-			"body": {
-				Type:             schema.TypeString,
-				Required:         true,
-				DiffSuppressFunc: diffSuppressDestination,
-				ValidateFunc:     validation.StringIsJSON,
-			},
+		Create: resourceElasticsearchOpenDistroDestinationCreate,
+		Read:   resourceElasticsearchOpenDistroDestinationRead,
+		Update: resourceElasticsearchOpenDistroDestinationUpdate,
+		Delete: resourceElasticsearchOpenDistroDestinationDelete,
+		Schema: openDistroDestinationSchema,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
 		},
+		DeprecationMessage: "elasticsearch_destination is deprecated, please use elasticsearch_opendistro_destination resource instead.",
+	}
+}
+
+func resourceElasticsearchOpenDistroDestination() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceElasticsearchOpenDistroDestinationCreate,
+		Read:   resourceElasticsearchOpenDistroDestinationRead,
+		Update: resourceElasticsearchOpenDistroDestinationUpdate,
+		Delete: resourceElasticsearchOpenDistroDestinationDelete,
+		Schema: openDistroDestinationSchema,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 	}
 }
 
-func resourceElasticsearchDestinationCreate(d *schema.ResourceData, m interface{}) error {
-	res, err := resourceElasticsearchPostDestination(d, m)
+func resourceElasticsearchOpenDistroDestinationCreate(d *schema.ResourceData, m interface{}) error {
+	res, err := resourceElasticsearchOpenDistroPostDestination(d, m)
 
 	if err != nil {
 		log.Printf("[INFO] Failed to put destination: %+v", err)
@@ -56,8 +72,8 @@ func resourceElasticsearchDestinationCreate(d *schema.ResourceData, m interface{
 	return nil
 }
 
-func resourceElasticsearchDestinationRead(d *schema.ResourceData, m interface{}) error {
-	res, err := resourceElasticsearchGetDestination(d.Id(), m)
+func resourceElasticsearchOpenDistroDestinationRead(d *schema.ResourceData, m interface{}) error {
+	res, err := resourceElasticsearchOpenDistroGetDestination(d.Id(), m)
 
 	if elastic6.IsNotFound(err) || elastic7.IsNotFound(err) {
 		log.Printf("[WARN] Destination (%s) not found, removing from state", d.Id())
@@ -74,17 +90,17 @@ func resourceElasticsearchDestinationRead(d *schema.ResourceData, m interface{})
 	return nil
 }
 
-func resourceElasticsearchDestinationUpdate(d *schema.ResourceData, m interface{}) error {
-	_, err := resourceElasticsearchPutDestination(d, m)
+func resourceElasticsearchOpenDistroDestinationUpdate(d *schema.ResourceData, m interface{}) error {
+	_, err := resourceElasticsearchOpenDistroPutDestination(d, m)
 
 	if err != nil {
 		return err
 	}
 
-	return resourceElasticsearchDestinationRead(d, m)
+	return resourceElasticsearchOpenDistroDestinationRead(d, m)
 }
 
-func resourceElasticsearchDestinationDelete(d *schema.ResourceData, m interface{}) error {
+func resourceElasticsearchOpenDistroDestinationDelete(d *schema.ResourceData, m interface{}) error {
 	var err error
 
 	path, err := uritemplates.Expand("/_opendistro/_alerting/destinations/{id}", map[string]string{
@@ -112,7 +128,7 @@ func resourceElasticsearchDestinationDelete(d *schema.ResourceData, m interface{
 	return err
 }
 
-func resourceElasticsearchGetDestination(destinationID string, m interface{}) (string, error) {
+func resourceElasticsearchOpenDistroGetDestination(destinationID string, m interface{}) (string, error) {
 	var err error
 	response := new(destinationResponse)
 
@@ -143,7 +159,7 @@ func resourceElasticsearchGetDestination(destinationID string, m interface{}) (s
 	return string(tj), err
 }
 
-func resourceElasticsearchPostDestination(d *schema.ResourceData, m interface{}) (*destinationResponse, error) {
+func resourceElasticsearchOpenDistroPostDestination(d *schema.ResourceData, m interface{}) (*destinationResponse, error) {
 	destinationJSON := d.Get("body").(string)
 
 	var err error
@@ -184,7 +200,7 @@ func resourceElasticsearchPostDestination(d *schema.ResourceData, m interface{})
 	return response, nil
 }
 
-func resourceElasticsearchPutDestination(d *schema.ResourceData, m interface{}) (*destinationResponse, error) {
+func resourceElasticsearchOpenDistroPutDestination(d *schema.ResourceData, m interface{}) (*destinationResponse, error) {
 	destinationJSON := d.Get("body").(string)
 
 	var err error

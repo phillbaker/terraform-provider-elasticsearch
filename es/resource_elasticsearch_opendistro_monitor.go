@@ -15,27 +15,43 @@ import (
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
-func resourceElasticsearchMonitor() *schema.Resource {
+var openDistroMonitorSchema = map[string]*schema.Schema{
+	"body": {
+		Type:         schema.TypeString,
+		Required:     true,
+		ValidateFunc: validation.StringIsJSON,
+	},
+}
+
+func resourceElasticsearchDeprecatedMonitor() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceElasticsearchMonitorCreate,
-		Read:   resourceElasticsearchMonitorRead,
-		Update: resourceElasticsearchMonitorUpdate,
-		Delete: resourceElasticsearchMonitorDelete,
-		Schema: map[string]*schema.Schema{
-			"body": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringIsJSON,
-			},
+		Create: resourceElasticsearchOpenDistroMonitorCreate,
+		Read:   resourceElasticsearchOpenDistroMonitorRead,
+		Update: resourceElasticsearchOpenDistroMonitorUpdate,
+		Delete: resourceElasticsearchOpenDistroMonitorDelete,
+		Schema: openDistroMonitorSchema,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
 		},
+		DeprecationMessage: "elasticsearch_monitor is deprecated, please use elasticsearch_opendistro_monitor resource instead.",
+	}
+}
+
+func resourceElasticsearchOpenDistroMonitor() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceElasticsearchOpenDistroMonitorCreate,
+		Read:   resourceElasticsearchOpenDistroMonitorRead,
+		Update: resourceElasticsearchOpenDistroMonitorUpdate,
+		Delete: resourceElasticsearchOpenDistroMonitorDelete,
+		Schema: openDistroMonitorSchema,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 	}
 }
 
-func resourceElasticsearchMonitorCreate(d *schema.ResourceData, m interface{}) error {
-	res, err := resourceElasticsearchPostMonitor(d, m)
+func resourceElasticsearchOpenDistroMonitorCreate(d *schema.ResourceData, m interface{}) error {
+	res, err := resourceElasticsearchOpenDistroPostMonitor(d, m)
 
 	if err != nil {
 		log.Printf("[INFO] Failed to put monitor: %+v", err)
@@ -49,8 +65,8 @@ func resourceElasticsearchMonitorCreate(d *schema.ResourceData, m interface{}) e
 	return nil
 }
 
-func resourceElasticsearchMonitorRead(d *schema.ResourceData, m interface{}) error {
-	res, err := resourceElasticsearchGetMonitor(d.Id(), m)
+func resourceElasticsearchOpenDistroMonitorRead(d *schema.ResourceData, m interface{}) error {
+	res, err := resourceElasticsearchOpenDistroGetMonitor(d.Id(), m)
 
 	if elastic6.IsNotFound(err) || elastic7.IsNotFound(err) {
 		log.Printf("[WARN] Monitor (%s) not found, removing from state", d.Id())
@@ -68,17 +84,17 @@ func resourceElasticsearchMonitorRead(d *schema.ResourceData, m interface{}) err
 	return nil
 }
 
-func resourceElasticsearchMonitorUpdate(d *schema.ResourceData, m interface{}) error {
-	_, err := resourceElasticsearchPutMonitor(d, m)
+func resourceElasticsearchOpenDistroMonitorUpdate(d *schema.ResourceData, m interface{}) error {
+	_, err := resourceElasticsearchOpenDistroPutMonitor(d, m)
 
 	if err != nil {
 		return err
 	}
 
-	return resourceElasticsearchMonitorRead(d, m)
+	return resourceElasticsearchOpenDistroMonitorRead(d, m)
 }
 
-func resourceElasticsearchMonitorDelete(d *schema.ResourceData, m interface{}) error {
+func resourceElasticsearchOpenDistroMonitorDelete(d *schema.ResourceData, m interface{}) error {
 	var err error
 
 	path, err := uritemplates.Expand("/_opendistro/_alerting/monitors/{id}", map[string]string{
@@ -106,7 +122,7 @@ func resourceElasticsearchMonitorDelete(d *schema.ResourceData, m interface{}) e
 	return err
 }
 
-func resourceElasticsearchGetMonitor(monitorID string, m interface{}) (*monitorResponse, error) {
+func resourceElasticsearchOpenDistroGetMonitor(monitorID string, m interface{}) (*monitorResponse, error) {
 	var err error
 	response := new(monitorResponse)
 
@@ -148,7 +164,7 @@ func resourceElasticsearchGetMonitor(monitorID string, m interface{}) (*monitorR
 	return response, err
 }
 
-func resourceElasticsearchPostMonitor(d *schema.ResourceData, m interface{}) (*monitorResponse, error) {
+func resourceElasticsearchOpenDistroPostMonitor(d *schema.ResourceData, m interface{}) (*monitorResponse, error) {
 	monitorJSON := d.Get("body").(string)
 
 	var err error
@@ -189,7 +205,7 @@ func resourceElasticsearchPostMonitor(d *schema.ResourceData, m interface{}) (*m
 	return response, nil
 }
 
-func resourceElasticsearchPutMonitor(d *schema.ResourceData, m interface{}) (*monitorResponse, error) {
+func resourceElasticsearchOpenDistroPutMonitor(d *schema.ResourceData, m interface{}) (*monitorResponse, error) {
 	monitorJSON := d.Get("body").(string)
 
 	var err error

@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccElasticsearchDestination(t *testing.T) {
+func TestAccElasticsearchOpenDistroDestination(t *testing.T) {
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
 	if err != nil {
@@ -38,19 +38,19 @@ func TestAccElasticsearchDestination(t *testing.T) {
 			}
 		},
 		Providers:    testAccOpendistroProviders,
-		CheckDestroy: testCheckElasticsearchDestinationDestroy,
+		CheckDestroy: testCheckElasticsearchOpenDistroDestinationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccElasticsearchDestination,
+				Config: testAccElasticsearchOpenDistroDestination,
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticsearchDestinationExists("elasticsearch_destination.test_destination"),
+					testCheckElasticsearchOpenDistroDestinationExists("elasticsearch_opendistro_destination.test_destination"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccElasticsearchDestination_importBasic(t *testing.T) {
+func TestAccElasticsearchOpenDistroDestination_importBasic(t *testing.T) {
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
 	if err != nil {
@@ -75,13 +75,13 @@ func TestAccElasticsearchDestination_importBasic(t *testing.T) {
 			}
 		},
 		Providers:    testAccOpendistroProviders,
-		CheckDestroy: testCheckElasticsearchDestinationDestroy,
+		CheckDestroy: testCheckElasticsearchOpenDistroDestinationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccElasticsearchDestination,
+				Config: testAccElasticsearchOpenDistroDestination,
 			},
 			{
-				ResourceName:      "elasticsearch_destination.test_destination",
+				ResourceName:      "elasticsearch_opendistro_destination.test_destination",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -89,7 +89,7 @@ func TestAccElasticsearchDestination_importBasic(t *testing.T) {
 	})
 }
 
-func testCheckElasticsearchDestinationExists(name string) resource.TestCheckFunc {
+func testCheckElasticsearchOpenDistroDestinationExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -104,9 +104,9 @@ func testCheckElasticsearchDestinationExists(name string) resource.TestCheckFunc
 		var err error
 		switch client := meta.(type) {
 		case *elastic7.Client:
-			_, err = resourceElasticsearchGetDestination(rs.Primary.ID, client)
+			_, err = resourceElasticsearchOpenDistroGetDestination(rs.Primary.ID, client)
 		case *elastic6.Client:
-			_, err = resourceElasticsearchGetDestination(rs.Primary.ID, client)
+			_, err = resourceElasticsearchOpenDistroGetDestination(rs.Primary.ID, client)
 		default:
 		}
 
@@ -118,9 +118,9 @@ func testCheckElasticsearchDestinationExists(name string) resource.TestCheckFunc
 	}
 }
 
-func testCheckElasticsearchDestinationDestroy(s *terraform.State) error {
+func testCheckElasticsearchOpenDistroDestinationDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "elasticsearch_destination" {
+		if rs.Type != "elasticsearch_opendistro_destination" {
 			continue
 		}
 
@@ -129,9 +129,9 @@ func testCheckElasticsearchDestinationDestroy(s *terraform.State) error {
 		var err error
 		switch client := meta.(type) {
 		case *elastic7.Client:
-			_, err = resourceElasticsearchGetDestination(rs.Primary.ID, client)
+			_, err = resourceElasticsearchOpenDistroGetDestination(rs.Primary.ID, client)
 		case *elastic6.Client:
-			_, err = resourceElasticsearchGetDestination(rs.Primary.ID, client)
+			_, err = resourceElasticsearchOpenDistroGetDestination(rs.Primary.ID, client)
 		default:
 		}
 
@@ -145,8 +145,8 @@ func testCheckElasticsearchDestinationDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccElasticsearchDestination = `
-resource "elasticsearch_destination" "test_destination" {
+var testAccElasticsearchOpenDistroDestination = `
+resource "elasticsearch_opendistro_destination" "test_destination" {
   body = <<EOF
 {
   "name": "my-destination",
