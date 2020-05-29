@@ -108,6 +108,20 @@ func normalizeIndexLifecyclePolicy(pol map[string]interface{}) {
 	}
 }
 
+func normalizeSnapshotLifecyclePolicy(pol map[string]interface{}) {
+	delete(pol, "version")
+	delete(pol, "modified_date")
+	delete(pol, "modified_date_millis")
+	delete(pol, "stats")
+	delete(pol, "next_execution")
+	delete(pol, "next_execution_millis")
+	if policy, ok := pol["policy"]; ok {
+		if policyMap, ok := policy.(map[string]interface{}); ok {
+			pol["policy"] = normalizedIndexLifecyclePolicy(policyMap)
+		}
+	}
+}
+
 func normalizedIndexLifecyclePolicy(policy map[string]interface{}) map[string]interface{} {
 	f := flattenMap(policy)
 	for k, v := range f {
