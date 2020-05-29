@@ -178,11 +178,21 @@ func testAccOpenDistroRoleResourceUpdated(resourceName string) string {
 		description = "test"
 		index_permissions {
 			index_patterns = [
-				"*",
+				"test*",
 			]
 
 			allowed_actions = [
-				"*",
+				"read",
+			]
+		}
+
+		index_permissions {
+			index_patterns = [
+				"?kibana",
+			]
+
+			allowed_actions = [
+				"indices_all",
 			]
 		}
 
