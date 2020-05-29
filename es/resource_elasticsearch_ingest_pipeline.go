@@ -27,7 +27,7 @@ func resourceElasticsearchIngestPipeline() *schema.Resource {
 				Type:             schema.TypeString,
 				DiffSuppressFunc: diffSuppressIngestPipeline,
 				Required:         true,
-				ValidateFunc:     validation.ValidateJsonString,
+				ValidateFunc:     validation.StringIsJSON,
 			},
 		},
 		Importer: &schema.ResourceImporter{

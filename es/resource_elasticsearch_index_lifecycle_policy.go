@@ -27,7 +27,7 @@ func resourceElasticsearchIndexLifecyclePolicy() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: diffSuppressIndexLifecyclePolicy,
-				ValidateFunc:     validation.ValidateJsonString,
+				ValidateFunc:     validation.StringIsJSON,
 			},
 		},
 		Importer: &schema.ResourceImporter{

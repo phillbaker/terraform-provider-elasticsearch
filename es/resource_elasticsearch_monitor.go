@@ -25,7 +25,7 @@ func resourceElasticsearchMonitor() *schema.Resource {
 			"body": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.ValidateJsonString,
+				ValidateFunc: validation.StringIsJSON,
 			},
 		},
 		Importer: &schema.ResourceImporter{

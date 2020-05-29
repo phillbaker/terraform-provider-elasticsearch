@@ -93,7 +93,7 @@ var (
 			// are not allowed via this provider. See
 			// https://www.elastic.co/guide/en/elasticsearch/reference/6.8/indices-put-mapping.html#updating-field-mappings.
 			ForceNew:     true,
-			ValidateFunc: validation.ValidateJsonString,
+			ValidateFunc: validation.StringIsJSON,
 		},
 		"aliases": {
 			Type:     schema.TypeString,
@@ -101,7 +101,7 @@ var (
 			// In order to not handle the separate endpoint of alias updates, updates
 			// are not allowed via this provider currently.
 			ForceNew:     true,
-			ValidateFunc: validation.ValidateJsonString,
+			ValidateFunc: validation.StringIsJSON,
 		},
 	}
 )

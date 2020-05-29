@@ -22,7 +22,7 @@ var xPackWatchSchema = map[string]*schema.Schema{
 	"body": {
 		Type:         schema.TypeString,
 		Required:     true,
-		ValidateFunc: validation.ValidateJsonString,
+		ValidateFunc: validation.StringIsJSON,
 	},
 }
 

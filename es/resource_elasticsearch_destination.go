@@ -29,7 +29,7 @@ func resourceElasticsearchDestination() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: diffSuppressDestination,
-				ValidateFunc:     validation.ValidateJsonString,
+				ValidateFunc:     validation.StringIsJSON,
 			},
 		},
 		Importer: &schema.ResourceImporter{

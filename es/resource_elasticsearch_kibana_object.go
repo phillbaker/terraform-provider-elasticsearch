@@ -23,7 +23,7 @@ func resourceElasticsearchKibanaObject() *schema.Resource {
 			"body": {
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.ValidateJsonString,
+				ValidateFunc: validation.StringIsJSON,
 			},
 			"index": {
 				Type:     schema.TypeString,

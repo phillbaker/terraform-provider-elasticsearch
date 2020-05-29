@@ -27,7 +27,7 @@ func resourceElasticsearchIndexTemplate() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: diffSuppressIndexTemplate,
-				ValidateFunc:     validation.ValidateJsonString,
+				ValidateFunc:     validation.StringIsJSON,
 			},
 		},
 		Importer: &schema.ResourceImporter{
