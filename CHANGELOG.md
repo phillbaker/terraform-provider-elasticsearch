@@ -6,6 +6,9 @@
 - Bump terraform plugin sdk to 1.12.0.
 - Add aws profile authentication option
 
+### Fixed
+- Fix error on only updating index.force_destroy.
+
 ## [1.1.1] - 2020-05-09
 ### Added
 - Make ping to elasticsearch during provider config optional

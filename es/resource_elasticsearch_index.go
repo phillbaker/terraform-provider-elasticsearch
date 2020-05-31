@@ -256,6 +256,12 @@ func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) 
 			settings[key] = d.Get(key)
 		}
 	}
+
+	// if we're not changing any settings, no-op this function
+	if len(settings) == 0 {
+		return resourceElasticsearchIndexRead(d, meta)
+	}
+
 	body := map[string]interface{}{
 		"settings": settings,
 	}

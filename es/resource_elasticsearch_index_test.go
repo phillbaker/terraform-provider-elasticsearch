@@ -29,6 +29,14 @@ resource "elasticsearch_index" "test" {
   number_of_replicas = 2
 }
 `
+	testAccElasticsearchIndexUpdateForceDestroy = `
+resource "elasticsearch_index" "test" {
+  name = "terraform-test"
+  number_of_shards = 1
+  number_of_replicas = 2
+  force_destroy = true
+}
+`
 )
 
 func TestAccElasticsearchIndex(t *testing.T) {
@@ -45,6 +53,12 @@ func TestAccElasticsearchIndex(t *testing.T) {
 			},
 			{
 				Config: testAccElasticsearchIndexUpdate1,
+				Check: resource.ComposeTestCheckFunc(
+					checkElasticsearchIndexUpdated("elasticsearch_index.test"),
+				),
+			},
+			{
+				Config: testAccElasticsearchIndexUpdateForceDestroy,
 				Check: resource.ComposeTestCheckFunc(
 					checkElasticsearchIndexUpdated("elasticsearch_index.test"),
 				),
