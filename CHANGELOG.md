@@ -1,17 +1,26 @@
 # Changelog
 
 ## [Unreleased]
+
+## [1.2.0] - 2020-05-31
 ### Added
-- Rename and deprecate elasticsearch_{monitor,destination} to be under opendistro, elasticsearch_{monitor,destination}
-- Bump terraform plugin sdk to 1.12.0.
 - Add aws profile authentication option
 
 ### Fixed
 - Fix error on only updating index.force_destroy.
 
+### Changed
+- Rename (backward compatible) elasticsearch_{monitor,destination} to be under opendistro, elasticsearch_opendistro_{monitor,destination}
+- Bump terraform plugin sdk to 1.12.0.
+
+### Deprecated
+- elasticsearch_{monitor,destination} in favor of elasticsearch_opendistro_{monitor,destination}
+
+
 ## [1.1.1] - 2020-05-09
 ### Added
 - Make ping to elasticsearch during provider config optional
+
 
 ## [1.1.0] - 2020-05-04
 
@@ -21,6 +30,9 @@
 
 ### Changed
 - Clarify naming, watch resources are from xpack.
+
+### Deprecated
+- elasticsearch_{watch} in favor of elasticsearch_xpack_watch
 
 
 ## [1.0.0] - 2020-03-18
