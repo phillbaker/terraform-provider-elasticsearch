@@ -39,7 +39,21 @@
 
 ### Added
 - Ability to import xpack users, role mapping and roles (#58, #59)
-  This includes changes to the role `field_security` field. In order to upgrade to this version, a  do a `terraform state rm` and then a `terraform import` of the resource may be necessary.
+  This includes changes to the role `field_security` field. In order to upgrade to this version:
+
+  1. Run the following to generate a list of state remove and import commands:
+        ```sh
+        terraform state list | grep role\\.  > roles.txt
+        for i in $(cat roles.txt); do
+          id=$(terraform state show $i | egrep "id" | tr -d '"' | cut -d'=' -f 2)
+          echo "terraform state rm $i"
+          echo "terraform import $i $id"
+        done
+        ```
+  2. Upgrade to the new provider.
+  3. Copy and paste the state commands that were printed above.
+
+
 
 ### Changed
 - Move source files into specific package.
