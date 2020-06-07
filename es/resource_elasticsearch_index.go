@@ -151,21 +151,33 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
+	// if date math is used, we need to pass the resolved name along to the read
+	// so we can pull the right result from the response
+	var resolvedName string
+
+	// Note: the CreateIndex call handles URL encoding under the hood to handle
+	// non-URL friendly characters and functionality like date math
 	switch client := meta.(type) {
 	case *elastic7.Client:
-		_, err = client.CreateIndex(name).BodyJson(body).Do(ctx)
+		resp, requestErr := client.CreateIndex(name).BodyJson(body).Do(ctx)
+		resolvedName = resp.Index
+		err = requestErr
 
 	case *elastic6.Client:
-		_, err = client.CreateIndex(name).BodyJson(body).Do(ctx)
+		resp, requestErr := client.CreateIndex(name).BodyJson(body).Do(ctx)
+		resolvedName = resp.Index
+		err = requestErr
 
 	default:
 		elastic5Client := meta.(*elastic5.Client)
-		_, err = elastic5Client.CreateIndex(name).BodyJson(body).Do(ctx)
+		resp, requestErr := elastic5Client.CreateIndex(name).BodyJson(body).Do(ctx)
+		resolvedName = resp.Index
+		err = requestErr
 	}
 
 	if err == nil {
 		// Let terraform know the resource was created
-		d.SetId(name)
+		d.SetId(resolvedName)
 		return resourceElasticsearchIndexRead(d, meta)
 	}
 	return err
@@ -292,43 +304,52 @@ func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) 
 
 func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) error {
 	var (
-		name     = d.Id()
+		index    = d.Id()
 		ctx      = context.Background()
 		settings map[string]interface{}
 	)
 
-	// The logic is repeated strictly becuase of the types
+	// The logic is repeated strictly because of the types
 	switch client := meta.(type) {
 	case *elastic7.Client:
-		r, err := client.IndexGet(name).Do(ctx)
+		r, err := client.IndexGet(index).Do(ctx)
 		if err != nil {
 			return err
 		}
 
-		resp := r[name]
-		settings = resp.Settings["index"].(map[string]interface{})
-
+		if resp, ok := r[index]; ok {
+			settings = resp.Settings["index"].(map[string]interface{})
+		}
 	case *elastic6.Client:
-		r, err := client.IndexGet(name).Do(ctx)
+		r, err := client.IndexGet(index).Do(ctx)
 		if err != nil {
 			return err
 		}
 
-		resp := r[name]
-		settings = resp.Settings["index"].(map[string]interface{})
-
+		if resp, ok := r[index]; ok {
+			settings = resp.Settings["index"].(map[string]interface{})
+		}
 	default:
 		elastic5Client := meta.(*elastic5.Client)
-		r, err := elastic5Client.IndexGet(name).Do(ctx)
+		r, err := elastic5Client.IndexGet(index).Do(ctx)
 		if err != nil {
 			return err
 		}
 
-		resp := r[name]
-		settings = resp.Settings["index"].(map[string]interface{})
-
+		if resp, ok := r[index]; ok {
+			settings = resp.Settings["index"].(map[string]interface{})
+		}
 	}
-	d.Set("name", name)
+
+	name := index
+	if providedName, ok := settings["provided_name"].(string); ok {
+		name = providedName
+	}
+	err := d.Set("name", name)
+	if err != nil {
+		return err
+	}
+
 	indexResourceDataFromSettings(settings, d)
 
 	return nil

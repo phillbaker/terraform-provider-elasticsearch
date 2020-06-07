@@ -37,6 +37,14 @@ resource "elasticsearch_index" "test" {
   force_destroy = true
 }
 `
+	testAccElasticsearchIndexDateMath = `
+resource "elasticsearch_index" "test_date_math" {
+  name = "<terraform-test-{now/y{yyyy}}-000001>"
+  # name = "%3Ctest-%7Bnow%2Fy%7Byyyy%7D%7D-000001%3E"
+  number_of_shards = 1
+  number_of_replicas = 1
+}
+`
 )
 
 func TestAccElasticsearchIndex(t *testing.T) {
@@ -84,6 +92,22 @@ func TestAccElasticsearchIndex_importBasic(t *testing.T) {
 					// not returned from the API
 					"force_destroy",
 				},
+			},
+		},
+	})
+}
+
+func TestAccElasticsearchIndex_dateMath(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: checkElasticsearchIndexDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccElasticsearchIndexDateMath,
+				Check: resource.ComposeTestCheckFunc(
+					checkElasticsearchIndexExists("elasticsearch_index.test_date_math"),
+				),
 			},
 		},
 	})
