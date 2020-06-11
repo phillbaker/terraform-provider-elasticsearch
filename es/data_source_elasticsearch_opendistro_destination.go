@@ -15,24 +15,33 @@ import (
 
 const DESTINATION_NAME_FIELD = "destination.name.keyword"
 
-func dataSourceElasticsearchDestination() *schema.Resource {
-	return &schema.Resource{
-		Read: dataSourceElasticsearchDestinationRead,
+var datasourceOpenDistroDestinationSchema = map[string]*schema.Schema{
+	"name": {
+		Type:     schema.TypeString,
+		Required: true,
+	},
+	"body": {
+		Type:     schema.TypeMap,
+		Computed: true,
+	},
+}
 
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"body": {
-				Type:     schema.TypeMap,
-				Computed: true,
-			},
-		},
+func dataSourceElasticsearchDeprecatedDestination() *schema.Resource {
+	return &schema.Resource{
+		Read:               dataSourceElasticsearchOpenDistroDestinationRead,
+		Schema:             datasourceOpenDistroDestinationSchema,
+		DeprecationMessage: "elasticsearch_destination is deprecated, please use elasticsearch_opendistro_destination data source instead.",
 	}
 }
 
-func dataSourceElasticsearchDestinationRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceElasticsearchOpenDistroDestination() *schema.Resource {
+	return &schema.Resource{
+		Read:   dataSourceElasticsearchOpenDistroDestinationRead,
+		Schema: datasourceOpenDistroDestinationSchema,
+	}
+}
+
+func dataSourceElasticsearchOpenDistroDestinationRead(d *schema.ResourceData, m interface{}) error {
 	destinationName := d.Get("name").(string)
 
 	response := new(destinationResponse)

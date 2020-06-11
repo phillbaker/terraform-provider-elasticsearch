@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+### Deprecated
+- Datasource: elasticsearch_{destination} in favor of elasticsearch_opendistro_{destination}
 
 ## [1.2.0] - 2020-05-31
 ### Added
@@ -14,7 +16,7 @@
 - Bump terraform plugin sdk to 1.12.0.
 
 ### Deprecated
-- elasticsearch_{monitor,destination} in favor of elasticsearch_opendistro_{monitor,destination}
+- Resource: elasticsearch_{monitor,destination} in favor of elasticsearch_opendistro_{monitor,destination}
 
 
 ## [1.1.1] - 2020-05-09

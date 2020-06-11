@@ -40,8 +40,8 @@ func TestAccElasticsearchDataSourceDestination_basic(t *testing.T) {
 			{
 				Config: testAccElasticsearchDataSourceDestination,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.elasticsearch_destination.test", "id"),
-					resource.TestCheckResourceAttrSet("data.elasticsearch_destination.test", "body.type"),
+					resource.TestCheckResourceAttrSet("data.elasticsearch_opendistro_destination.test", "id"),
+					resource.TestCheckResourceAttrSet("data.elasticsearch_opendistro_destination.test", "body.type"),
 				),
 			},
 		},
@@ -49,7 +49,7 @@ func TestAccElasticsearchDataSourceDestination_basic(t *testing.T) {
 }
 
 var testAccElasticsearchDataSourceDestination = `
-resource "elasticsearch_destination" "test" {
+resource "elasticsearch_opendistro_destination" "test" {
   body = <<EOF
 {
   "name": "my-destination",
@@ -61,8 +61,8 @@ resource "elasticsearch_destination" "test" {
 EOF
 }
 
-data "elasticsearch_destination" "test" {
+data "elasticsearch_opendistro_destination" "test" {
   # Ugh, song and dance to get the json value to force dependency
-  name = "${element(list("my-destination", "${elasticsearch_destination.test.body}"), 0)}"
+  name = "${element(list("my-destination", "${elasticsearch_opendistro_destination.test.body}"), 0)}"
 }
 `

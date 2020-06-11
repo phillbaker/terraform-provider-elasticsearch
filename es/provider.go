@@ -151,8 +151,9 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"elasticsearch_destination": dataSourceElasticsearchDestination(),
-			"elasticsearch_host":        dataSourceElasticsearchHost(),
+			"elasticsearch_destination":            dataSourceElasticsearchDeprecatedDestination(),
+			"elasticsearch_host":                   dataSourceElasticsearchHost(),
+			"elasticsearch_opendistro_destination": dataSourceElasticsearchOpenDistroDestination(),
 		},
 
 		ConfigureFunc: providerConfigure,
