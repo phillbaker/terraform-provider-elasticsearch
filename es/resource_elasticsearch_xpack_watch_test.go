@@ -128,12 +128,12 @@ resource "elasticsearch_xpack_watch" "test_watch" {
     }
   },
   "actions": {
-    "test_index": {
-      "index": {
-        "index": "test",
-        "doc_type": "test2"
-      }
-    }
+    "test_log": {
+	    "logging": {
+	    	"level": "info",
+	      "text": "executed at {{ctx.execution_time}}"
+	    }
+	  }
   }
 }
 EOF
