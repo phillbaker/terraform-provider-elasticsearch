@@ -1,6 +1,11 @@
 # Changelog
-
 ## [Unreleased]
+
+
+## [1.3.0] - 2020-06-20
+### Added
+- Support Snapshot lifecycle management
+
 ### Deprecated
 - Datasource: elasticsearch_{destination} in favor of elasticsearch_opendistro_{destination}
 
