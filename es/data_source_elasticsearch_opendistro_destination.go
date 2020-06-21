@@ -82,9 +82,8 @@ func dataSourceElasticsearchOpenDistroDestinationRead(d *schema.ResourceData, m 
 			log.Printf("[INFO] couldn't simplify: %+v", value)
 		}
 	}
-	d.Set("body", simplifiedBody)
-
-	return nil
+	err = d.Set("body", simplifiedBody)
+	return err
 }
 
 func elastic7Search(client *elastic7.Client, index string, name string) (string, *json.RawMessage, error) {

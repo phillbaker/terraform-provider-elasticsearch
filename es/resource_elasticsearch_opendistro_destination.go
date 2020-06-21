@@ -63,13 +63,12 @@ func resourceElasticsearchOpenDistroDestinationCreate(d *schema.ResourceData, m 
 	}
 
 	d.SetId(res.ID)
-	bodyString, err := json.Marshal(res.Destination)
+	destination, err := json.Marshal(res.Destination)
 	if err != nil {
 		return err
 	}
-	d.Set("body", bodyString)
-
-	return nil
+	err = d.Set("body", string(destination))
+	return err
 }
 
 func resourceElasticsearchOpenDistroDestinationRead(d *schema.ResourceData, m interface{}) error {
@@ -85,9 +84,8 @@ func resourceElasticsearchOpenDistroDestinationRead(d *schema.ResourceData, m in
 		return err
 	}
 
-	d.Set("body", res)
-
-	return nil
+	err = d.Set("body", res)
+	return err
 }
 
 func resourceElasticsearchOpenDistroDestinationUpdate(d *schema.ResourceData, m interface{}) error {

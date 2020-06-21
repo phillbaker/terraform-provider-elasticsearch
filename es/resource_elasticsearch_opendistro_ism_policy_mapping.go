@@ -88,8 +88,8 @@ func resourceElasticsearchOpenDistroISMPolicyMappingRead(d *schema.ResourceData,
 	}
 
 	d.SetId(d.Get("indexes").(string))
-	d.Set("managed_indexes", concernIndexes)
-	return nil
+	err = d.Set("managed_indexes", concernIndexes)
+	return err
 }
 
 func resourceElasticsearchOpenDistroISMPolicyMappingUpdate(d *schema.ResourceData, m interface{}) error {

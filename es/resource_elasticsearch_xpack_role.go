@@ -172,7 +172,8 @@ func resourceElasticsearchXpackRoleRead(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 
-	d.Set("role_name", d.Id())
+	ds := &resourceDataSetter{d: d}
+	ds.set("role_name", d.Id())
 
 	if len(role.Indices) > 0 {
 		indices := make([]map[string]interface{}, 0, len(role.Indices))
@@ -185,10 +186,10 @@ func resourceElasticsearchXpackRoleRead(d *schema.ResourceData, m interface{}) e
 			}
 			indices = append(indices, ip)
 		}
-		d.Set("indices", indices)
+		ds.set("indices", indices)
 	}
 
-	d.Set("cluster", role.Cluster)
+	ds.set("cluster", role.Cluster)
 
 	if len(role.Applications) > 0 {
 		applications := make([]map[string]interface{}, 0, len(role.Applications))
@@ -200,13 +201,13 @@ func resourceElasticsearchXpackRoleRead(d *schema.ResourceData, m interface{}) e
 			}
 			applications = append(applications, ap)
 		}
-		d.Set("applications", applications)
+		ds.set("applications", applications)
 	}
 
-	d.Set("global", role.Global)
-	d.Set("run_as", role.RunAs)
-	d.Set("metadata", role.Metadata)
-	return nil
+	ds.set("global", role.Global)
+	ds.set("run_as", role.RunAs)
+	ds.set("metadata", role.Metadata)
+	return ds.err
 }
 
 func resourceElasticsearchXpackRoleUpdate(d *schema.ResourceData, m interface{}) error {

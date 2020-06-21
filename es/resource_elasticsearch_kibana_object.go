@@ -188,10 +188,11 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 		return err
 	}
 
-	d.Set("index", index)
+	ds := &resourceDataSetter{d: d}
+	ds.set("index", index)
 	d.Set("body", result)
 
-	return nil
+	return ds.err
 }
 
 func resourceElasticsearchKibanaObjectUpdate(d *schema.ResourceData, meta interface{}) error {

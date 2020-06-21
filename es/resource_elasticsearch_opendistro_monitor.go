@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/olivere/elastic/uritemplates"
 
@@ -17,8 +18,13 @@ import (
 
 var openDistroMonitorSchema = map[string]*schema.Schema{
 	"body": {
-		Type:         schema.TypeString,
-		Required:     true,
+		Type:             schema.TypeString,
+		Required:         true,
+		DiffSuppressFunc: diffSuppressMonitor,
+		StateFunc: func(v interface{}) string {
+			json, _ := structure.NormalizeJsonString(v)
+			return json
+		},
 		ValidateFunc: validation.StringIsJSON,
 	},
 }
@@ -59,10 +65,12 @@ func resourceElasticsearchOpenDistroMonitorCreate(d *schema.ResourceData, m inte
 	}
 
 	d.SetId(res.ID)
-	d.Set("body", res.Monitor)
 	log.Printf("[INFO] Object ID: %s", d.Id())
 
-	return nil
+	// Although we receive the full monitor in the response to the POST,
+	// OpenDistro seems to add default values to the ojbect after the resource
+	// is saved, e.g. adjust_pure_negative, boost values
+	return resourceElasticsearchOpenDistroMonitorRead(d, m)
 }
 
 func resourceElasticsearchOpenDistroMonitorRead(d *schema.ResourceData, m interface{}) error {
@@ -78,10 +86,18 @@ func resourceElasticsearchOpenDistroMonitorRead(d *schema.ResourceData, m interf
 		return err
 	}
 
-	d.Set("body", res.Monitor)
 	d.SetId(res.ID)
 
-	return nil
+	monitorJson, err := json.Marshal(res.Monitor)
+	if err != nil {
+		return err
+	}
+	monitorJsonNormalized, err := structure.NormalizeJsonString(string(monitorJson))
+	if err != nil {
+		return err
+	}
+	err = d.Set("body", monitorJsonNormalized)
+	return err
 }
 
 func resourceElasticsearchOpenDistroMonitorUpdate(d *schema.ResourceData, m interface{}) error {
@@ -160,7 +176,7 @@ func resourceElasticsearchOpenDistroGetMonitor(monitorID string, m interface{}) 
 	if err := json.Unmarshal(body, response); err != nil {
 		return response, fmt.Errorf("error unmarshalling monitor body: %+v: %+v", err, body)
 	}
-
+	normalizeMonitor(response.Monitor)
 	return response, err
 }
 
@@ -201,7 +217,7 @@ func resourceElasticsearchOpenDistroPostMonitor(d *schema.ResourceData, m interf
 	if err := json.Unmarshal(body, response); err != nil {
 		return response, fmt.Errorf("error unmarshalling monitor body: %+v: %+v", err, body)
 	}
-
+	normalizeMonitor(response.Monitor)
 	return response, nil
 }
 
@@ -252,7 +268,7 @@ func resourceElasticsearchOpenDistroPutMonitor(d *schema.ResourceData, m interfa
 }
 
 type monitorResponse struct {
-	Version int         `json:"_version"`
-	ID      string      `json:"_id"`
-	Monitor interface{} `json:"monitor"`
+	Version int                    `json:"_version"`
+	ID      string                 `json:"_id"`
+	Monitor map[string]interface{} `json:"monitor"`
 }

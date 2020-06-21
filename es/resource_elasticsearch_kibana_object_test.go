@@ -87,7 +87,7 @@ func testCheckElasticsearchKibanaObjectDestroy(s *terraform.State) error {
 		var err error
 		switch client := meta.(type) {
 		case *elastic7.Client:
-			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
+			_, err = client.Get().Index(".kibana").Id("response-time-percentile").Do(context.TODO())
 		case *elastic6.Client:
 			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
 		default:
