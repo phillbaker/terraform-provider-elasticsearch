@@ -47,6 +47,7 @@ before_script:
     fi
   # linters and checks
   - golangci-lint run --new-from-rev=bf51aaa --timeout=10m
+  - ./script/test-mod-tidy
 script:
   # run tests
   - TF_ACC=1 go test ./... -v -cover
