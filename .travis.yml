@@ -7,9 +7,13 @@ cache:
   directories:
     - $HOME/gopath/pkg/mod
 env:
-  - ES_VERSION=5.6.16 ES_OSS_IMAGE=elasticsearch:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_COMMAND="elasticsearch -Epath.repo=/tmp"
-  - ES_VERSION=6.8.0 ES_OSS_IMAGE=docker.elastic.co/elasticsearch/elasticsearch-oss:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_OPENDISTRO_IMAGE=amazon/opendistro-for-elasticsearch:0.9.0
-  - ES_VERSION=7.6.1 ES_OSS_IMAGE=docker.elastic.co/elasticsearch/elasticsearch-oss:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_OPENDISTRO_IMAGE=amazon/opendistro-for-elasticsearch:1.6.0
+  global:
+    # GITHUB_TOKEN
+    - secure: vSQRrg0xFXWfVJrqDA+QLy9xly2M55KhYFCLCotAyLYtf0nWjCcN5rsMcDT+Ik+fwcP24ykdw+4iBqorWxJqGedHtS7fmXcQqSr89lUMij/8ubZeV/mJ1bIpgGzf6FfLYFb1O7MP+D1eLzOFzc7rmAwY8JhRDVJd0j9DdP/pqFB7dAk8W5viIja51vFXENA8XZNinkyXXGkTCCPCRIScBlYLm45B2LSpTBB/WSJqjj+twcpjUJVA0fcfSMDHmcjivL5gJH2l2PZr8NyUme69PQ5BiDVKPuBo5x+naEFBkqpayHoojTYfpzXuWH+0rU2f+GjQJJkldwvmkmhRQ5eMPBjtJl7As3lGxHNs8KaxY5evbmDy2mJMKTMiHSeF4ZdyUra1wKbm1xpUJI1x/46GOAAhwkLRv6vtb9Rrm0Lb3AMIH13Qb4+XuGkEau+0XOkmx22Kz5uGTeCnoZ65hzzBkKLlrpoOc8J7vmM4TBUuN26ayVv6FWf46aRlHptwWJ9znxOjP2A7+rZGL5haQB2y1S97gwt//PRPHcaTwwjZWcVN++Je65Pc1GWxyf3zSMR540lPu1B/RM+x30GlWywQWE/Q18burnzT9KoIY6cPiwE/Ko0e4GHFagGSh5OdY1H3SctMq0dRi7SjuQQb/VmS0N6k0+M5pW8IcFQMzekis4M=
+  jobs:
+    - ES_VERSION=5.6.16 ES_OSS_IMAGE=elasticsearch:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_COMMAND="elasticsearch -Epath.repo=/tmp"
+    - ES_VERSION=6.8.0 ES_OSS_IMAGE=docker.elastic.co/elasticsearch/elasticsearch-oss:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_OPENDISTRO_IMAGE=amazon/opendistro-for-elasticsearch:0.9.0
+    - ES_VERSION=7.6.1 ES_OSS_IMAGE=docker.elastic.co/elasticsearch/elasticsearch-oss:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_OPENDISTRO_IMAGE=amazon/opendistro-for-elasticsearch:1.6.0
 matrix:
   allow_failures:
     - go: master
@@ -46,24 +50,36 @@ before_script:
 script:
   # run tests
   - TF_ACC=1 go test ./... -v -cover
-before_deploy:
-  - export GO111MODULE=on
-  - go get github.com/mitchellh/gox
-  - export TARGET_OS="freebsd darwin linux windows"
-  - export TARGET_ARCH="386 amd64"
-  # Use terraform provider conventions
-  #  https://www.terraform.io/docs/configuration/providers.html#third-party-plugins
-  - export FILE_NAME="terraform-provider-elasticsearch_${TRAVIS_TAG}_{{.OS}}_{{.Arch}}"
-  - gox -os "$TARGET_OS" -arch "$TARGET_ARCH" -output="$FILE_NAME"
-  - CGO_ENABLED=0 gox -os "$TARGET_OS" -arch "$TARGET_ARCH" -output="${FILE_NAME}_static"
+  # check goreleaser config for deprecations
+  - curl -sfL https://git.io/goreleaser | sh -s -- check
 deploy:
-  provider: releases
-  api_key:
-    secure: JOkdZIcFaAlf+RXY3xQ3MkTYxBCA5Ot2QOR7RtPTfbM1a7R9YrG0zFvgMNnZCiE5ONmf2OkJlcmSdviCE+awrBXSdARZXJFdO+CMa6Q9meyNYcQ8vBTM52BQLmkL2YF+mEEMnxgMD/qXyP4LXR45Hc0LamoDFiONx5w984VZRitPyNDoLczlH4uU3cecfWJN6GFCX/DyG4E1LSQFfy5jVoiaKTbWK/l+XeBJW2pyoCp9a/zmfsZsJhV6gr8Nl9PJxyu2dmgAHQKDEjjIJu6J1eP2vbC4YP/YI73RtWHMUGQ+yZpfd01dL6/NYpWwxZh4bKvtVk8CzHhikvD7DXQOc0yOxw52SMqct+ek0sfkRSz/l/AhwBbOobxbksUIUylBtTRIpH0elW//1WZ2+7pbcZB/SEeKecPoxpfyRQmV/VRRSoQWva9OQ3SObiypTLsPYCY9YG75vAkRddlASbtrErzLS3C8cbo4c7Hrl91Qxw/rNihYIFrwamSax7YJqyA6NmNqIMXr3H9BZMXy1H4FSXBnGOMmnmfeOw9WC4qU/KP31ieyOdzRvP18DQPQjggGz6fzdnIJ8mo1kT46vt9fK0h6AjGB+VVBt9BOBCO8dzPE8NASVE5uRV4FYsTMWOUKLO/SbmFdOpKHR8WIYOe8A7/sJMAnmZqocE8fykCwH9k=
-  file: terraform-provider-elasticsearch*
-  skip_cleanup: true
-  file_glob: true
-  on:
-    tags: true
-    branch: master
-    go: '1.14'
+  - provider: script
+    skip_cleanup: true
+    script: curl -sL https://git.io/goreleaser | bash
+    on:
+      tags: true
+      # branch: master
+      branch: travis-goreleaser
+      go: '1.14'
+      condition: $TRAVIS_OS_NAME = linux
+# before_deploy:
+#   - export GO111MODULE=on
+#   - go get github.com/mitchellh/gox
+#   - export TARGET_OS="freebsd darwin linux windows"
+#   - export TARGET_ARCH="386 amd64"
+#   # Use terraform provider conventions
+#   #  https://www.terraform.io/docs/configuration/providers.html#third-party-plugins
+#   - export FILE_NAME="terraform-provider-elasticsearch_${TRAVIS_TAG}_{{.OS}}_{{.Arch}}"
+#   - gox -os "$TARGET_OS" -arch "$TARGET_ARCH" -output="$FILE_NAME"
+#   - CGO_ENABLED=0 gox -os "$TARGET_OS" -arch "$TARGET_ARCH" -output="${FILE_NAME}_static"
+# deploy:
+#   provider: releases
+#   api_key:
+#     secure: JOkdZIcFaAlf+RXY3xQ3MkTYxBCA5Ot2QOR7RtPTfbM1a7R9YrG0zFvgMNnZCiE5ONmf2OkJlcmSdviCE+awrBXSdARZXJFdO+CMa6Q9meyNYcQ8vBTM52BQLmkL2YF+mEEMnxgMD/qXyP4LXR45Hc0LamoDFiONx5w984VZRitPyNDoLczlH4uU3cecfWJN6GFCX/DyG4E1LSQFfy5jVoiaKTbWK/l+XeBJW2pyoCp9a/zmfsZsJhV6gr8Nl9PJxyu2dmgAHQKDEjjIJu6J1eP2vbC4YP/YI73RtWHMUGQ+yZpfd01dL6/NYpWwxZh4bKvtVk8CzHhikvD7DXQOc0yOxw52SMqct+ek0sfkRSz/l/AhwBbOobxbksUIUylBtTRIpH0elW//1WZ2+7pbcZB/SEeKecPoxpfyRQmV/VRRSoQWva9OQ3SObiypTLsPYCY9YG75vAkRddlASbtrErzLS3C8cbo4c7Hrl91Qxw/rNihYIFrwamSax7YJqyA6NmNqIMXr3H9BZMXy1H4FSXBnGOMmnmfeOw9WC4qU/KP31ieyOdzRvP18DQPQjggGz6fzdnIJ8mo1kT46vt9fK0h6AjGB+VVBt9BOBCO8dzPE8NASVE5uRV4FYsTMWOUKLO/SbmFdOpKHR8WIYOe8A7/sJMAnmZqocE8fykCwH9k=
+#   file: terraform-provider-elasticsearch*
+#   skip_cleanup: true
+#   file_glob: true
+#   on:
+#     tags: true
+#     branch: master
+#     go: '1.14'
