@@ -1,6 +1,7 @@
 # Changelog
 ## [Unreleased]
-
+### Changed
+- Releases are now built with goreleaser tooling and packaged as zip files. Binaries are built with `CGO_ENABLED=0` as per the recommendations of goreleaser/terraform, these correspond to the previous `_static` binaries.
 
 ## [1.3.0] - 2020-06-20
 ### Added
