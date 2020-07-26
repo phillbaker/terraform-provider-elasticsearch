@@ -53,6 +53,12 @@ script:
   - TF_ACC=1 go test ./... -v -cover
   # check goreleaser config for deprecations
   - curl -sfL https://git.io/goreleaser | sh -s -- check
+before_deploy:
+  # decrypt and import gpg signing key
+  - openssl aes-256-cbc -K $encrypted_d823238f3370_key -iv $encrypted_d823238f3370_iv -in ci/gpg.priv.enc -out ci/gpg.priv -d
+  - gpg --import ci/gpg.priv
+  - rm ci/gpg.priv
+  - export GPG_FINGERPRINT=82B6A957
 deploy:
   - provider: script
     skip_cleanup: true
