@@ -14,9 +14,6 @@ env:
     - ES_VERSION=5.6.16 ES_OSS_IMAGE=elasticsearch:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_COMMAND="elasticsearch -Epath.repo=/tmp"
     - ES_VERSION=6.8.0 ES_OSS_IMAGE=docker.elastic.co/elasticsearch/elasticsearch-oss:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_OPENDISTRO_IMAGE=amazon/opendistro-for-elasticsearch:0.9.0
     - ES_VERSION=7.6.1 ES_OSS_IMAGE=docker.elastic.co/elasticsearch/elasticsearch-oss:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_OPENDISTRO_IMAGE=amazon/opendistro-for-elasticsearch:1.6.0
-matrix:
-  allow_failures:
-    - go: master
 addons:
   ssh_known_hosts: github.com
   apt:
@@ -53,40 +50,25 @@ script:
   - TF_ACC=1 go test ./... -v -cover
   # check goreleaser config for deprecations
   - curl -sfL https://git.io/goreleaser | sh -s -- check
-before_deploy:
-  # decrypt and import gpg signing key
-  - openssl aes-256-cbc -K $encrypted_d823238f3370_key -iv $encrypted_d823238f3370_iv -in ci/gpg.priv.enc -out ci/gpg.priv -d
-  - gpg --import ci/gpg.priv
-  - rm ci/gpg.priv
-  - export GPG_FINGERPRINT=82B6A957
-deploy:
-  - provider: script
-    skip_cleanup: true
-    script: curl -sL https://git.io/goreleaser | bash
-    on:
-      tags: true
-      # branch: master
-      branch: travis-goreleaser
-      go: '1.14'
-      condition: $TRAVIS_OS_NAME = linux
-# before_deploy:
-#   - export GO111MODULE=on
-#   - go get github.com/mitchellh/gox
-#   - export TARGET_OS="freebsd darwin linux windows"
-#   - export TARGET_ARCH="386 amd64"
-#   # Use terraform provider conventions
-#   #  https://www.terraform.io/docs/configuration/providers.html#third-party-plugins
-#   - export FILE_NAME="terraform-provider-elasticsearch_${TRAVIS_TAG}_{{.OS}}_{{.Arch}}"
-#   - gox -os "$TARGET_OS" -arch "$TARGET_ARCH" -output="$FILE_NAME"
-#   - CGO_ENABLED=0 gox -os "$TARGET_OS" -arch "$TARGET_ARCH" -output="${FILE_NAME}_static"
-# deploy:
-#   provider: releases
-#   api_key:
-#     secure: JOkdZIcFaAlf+RXY3xQ3MkTYxBCA5Ot2QOR7RtPTfbM1a7R9YrG0zFvgMNnZCiE5ONmf2OkJlcmSdviCE+awrBXSdARZXJFdO+CMa6Q9meyNYcQ8vBTM52BQLmkL2YF+mEEMnxgMD/qXyP4LXR45Hc0LamoDFiONx5w984VZRitPyNDoLczlH4uU3cecfWJN6GFCX/DyG4E1LSQFfy5jVoiaKTbWK/l+XeBJW2pyoCp9a/zmfsZsJhV6gr8Nl9PJxyu2dmgAHQKDEjjIJu6J1eP2vbC4YP/YI73RtWHMUGQ+yZpfd01dL6/NYpWwxZh4bKvtVk8CzHhikvD7DXQOc0yOxw52SMqct+ek0sfkRSz/l/AhwBbOobxbksUIUylBtTRIpH0elW//1WZ2+7pbcZB/SEeKecPoxpfyRQmV/VRRSoQWva9OQ3SObiypTLsPYCY9YG75vAkRddlASbtrErzLS3C8cbo4c7Hrl91Qxw/rNihYIFrwamSax7YJqyA6NmNqIMXr3H9BZMXy1H4FSXBnGOMmnmfeOw9WC4qU/KP31ieyOdzRvP18DQPQjggGz6fzdnIJ8mo1kT46vt9fK0h6AjGB+VVBt9BOBCO8dzPE8NASVE5uRV4FYsTMWOUKLO/SbmFdOpKHR8WIYOe8A7/sJMAnmZqocE8fykCwH9k=
-#   file: terraform-provider-elasticsearch*
-#   skip_cleanup: true
-#   file_glob: true
-#   on:
-#     tags: true
-#     branch: master
-#     go: '1.14'
+jobs:
+  allow_failures:
+    - go: master
+  include:
+    - stage: deploy
+      script: skip
+      before_deploy:
+        # decrypt and import gpg signing key
+        - openssl aes-256-cbc -K $encrypted_d823238f3370_key -iv $encrypted_d823238f3370_iv -in ci/gpg.priv.enc -out ci/gpg.priv -d
+        - gpg --import ci/gpg.priv
+        - rm ci/gpg.priv
+        - export GPG_FINGERPRINT=82B6A957
+      deploy:
+        - provider: script
+          skip_cleanup: true
+          script: curl -sL https://git.io/goreleaser | bash
+          on:
+            tags: true
+            # branch: master
+            branch: travis-goreleaser
+            go: '1.14'
+            condition: $TRAVIS_OS_NAME = linux
