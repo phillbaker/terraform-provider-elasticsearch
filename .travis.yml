@@ -68,7 +68,6 @@ jobs:
           script: curl -sL https://git.io/goreleaser | bash
           on:
             tags: true
-            # branch: master
-            branch: travis-goreleaser
+            branch: master
             go: '1.14'
             condition: $TRAVIS_OS_NAME = linux

@@ -43,7 +43,6 @@ signs:
       - "--detach-sign"
       - "${artifact}"
 release:
-  # draft: false
-  draft: true
+  draft: false
 changelog:
   skip: true
