@@ -6,7 +6,9 @@ This is a terraform provider that lets you provision elasticsearch resources, co
 
 ## Installation
 
-[Download a binary](https://github.com/phillbaker/terraform-provider-elasticsearch/releases), and put it in a good spot on your system. Then update your `~/.terraformrc` to refer to the binary:
+[This package is published on the official Terraform registry](https://registry.terraform.io/providers/phillbaker/elasticsearch/latest).
+
+[Or download a binary](https://github.com/phillbaker/terraform-provider-elasticsearch/releases), and put it in a good spot on your system. Then update your `~/.terraformrc` to refer to the binary:
 
 ```hcl
 providers {
@@ -14,7 +16,7 @@ providers {
 }
 ```
 
-See [the docs for more information](https://www.terraform.io/docs/plugins/basics.html).
+See [the docs for more on manual installation](https://www.terraform.io/docs/plugins/basics.html).
 
 ## Usage
 
