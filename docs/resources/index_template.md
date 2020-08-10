@@ -1,12 +1,12 @@
 ---
 layout: "elasticsearch"
 page_title: "Elasticsearch: elasticsearch_index_template"
-sidebar_current: "docs-elasticsearch-resource-index-template"
+subcategory: "Elasticsearch Opensource"
 description: |-
   Provides an Elasticsearch index template resource.
 ---
 
-# elasticsearch\_index\_template
+# elasticsearch_index_template
 
 Provides an Elasticsearch index template resource.
 

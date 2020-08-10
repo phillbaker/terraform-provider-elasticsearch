@@ -1,12 +1,12 @@
 ---
 layout: "elasticsearch"
 page_title: "Elasticsearch: elasticsearch_snapshot_repository"
-sidebar_current: "docs-elasticsearch-resource-snapshot-repository"
+subcategory: "Elasticsearch Opensource"
 description: |-
   Provides an Elasticsearch snapshot repository resource.
 ---
 
-# elasticsearch\_snapshot\_repository
+# elasticsearch_snapshot_repository
 
 Provides an Elasticsearch snapshot repository resource.
 
