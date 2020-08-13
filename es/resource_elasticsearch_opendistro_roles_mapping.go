@@ -23,6 +23,7 @@ func resourceElasticsearchOpenDistroRolesMapping() *schema.Resource {
 			"role_name": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"backend_roles": {
 				Type:     schema.TypeSet,
@@ -62,7 +63,6 @@ func resourceElasticsearchOpenDistroRolesMappingCreate(d *schema.ResourceData, m
 	}
 
 	name := d.Get("role_name").(string)
-
 	d.SetId(name)
 	return resourceElasticsearchOpenDistroRolesMappingRead(d, m)
 }
@@ -79,6 +79,7 @@ func resourceElasticsearchOpenDistroRolesMappingRead(d *schema.ResourceData, m i
 		return err
 	}
 
+	d.Set("role_name", d.Id())
 	d.Set("backend_roles", res.BackendRoles)
 	d.Set("hosts", res.Hosts)
 	d.Set("users", res.Users)

@@ -23,6 +23,7 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 			"role_name": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"cluster_permissions": {
 				Type:     schema.TypeSet,
@@ -99,9 +100,8 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 }
 
 func resourceElasticsearchOpenDistroRoleCreate(d *schema.ResourceData, m interface{}) error {
-	_, err := resourceElasticsearchPutOpenDistroRole(d, m)
-
-	if err != nil {
+	if _, err := resourceElasticsearchPutOpenDistroRole(d, m); err != nil {
+		log.Printf("[INFO] Failed to create OpenDistroRole: %+v", err)
 		return err
 	}
 
@@ -122,9 +122,14 @@ func resourceElasticsearchOpenDistroRoleRead(d *schema.ResourceData, m interface
 		return err
 	}
 
-	d.Set("tenant_permissions", res.TenantPermissions)
+	d.Set("role_name", d.Id())
+	if err := d.Set("tenant_permissions", flattenTenantPermissions(res.TenantPermissions)); err != nil {
+		return fmt.Errorf("error setting tenant_permissions: %s", err)
+	}
 	d.Set("cluster_permissions", res.ClusterPermissions)
-	d.Set("index_permissions", res.IndexPermissions)
+	if err := d.Set("index_permissions", flattenIndexPermissions(res.IndexPermissions)); err != nil {
+		return fmt.Errorf("error setting index_permissions: %s", err)
+	}
 	d.Set("description", res.Description)
 
 	return nil
@@ -139,8 +144,6 @@ func resourceElasticsearchOpenDistroRoleUpdate(d *schema.ResourceData, m interfa
 }
 
 func resourceElasticsearchOpenDistroRoleDelete(d *schema.ResourceData, m interface{}) error {
-	var err error
-
 	path, err := uritemplates.Expand("/_opendistro/_security/api/roles/{name}", map[string]string{
 		"name": d.Get("role_name").(string),
 	})

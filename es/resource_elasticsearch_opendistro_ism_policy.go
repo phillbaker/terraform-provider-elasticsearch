@@ -20,12 +20,13 @@ func resourceElasticsearchOpenDistroISMPolicy() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceElasticsearchOpenDistroISMPolicyCreate,
 		Read:   resourceElasticsearchOpenDistroISMPolicyRead,
-		Update: resourceElasticsearchOpenDistroISMPolicyCreate,
+		Update: resourceElasticsearchOpenDistroISMPolicyUpdate,
 		Delete: resourceElasticsearchOpenDistroISMPolicyDelete,
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"body": {
 				Type:             schema.TypeString,
@@ -54,20 +55,22 @@ func resourceElasticsearchOpenDistroISMPolicy() *schema.Resource {
 }
 
 func resourceElasticsearchOpenDistroISMPolicyCreate(d *schema.ResourceData, m interface{}) error {
-	if _, err := resourceElasticsearchPutOpendistroPolicy(d, m); err != nil {
+	if _, err := resourceElasticsearchPutOpenDistroISMPolicy(d, m); err != nil {
+		log.Printf("[INFO] Failed to create OpenDistroPolicy: %+v", err)
 		return err
 	}
 
+	policyID := d.Get("policy_id").(string)
+	d.SetId(policyID)
 	return resourceElasticsearchOpenDistroISMPolicyRead(d, m)
 }
 
 func resourceElasticsearchOpenDistroISMPolicyRead(d *schema.ResourceData, m interface{}) error {
-	policyID := d.Get("policy_id").(string)
-	policyResponse, err := resourceElasticsearchGetOpenDistroISMPolicy(policyID, m)
+	policyResponse, err := resourceElasticsearchGetOpenDistroISMPolicy(d.Id(), m)
 
 	if err != nil {
 		if elastic7.IsNotFound(err) {
-			log.Printf("[WARN] OpendistroPolicy (%s) not found, removing from state", policyID)
+			log.Printf("[WARN] OpenDistroPolicy (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}
@@ -75,13 +78,13 @@ func resourceElasticsearchOpenDistroISMPolicyRead(d *schema.ResourceData, m inte
 	}
 
 	bodyString, err := json.Marshal(policyResponse.Policy)
-	// Need encapsulation as the reponse from the GET is different than the one in the PUT
+	// Need encapsulation as the response from the GET is different than the one in the PUT
 	bodyStringNormalized, _ := structure.NormalizeJsonString(fmt.Sprintf("{\"policy\": %+s}", string(bodyString)))
 
 	if err != nil {
 		return err
 	}
-	d.SetId(policyResponse.PolicyID)
+	d.Set("policy_id", policyResponse.PolicyID)
 	d.Set("body", bodyStringNormalized)
 	d.Set("primary_term", policyResponse.PrimaryTerm)
 	d.Set("seq_no", policyResponse.SeqNo)
@@ -89,9 +92,15 @@ func resourceElasticsearchOpenDistroISMPolicyRead(d *schema.ResourceData, m inte
 	return nil
 }
 
-func resourceElasticsearchOpenDistroISMPolicyDelete(d *schema.ResourceData, m interface{}) error {
-	var err error
+func resourceElasticsearchOpenDistroISMPolicyUpdate(d *schema.ResourceData, m interface{}) error {
+	if _, err := resourceElasticsearchPutOpenDistroISMPolicy(d, m); err != nil {
+		return err
+	}
 
+	return resourceElasticsearchOpenDistroISMPolicyRead(d, m)
+}
+
+func resourceElasticsearchOpenDistroISMPolicyDelete(d *schema.ResourceData, m interface{}) error {
 	path, err := uritemplates.Expand("/_opendistro/_ism/policies/{policy_id}", map[string]string{
 		"policy_id": d.Id(),
 	})
@@ -158,7 +167,7 @@ func resourceElasticsearchGetOpenDistroISMPolicy(policyID string, m interface{})
 	return *response, err
 }
 
-func resourceElasticsearchPutOpendistroPolicy(d *schema.ResourceData, m interface{}) (*PutPolicyResponse, error) {
+func resourceElasticsearchPutOpenDistroISMPolicy(d *schema.ResourceData, m interface{}) (*PutPolicyResponse, error) {
 	response := new(PutPolicyResponse)
 	policyJSON := d.Get("body").(string)
 	seq := d.Get("seq_no").(int)
