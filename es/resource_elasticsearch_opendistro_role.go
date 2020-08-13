@@ -130,15 +130,21 @@ func resourceElasticsearchOpenDistroRoleRead(d *schema.ResourceData, m interface
 		return err
 	}
 
-	d.Set("role_name", d.Id())
+	if err := d.Set("role_name", d.Id()); err != nil {
+		return fmt.Errorf("error setting role_name: %s", err)
+	}
 	if err := d.Set("tenant_permissions", flattenTenantPermissions(res.TenantPermissions)); err != nil {
 		return fmt.Errorf("error setting tenant_permissions: %s", err)
 	}
-	d.Set("cluster_permissions", res.ClusterPermissions)
+	if err := d.Set("cluster_permissions", res.ClusterPermissions); err != nil {
+		return fmt.Errorf("error setting cluster_permissions: %s", err)
+	}
 	if err := d.Set("index_permissions", flattenIndexPermissions(res.IndexPermissions)); err != nil {
 		return fmt.Errorf("error setting index_permissions: %s", err)
 	}
-	d.Set("description", res.Description)
+	if err := d.Set("description", res.Description); err != nil {
+		return fmt.Errorf("error setting description: %s", err)
+	}
 
 	return nil
 }

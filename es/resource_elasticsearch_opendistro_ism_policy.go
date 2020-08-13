@@ -78,16 +78,25 @@ func resourceElasticsearchOpenDistroISMPolicyRead(d *schema.ResourceData, m inte
 	}
 
 	bodyString, err := json.Marshal(policyResponse.Policy)
-	// Need encapsulation as the response from the GET is different than the one in the PUT
-	bodyStringNormalized, _ := structure.NormalizeJsonString(fmt.Sprintf("{\"policy\": %+s}", string(bodyString)))
-
 	if err != nil {
 		return err
 	}
-	d.Set("policy_id", policyResponse.PolicyID)
-	d.Set("body", bodyStringNormalized)
-	d.Set("primary_term", policyResponse.PrimaryTerm)
-	d.Set("seq_no", policyResponse.SeqNo)
+
+	// Need encapsulation as the response from the GET is different than the one in the PUT
+	bodyStringNormalized, _ := structure.NormalizeJsonString(fmt.Sprintf("{\"policy\": %+s}", string(bodyString)))
+
+	if err := d.Set("policy_id", policyResponse.PolicyID); err != nil {
+		return fmt.Errorf("error setting policy_id: %s", err)
+	}
+	if err := d.Set("body", bodyStringNormalized); err != nil {
+		return fmt.Errorf("error setting body: %s", err)
+	}
+	if err := d.Set("primary_term", policyResponse.PrimaryTerm); err != nil {
+		return fmt.Errorf("error setting primary_term: %s", err)
+	}
+	if err := d.Set("seq_no", policyResponse.SeqNo); err != nil {
+		return fmt.Errorf("error setting seq_no: %s", err)
+	}
 
 	return nil
 }
