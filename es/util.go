@@ -1,9 +1,12 @@
 package es
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
+	"sort"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -375,4 +378,96 @@ func expandTenantPermissionsSet(resourcesArray []interface{}) ([]TenantPermissio
 		vperm = append(vperm, obj)
 	}
 	return vperm, nil
+}
+
+func indexPermissionsHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+
+	// We need to make sure to sort the strings below so that we always
+	// generate the same hash code no matter what is in the set.
+	if v, ok := m["index_patterns"]; ok {
+		vs := v.(*schema.Set).List()
+		s := make([]string, len(vs))
+		for i, raw := range vs {
+			s[i] = raw.(string)
+		}
+		sort.Strings(s)
+
+		for _, v := range s {
+			buf.WriteString(fmt.Sprintf("%s-", v))
+		}
+	}
+	if v, ok := m["fls"]; ok {
+		vs := v.(*schema.Set).List()
+		s := make([]string, len(vs))
+		for i, raw := range vs {
+			s[i] = raw.(string)
+		}
+		sort.Strings(s)
+
+		for _, v := range s {
+			buf.WriteString(fmt.Sprintf("%s-", v))
+		}
+	}
+	if v, ok := m["masked_fields"]; ok {
+		vs := v.(*schema.Set).List()
+		s := make([]string, len(vs))
+		for i, raw := range vs {
+			s[i] = raw.(string)
+		}
+		sort.Strings(s)
+
+		for _, v := range s {
+			buf.WriteString(fmt.Sprintf("%s-", v))
+		}
+	}
+	if v, ok := m["allowed_actions"]; ok {
+		vs := v.(*schema.Set).List()
+		s := make([]string, len(vs))
+		for i, raw := range vs {
+			s[i] = raw.(string)
+		}
+		sort.Strings(s)
+
+		for _, v := range s {
+			buf.WriteString(fmt.Sprintf("%s-", v))
+		}
+	}
+
+	return hashcode.String(buf.String())
+}
+
+func tenantPermissionsHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+
+	// We need to make sure to sort the strings below so that we always
+	// generate the same hash code no matter what is in the set.
+	if v, ok := m["tenant_patterns"]; ok {
+		vs := v.(*schema.Set).List()
+		s := make([]string, len(vs))
+		for i, raw := range vs {
+			s[i] = raw.(string)
+		}
+		sort.Strings(s)
+
+		for _, v := range s {
+			buf.WriteString(fmt.Sprintf("%s-", v))
+		}
+	}
+	if v, ok := m["allowed_actions"]; ok {
+		vs := v.(*schema.Set).List()
+		s := make([]string, len(vs))
+		for i, raw := range vs {
+			s[i] = raw.(string)
+		}
+		sort.Strings(s)
+
+		for _, v := range s {
+			buf.WriteString(fmt.Sprintf("%s-", v))
+		}
+	}
+
+	return hashcode.String(buf.String())
 }

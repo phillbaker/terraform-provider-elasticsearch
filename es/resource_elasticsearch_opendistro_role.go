@@ -41,6 +41,7 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+							Set: schema.HashString,
 						},
 						"fls": {
 							Type:     schema.TypeSet,
@@ -48,6 +49,7 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+							Set: schema.HashString,
 						},
 						"masked_fields": {
 							Type:     schema.TypeSet,
@@ -55,6 +57,7 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+							Set: schema.HashString,
 						},
 						"allowed_actions": {
 							Type:     schema.TypeSet,
@@ -62,9 +65,11 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+							Set: schema.HashString,
 						},
 					},
 				},
+				Set: indexPermissionsHash,
 			},
 			"tenant_permissions": {
 				Type:     schema.TypeSet,
@@ -77,6 +82,7 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+							Set: schema.HashString,
 						},
 						"allowed_actions": {
 							Type:     schema.TypeSet,
@@ -84,9 +90,11 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+							Set: schema.HashString,
 						},
 					},
 				},
+				Set: tenantPermissionsHash,
 			},
 			"description": {
 				Type:     schema.TypeString,
