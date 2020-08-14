@@ -63,8 +63,8 @@ Examples of resources can be found in the examples directory. The resources curr
 
 #### OpenDistro
 
-- [x] [Alerting](https://opendistro.github.io/for-elasticsearch-docs/docs/ism/api/) (Destinations/Monitors)
-- [x] [Security](https://opendistro.github.io/for-elasticsearch-docs/docs/ism/api/) (Role/Role Mapping/User)
+- [x] [Alerting](https://opendistro.github.io/for-elasticsearch-docs/docs/alerting/api/) (Destinations/Monitors)
+- [x] [Security](https://opendistro.github.io/for-elasticsearch-docs/docs/security/access-control/api/) (Role/Role Mapping/User)
 - [x] [Index State Management](https://opendistro.github.io/for-elasticsearch-docs/docs/ism/api/)
 
 ### Examples
