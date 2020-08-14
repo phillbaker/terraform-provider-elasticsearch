@@ -23,6 +23,7 @@ func resourceElasticsearchOpenDistroRolesMapping() *schema.Resource {
 			"role_name": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"backend_roles": {
 				Type:     schema.TypeSet,
@@ -62,7 +63,6 @@ func resourceElasticsearchOpenDistroRolesMappingCreate(d *schema.ResourceData, m
 	}
 
 	name := d.Get("role_name").(string)
-
 	d.SetId(name)
 	return resourceElasticsearchOpenDistroRolesMappingRead(d, m)
 }
@@ -79,11 +79,24 @@ func resourceElasticsearchOpenDistroRolesMappingRead(d *schema.ResourceData, m i
 		return err
 	}
 
-	d.Set("backend_roles", res.BackendRoles)
-	d.Set("hosts", res.Hosts)
-	d.Set("users", res.Users)
-	d.Set("description", res.Description)
-	d.Set("and_backend_roles", res.AndBackendRoles)
+	if err := d.Set("role_name", d.Id()); err != nil {
+		return fmt.Errorf("error setting role_name: %s", err)
+	}
+	if err := d.Set("backend_roles", res.BackendRoles); err != nil {
+		return fmt.Errorf("error setting backend_roles: %s", err)
+	}
+	if err := d.Set("hosts", res.Hosts); err != nil {
+		return fmt.Errorf("error setting hosts: %s", err)
+	}
+	if err := d.Set("users", res.Users); err != nil {
+		return fmt.Errorf("error setting users: %s", err)
+	}
+	if err := d.Set("description", res.Description); err != nil {
+		return fmt.Errorf("error setting description: %s", err)
+	}
+	if err := d.Set("and_backend_roles", res.AndBackendRoles); err != nil {
+		return fmt.Errorf("error setting and_backend_roles: %s", err)
+	}
 
 	return nil
 }

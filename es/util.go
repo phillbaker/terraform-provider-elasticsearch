@@ -1,9 +1,12 @@
 package es
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
+	"sort"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -230,6 +233,18 @@ func expandStringList(resourcesArray []interface{}) []string {
 	return vs
 }
 
+func flattenStringList(list []string) []interface{} {
+	vs := make([]interface{}, 0, len(list))
+	for _, v := range list {
+		vs = append(vs, v)
+	}
+	return vs
+}
+
+func flattenStringSet(list []string) *schema.Set {
+	return schema.NewSet(schema.HashString, flattenStringList(list))
+}
+
 func expandApplicationPermissionSet(resourcesArray []interface{}) ([]XPackSecurityApplicationPrivileges, error) {
 	vperm := make([]XPackSecurityApplicationPrivileges, 0, len(resourcesArray))
 	for _, item := range resourcesArray {
@@ -289,6 +304,30 @@ func (ds *resourceDataSetter) set(key string, value interface{}) {
 	ds.err = ds.d.Set(key, value)
 }
 
+func flattenIndexPermissions(permissions []IndexPermissions) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(permissions))
+	for _, permission := range permissions {
+		p := make(map[string]interface{})
+
+		if len(permission.IndexPatterns) > 0 {
+			p["index_patterns"] = flattenStringSet(permission.IndexPatterns)
+		}
+		if len(permission.Fls) > 0 {
+			p["fls"] = flattenStringSet(permission.Fls)
+		}
+		if len(permission.MaskedFields) > 0 {
+			p["masked_fields"] = flattenStringSet(permission.MaskedFields)
+		}
+		if len(permission.AllowedActions) > 0 {
+			p["allowed_actions"] = flattenStringSet(permission.AllowedActions)
+		}
+
+		result = append(result, p)
+	}
+
+	return result
+}
+
 func expandIndexPermissionsSet(resourcesArray []interface{}) ([]IndexPermissions, error) {
 	vperm := make([]IndexPermissions, 0, len(resourcesArray))
 	for _, item := range resourcesArray {
@@ -307,6 +346,24 @@ func expandIndexPermissionsSet(resourcesArray []interface{}) ([]IndexPermissions
 	return vperm, nil
 }
 
+func flattenTenantPermissions(permissions []TenantPermissions) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(permissions))
+	for _, permission := range permissions {
+		p := make(map[string]interface{})
+
+		if len(permission.TenantPatterns) > 0 {
+			p["tenant_patterns"] = flattenStringSet(permission.TenantPatterns)
+		}
+		if len(permission.AllowedActions) > 0 {
+			p["allowed_actions"] = flattenStringSet(permission.AllowedActions)
+		}
+
+		result = append(result, p)
+	}
+
+	return result
+}
+
 func expandTenantPermissionsSet(resourcesArray []interface{}) ([]TenantPermissions, error) {
 	vperm := make([]TenantPermissions, 0, len(resourcesArray))
 	for _, item := range resourcesArray {
@@ -321,4 +378,96 @@ func expandTenantPermissionsSet(resourcesArray []interface{}) ([]TenantPermissio
 		vperm = append(vperm, obj)
 	}
 	return vperm, nil
+}
+
+func indexPermissionsHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+
+	// We need to make sure to sort the strings below so that we always
+	// generate the same hash code no matter what is in the set.
+	if v, ok := m["index_patterns"]; ok {
+		vs := v.(*schema.Set).List()
+		s := make([]string, len(vs))
+		for i, raw := range vs {
+			s[i] = raw.(string)
+		}
+		sort.Strings(s)
+
+		for _, v := range s {
+			buf.WriteString(fmt.Sprintf("%s-", v))
+		}
+	}
+	if v, ok := m["fls"]; ok {
+		vs := v.(*schema.Set).List()
+		s := make([]string, len(vs))
+		for i, raw := range vs {
+			s[i] = raw.(string)
+		}
+		sort.Strings(s)
+
+		for _, v := range s {
+			buf.WriteString(fmt.Sprintf("%s-", v))
+		}
+	}
+	if v, ok := m["masked_fields"]; ok {
+		vs := v.(*schema.Set).List()
+		s := make([]string, len(vs))
+		for i, raw := range vs {
+			s[i] = raw.(string)
+		}
+		sort.Strings(s)
+
+		for _, v := range s {
+			buf.WriteString(fmt.Sprintf("%s-", v))
+		}
+	}
+	if v, ok := m["allowed_actions"]; ok {
+		vs := v.(*schema.Set).List()
+		s := make([]string, len(vs))
+		for i, raw := range vs {
+			s[i] = raw.(string)
+		}
+		sort.Strings(s)
+
+		for _, v := range s {
+			buf.WriteString(fmt.Sprintf("%s-", v))
+		}
+	}
+
+	return hashcode.String(buf.String())
+}
+
+func tenantPermissionsHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+
+	// We need to make sure to sort the strings below so that we always
+	// generate the same hash code no matter what is in the set.
+	if v, ok := m["tenant_patterns"]; ok {
+		vs := v.(*schema.Set).List()
+		s := make([]string, len(vs))
+		for i, raw := range vs {
+			s[i] = raw.(string)
+		}
+		sort.Strings(s)
+
+		for _, v := range s {
+			buf.WriteString(fmt.Sprintf("%s-", v))
+		}
+	}
+	if v, ok := m["allowed_actions"]; ok {
+		vs := v.(*schema.Set).List()
+		s := make([]string, len(vs))
+		for i, raw := range vs {
+			s[i] = raw.(string)
+		}
+		sort.Strings(s)
+
+		for _, v := range s {
+			buf.WriteString(fmt.Sprintf("%s-", v))
+		}
+	}
+
+	return hashcode.String(buf.String())
 }
