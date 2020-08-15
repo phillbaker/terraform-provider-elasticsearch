@@ -1,83 +1,97 @@
 package es
 
 import (
+	"context"
 	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var testAccProviders map[string]terraform.ResourceProvider
+var testAccProviders map[string]*schema.Provider
+var testAccProviderFactories func(providers *[]*schema.Provider) map[string]func() (*schema.Provider, error)
 var testAccProvider *schema.Provider
 
-var testAccXPackProviders map[string]terraform.ResourceProvider
+var testAccXPackProviders map[string]*schema.Provider
 var testAccXPackProvider *schema.Provider
 
-var testAccOpendistroProviders map[string]terraform.ResourceProvider
+var testAccOpendistroProviders map[string]*schema.Provider
 var testAccOpendistroProvider *schema.Provider
 
-var testAccKibanaProviders map[string]terraform.ResourceProvider
+var testAccKibanaProviders map[string]*schema.Provider
 var testAccKibanaProvider *schema.Provider
 
 func init() {
-	testAccProvider = Provider().(*schema.Provider)
-	testAccProviders = map[string]terraform.ResourceProvider{
+	testAccProvider = Provider()
+	testAccProviders = map[string]*schema.Provider{
 		"elasticsearch": testAccProvider,
 	}
+	testAccProviderFactories = func(providers *[]*schema.Provider) map[string]func() (*schema.Provider, error) {
+		// this is an SDKV2 compatible hack, the "factory" functions are
+		// effectively singletons for the lifecycle of a resource.Test
+		var factories = make(map[string]func() (*schema.Provider, error), len(testAccProviders))
+		for name, p := range testAccProviders {
+			factories[name] = func() (*schema.Provider, error) {
+				return p, nil
+			}
+			*providers = append(*providers, p)
+		}
+		return factories
+	}
 
-	testAccXPackProvider = Provider().(*schema.Provider)
-	testAccXPackProviders = map[string]terraform.ResourceProvider{
+	testAccXPackProvider = Provider()
+	testAccXPackProviders = map[string]*schema.Provider{
 		"elasticsearch": testAccXPackProvider,
 	}
 
-	xPackOriginalConfigureFunc := testAccXPackProvider.ConfigureFunc
-	testAccXPackProvider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+	xPackOriginalConfigureFunc := testAccXPackProvider.ConfigureContextFunc
+	testAccXPackProvider.ConfigureContextFunc = func(c context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		err := d.Set("url", "http://elastic:elastic@127.0.0.1:9210")
 		if err != nil {
-			return nil, err
+			return nil, diag.FromErr(err)
 		}
-		return xPackOriginalConfigureFunc(d)
+		return xPackOriginalConfigureFunc(c, d)
 	}
 
-	testAccOpendistroProvider = Provider().(*schema.Provider)
-	testAccOpendistroProviders = map[string]terraform.ResourceProvider{
+	testAccOpendistroProvider = Provider()
+	testAccOpendistroProviders = map[string]*schema.Provider{
 		"elasticsearch": testAccOpendistroProvider,
 	}
 
-	opendistroOriginalConfigureFunc := testAccOpendistroProvider.ConfigureFunc
-	testAccOpendistroProvider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+	opendistroOriginalConfigureFunc := testAccOpendistroProvider.ConfigureContextFunc
+	testAccOpendistroProvider.ConfigureContextFunc = func(c context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		err := d.Set("url", "http://admin:admin@127.0.0.1:9220")
 		if err != nil {
-			return nil, err
+			return nil, diag.FromErr(err)
 		}
-		return opendistroOriginalConfigureFunc(d)
+		return opendistroOriginalConfigureFunc(c, d)
 	}
 
-	testAccKibanaProvider = Provider().(*schema.Provider)
-	testAccKibanaProviders = map[string]terraform.ResourceProvider{
+	testAccKibanaProvider = Provider()
+	testAccKibanaProviders = map[string]*schema.Provider{
 		"elasticsearch": testAccKibanaProvider,
 	}
 
-	kibanaOriginalConfigureFunc := testAccKibanaProvider.ConfigureFunc
-	testAccKibanaProvider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+	kibanaOriginalConfigureFunc := testAccKibanaProvider.ConfigureContextFunc
+	testAccKibanaProvider.ConfigureContextFunc = func(c context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		err := d.Set("kibana_url", "http://127.0.0.1:5601")
 		if err != nil {
-			return nil, err
+			return nil, diag.FromErr(err)
 		}
-		return kibanaOriginalConfigureFunc(d)
+		return kibanaOriginalConfigureFunc(c, d)
 	}
 }
 
 func TestProvider(t *testing.T) {
-	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
+	if err := Provider().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
 }
 
 func TestProvider_impl(t *testing.T) {
-	var _ terraform.ResourceProvider = Provider()
+	var _ = Provider()
 }
 
 func testAccPreCheck(t *testing.T) {
@@ -205,7 +219,7 @@ func TestAWSCredsAssumeRole(t *testing.T) {
 		"aws_assume_role_arn": "test_arn",
 	}
 
-	testConfigData := schema.TestResourceDataRaw(t, Provider().(*schema.Provider).Schema, testConfig)
+	testConfigData := schema.TestResourceDataRaw(t, Provider().Schema, testConfig)
 
 	conf := &ProviderConf{
 		awsAssumeRoleArn: testConfigData.Get("aws_assume_role_arn").(string),

@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/olivere/elastic/uritemplates"
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )

@@ -4,9 +4,13 @@
 
 This is a terraform provider that lets you provision elasticsearch resources, compatible with v5, v6 and v7 of elasticsearch. Based off of an [original PR to Terraform](https://github.com/hashicorp/terraform/pull/13238).
 
-## Installation
+## Using the Provider
+
+### Terraform 0.13 and above
 
 [This package is published on the official Terraform registry](https://registry.terraform.io/providers/phillbaker/elasticsearch/latest).
+
+### Terraform 0.12 or manual installation
 
 [Or download a binary](https://github.com/phillbaker/terraform-provider-elasticsearch/releases), and put it in a good spot on your system. Then update your `~/.terraformrc` to refer to the binary:
 
@@ -16,7 +20,11 @@ providers {
 }
 ```
 
-See [the docs for more on manual installation](https://www.terraform.io/docs/plugins/basics.html).
+See [the docs for more on manual installation](https://www.terraform.io/docs/extend/how-terraform-works.html#plugin-locations).
+
+### Terraform 0.11
+
+With version 2.x of this provider, it uses version 2.x of the Terraform Plugin SDK which only supports Terraform 0.12 and higher. Please see the 1.x releases of this provider for Terraform 0.11 support.
 
 ## Usage
 

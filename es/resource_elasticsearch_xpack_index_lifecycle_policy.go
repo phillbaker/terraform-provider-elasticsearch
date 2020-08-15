@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
@@ -33,7 +33,7 @@ func resourceElasticsearchDeprecatedIndexLifecyclePolicy() *schema.Resource {
 		Delete: resourceElasticsearchXpackIndexLifecyclePolicyDelete,
 		Schema: xPackIndexLifecyclePolicySchema,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		DeprecationMessage: "elasticsearch_index_lifecycle_policy is deprecated, please use elasticsearch_xpack_index_lifecycle_policy resource instead.",
 	}
@@ -47,7 +47,7 @@ func resourceElasticsearchXpackIndexLifecyclePolicy() *schema.Resource {
 		Delete: resourceElasticsearchXpackIndexLifecyclePolicyDelete,
 		Schema: xPackIndexLifecyclePolicySchema,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 	}
 }

@@ -86,6 +86,11 @@ jobs:
     - name: Run check scripts
       run: |
         ./script/test-mod-tidy
+    - name: Install managed version of terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 0.14.11
+        terraform_wrapper: false
     - name: Wait for Elasticsearch
       # ensure that ES has come up and is available
       run: |

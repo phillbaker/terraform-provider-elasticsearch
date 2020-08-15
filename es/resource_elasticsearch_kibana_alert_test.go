@@ -9,18 +9,17 @@ import (
 
 	elastic7 "github.com/olivere/elastic/v7"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/phillbaker/terraform-provider-elasticsearch/kibana"
 )
 
 func TestAccElasticsearchKibanaAlert(t *testing.T) {
-	provider := Provider().(*schema.Provider)
-	err := provider.Configure(&terraform.ResourceConfig{})
-	if err != nil {
-		t.Skipf("err: %s", err)
+	provider := Provider()
+	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
+	if diags.HasError() {
+		t.Skipf("err: %#v", diags)
 	}
 	meta := provider.Meta()
 
@@ -69,10 +68,10 @@ func TestAccElasticsearchKibanaAlert(t *testing.T) {
 }
 
 func TestAccElasticsearchKibanaAlert_importBasic(t *testing.T) {
-	provider := Provider().(*schema.Provider)
-	err := provider.Configure(&terraform.ResourceConfig{})
-	if err != nil {
-		t.Skipf("err: %s", err)
+	provider := Provider()
+	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
+	if diags.HasError() {
+		t.Skipf("err: %#v", diags)
 	}
 	meta := provider.Meta()
 
@@ -173,9 +172,9 @@ func testCheckElasticsearchKibanaAlertDestroy(s *terraform.State) error {
 }
 
 func testKibanaAlertCreateAction() (string, error) {
-	err := testAccKibanaProvider.Configure(&terraform.ResourceConfig{})
-	if err != nil {
-		return "", err
+	diags := testAccKibanaProvider.Configure(context.Background(), &terraform.ResourceConfig{})
+	if diags.HasError() {
+		return "", diagnosticsAsError{diags}
 	}
 	meta := testAccKibanaProvider.Meta()
 

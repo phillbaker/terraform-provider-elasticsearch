@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/go-version"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/olivere/elastic/uritemplates"
 
 	elastic7 "github.com/olivere/elastic/v7"
@@ -169,7 +169,7 @@ func resourceElasticsearchKibanaAlert() *schema.Resource {
 			},
 		},
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Description: "Alerts allow you to define rules to detect conditions and trigger actions when those conditions are met. Alerts work by running checks on a schedule to detect conditions. When a condition is met, the alert tracks it as an alert instance and responds by triggering one or more actions. Actions typically involve interaction with Kibana services or third party integrations. For more see the [docs](https://www.elastic.co/guide/en/kibana/current/alerting-getting-started.html).",
 	}

@@ -3,15 +3,17 @@ package es
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func TestAccElasticsearchDataSourceHost_basic(t *testing.T) {
+	var providers []*schema.Provider
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		Providers: testAccProviders,
+		ProviderFactories: testAccProviderFactories(&providers),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccElasticsearchDataSourceHost,

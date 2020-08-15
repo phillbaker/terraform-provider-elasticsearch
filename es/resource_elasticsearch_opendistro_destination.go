@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/structure"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/olivere/elastic/uritemplates"
 
 	elastic7 "github.com/olivere/elastic/v7"
@@ -41,7 +41,7 @@ func resourceElasticsearchDeprecatedDestination() *schema.Resource {
 		Delete: resourceElasticsearchOpenDistroDestinationDelete,
 		Schema: openDistroDestinationSchema,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		DeprecationMessage: "elasticsearch_destination is deprecated, please use elasticsearch_opendistro_destination resource instead.",
 	}
@@ -56,7 +56,7 @@ func resourceElasticsearchOpenDistroDestination() *schema.Resource {
 		Delete:      resourceElasticsearchOpenDistroDestinationDelete,
 		Schema:      openDistroDestinationSchema,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 	}
 }

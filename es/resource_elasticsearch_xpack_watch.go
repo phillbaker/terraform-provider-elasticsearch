@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/structure"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
@@ -48,7 +48,7 @@ func resourceElasticsearchDeprecatedWatch() *schema.Resource {
 		Delete: resourceElasticsearchWatchDelete,
 		Schema: xPackWatchSchema,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		DeprecationMessage: "elasticsearch_watch is deprecated, please use elasticsearch_xpack_watch resource instead.",
 	}
@@ -62,7 +62,7 @@ func resourceElasticsearchXpackWatch() *schema.Resource {
 		Delete: resourceElasticsearchWatchDelete,
 		Schema: xPackWatchSchema,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 	}
 }

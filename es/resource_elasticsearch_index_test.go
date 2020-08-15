@@ -7,9 +7,9 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
@@ -281,10 +281,10 @@ func TestAccElasticsearchIndexAnalysis(t *testing.T) {
 }
 
 func TestAccElasticsearchIndex_handleInvalid(t *testing.T) {
-	provider := Provider().(*schema.Provider)
-	err := provider.Configure(&terraform.ResourceConfig{})
-	if err != nil {
-		t.Skipf("err: %s", err)
+	provider := Provider()
+	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
+	if diags.HasError() {
+		t.Skipf("err: %#v", diags)
 	}
 	meta := provider.Meta()
 	esClient, err := getClient(meta.(*ProviderConf))
@@ -356,10 +356,10 @@ func TestAccElasticsearchIndex_dateMath(t *testing.T) {
 }
 
 func TestAccElasticsearchIndex_rolloverAliasXpack(t *testing.T) {
-	provider := Provider().(*schema.Provider)
-	err := provider.Configure(&terraform.ResourceConfig{})
-	if err != nil {
-		t.Skipf("err: %s", err)
+	provider := Provider()
+	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
+	if diags.HasError() {
+		t.Skipf("err: %#v", diags)
 	}
 	meta := provider.Meta()
 	esClient, err := getClient(meta.(*ProviderConf))
@@ -406,10 +406,10 @@ func TestAccElasticsearchIndex_rolloverAliasXpack(t *testing.T) {
 }
 
 func TestAccElasticsearchIndex_rolloverAliasOpendistro(t *testing.T) {
-	provider := Provider().(*schema.Provider)
-	err := provider.Configure(&terraform.ResourceConfig{})
-	if err != nil {
-		t.Skipf("err: %s", err)
+	provider := Provider()
+	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
+	if diags.HasError() {
+		t.Skipf("err: %#v", diags)
 	}
 	meta := provider.Meta()
 	esClient, err := getClient(meta.(*ProviderConf))

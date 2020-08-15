@@ -9,18 +9,17 @@ import (
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccElasticsearchXpackRoleMapping(t *testing.T) {
 
-	provider := Provider().(*schema.Provider)
-	err := provider.Configure(&terraform.ResourceConfig{})
-	if err != nil {
-		t.Skipf("err: %s", err)
+	provider := Provider()
+	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
+	if diags.HasError() {
+		t.Skipf("err: %#v", diags)
 	}
 	meta := provider.Meta()
 	esClient, err := getClient(meta.(*ProviderConf))
@@ -230,10 +229,10 @@ resource "elasticsearch_xpack_role_mapping" "test" {
 }
 
 func TestAccRoleMappingResource_importBasic(t *testing.T) {
-	provider := Provider().(*schema.Provider)
-	err := provider.Configure(&terraform.ResourceConfig{})
-	if err != nil {
-		t.Skipf("err: %s", err)
+	provider := Provider()
+	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
+	if diags.HasError() {
+		t.Skipf("err: %#v", diags)
 	}
 	meta := provider.Meta()
 	esClient, err := getClient(meta.(*ProviderConf))

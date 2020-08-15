@@ -6,7 +6,10 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"hash/crc32"
+	"io/ioutil"
 	"log"
+	"os"
 	"reflect"
 	"sort"
 	"strconv"
@@ -14,8 +17,9 @@ import (
 	"unicode"
 
 	"github.com/hashicorp/go-version"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/mitchellh/go-homedir"
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
@@ -344,7 +348,7 @@ func flattenInterfaceSet(list []interface{}) *schema.Set {
 
 func flattenFloatSet(list []interface{}) *schema.Set {
 	hashFloat := func(v interface{}) int {
-		return hashcode.String(strconv.FormatFloat(v.(float64), 'f', -1, 64))
+		return hashcode(strconv.FormatFloat(v.(float64), 'f', -1, 64))
 	}
 
 	return schema.NewSet(hashFloat, list)
@@ -586,7 +590,7 @@ func indexPermissionsHash(v interface{}) int {
 		}
 	}
 
-	return hashcode.String(buf.String())
+	return hashcode(buf.String())
 }
 
 func tenantPermissionsHash(v interface{}) int {
@@ -620,7 +624,55 @@ func tenantPermissionsHash(v interface{}) int {
 		}
 	}
 
-	return hashcode.String(buf.String())
+	return hashcode(buf.String())
+}
+
+// hashcode hashes a string to a unique hash code.
+//
+// crc32 returns a uint32, but for our use we need
+// and non negative integer. Here we cast to an integer
+// and invert it if the result is negative.
+func hashcode(s string) int {
+	v := int(crc32.ChecksumIEEE([]byte(s)))
+	if v >= 0 {
+		return v
+	}
+	if -v >= 0 {
+		return -v
+	}
+	// v == MinInt
+	return 0
+}
+
+// If the argument is a path, readPathOrContent loads it and returns the contents,
+// otherwise the argument is assumed to be the desired contents and is simply
+// returned.
+//
+// The boolean second return value can be called `wasPath` - it indicates if a
+// path was detected and a file loaded.
+func readPathOrContent(poc string) (string, bool, error) {
+	if len(poc) == 0 {
+		return poc, false, nil
+	}
+
+	path := poc
+	if path[0] == '~' {
+		var err error
+		path, err = homedir.Expand(path)
+		if err != nil {
+			return path, true, err
+		}
+	}
+
+	if _, err := os.Stat(path); err == nil {
+		contents, err := ioutil.ReadFile(path)
+		if err != nil {
+			return string(contents), true, err
+		}
+		return string(contents), true, nil
+	}
+
+	return poc, false, nil
 }
 
 func elastic7GetVersion(client *elastic7.Client) (*version.Version, error) {
@@ -677,4 +729,35 @@ func toUnderscore(s string) string {
 		p = r
 	}
 	return string(res)
+}
+
+// borrowed from upstream terraform, this isn't exported though
+type diagnosticsAsError struct {
+	diag.Diagnostics
+}
+
+func (dae diagnosticsAsError) Error() string {
+	diags := dae.Diagnostics
+	switch {
+	case len(diags) == 0:
+		// should never happen, since we don't create this wrapper if
+		// there are no diagnostics in the list.
+		return "no errors"
+	case len(diags) == 1:
+		if diags[0].Detail == "" {
+			return diags[0].Summary
+		}
+		return fmt.Sprintf("%s: %s", diags[0].Summary, diags[0].Detail)
+	default:
+		var ret bytes.Buffer
+		fmt.Fprintf(&ret, "%d problems:\n", len(diags))
+		for _, diag := range dae.Diagnostics {
+			if diag.Detail == "" {
+				fmt.Fprintf(&ret, "\n- %s", diag.Summary)
+			} else {
+				fmt.Fprintf(&ret, "\n- %s: %s", diag.Summary, diag.Detail)
+			}
+		}
+		return ret.String()
+	}
 }

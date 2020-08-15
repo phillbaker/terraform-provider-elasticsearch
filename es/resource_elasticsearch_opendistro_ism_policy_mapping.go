@@ -8,8 +8,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/olivere/elastic/uritemplates"
 
 	elastic7 "github.com/olivere/elastic/v7"
@@ -59,7 +59,7 @@ func resourceElasticsearchOpenDistroISMPolicyMapping() *schema.Resource {
 			},
 		},
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(5 * time.Minute),
@@ -79,7 +79,7 @@ func resourceElasticsearchOpenDistroISMPolicyMappingCreate(d *schema.ResourceDat
 	indexPattern := d.Get("indexes").(string)
 	policyID := d.Get("policy_id").(string)
 
-	return resource.Retry(d.Timeout(schema.TimeoutCreate), resourceElasticsearchOpenDistroISMPolicyMappingRetry(indexPattern, policyID, d, m))
+	return resource.RetryContext(context.TODO(), d.Timeout(schema.TimeoutCreate), resourceElasticsearchOpenDistroISMPolicyMappingRetry(indexPattern, policyID, d, m))
 }
 
 // From https://opendistro.github.io/for-elasticsearch-docs/docs/im/ism/api/#update-managed-index-policy
@@ -96,6 +96,7 @@ func resourceElasticsearchOpenDistroISMPolicyMappingRetry(indexPattern string, p
 		indices, err := resourceElasticsearchOpendistroPolicyIndices(indexPattern, policyID, m)
 
 		if err != nil {
+			log.Printf("[INFO] error on retrieving indices %+v", err)
 			return resource.NonRetryableError(err)
 		}
 
@@ -105,7 +106,12 @@ func resourceElasticsearchOpenDistroISMPolicyMappingRetry(indexPattern string, p
 			return resource.RetryableError(fmt.Errorf("Expected at least one index to be mapped, but found %d", len(indices)))
 		}
 
-		return resource.NonRetryableError(resourceElasticsearchOpenDistroISMPolicyMappingRead(d, m))
+		err = resourceElasticsearchOpenDistroISMPolicyMappingRead(d, m)
+		log.Printf("[INFO] resourceElasticsearchOpenDistroISMPolicyMappingRetry error %+v", err)
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+		return nil
 	}
 }
 
@@ -124,7 +130,7 @@ func resourceElasticsearchOpendistroPolicyIndices(indexPattern string, policyID 
 		}
 	}
 
-	log.Printf("[INFO] resourceElasticsearchOpenDistroISMPolicyMappingRead %+v %+v %+v", indexPattern, indices, mappedIndexes)
+	log.Printf("[INFO] resourceElasticsearchOpendistroPolicyIndices %+v %+v %+v", indexPattern, indices, mappedIndexes)
 	return mappedIndexes, nil
 }
 
@@ -134,6 +140,7 @@ func resourceElasticsearchOpenDistroISMPolicyMappingRead(d *schema.ResourceData,
 
 	indices, err := resourceElasticsearchOpendistroPolicyIndices(indexPattern, policyID, m)
 	if err != nil {
+		log.Printf("[INFO] resourceElasticsearchOpenDistroISMPolicyMappingRead %+v %+v", indices, err)
 		return err
 	}
 
@@ -165,7 +172,7 @@ func resourceElasticsearchOpenDistroISMPolicyMappingUpdate(d *schema.ResourceDat
 	indexPattern := d.Get("indexes").(string)
 	policyID := d.Get("policy_id").(string)
 
-	return resource.Retry(d.Timeout(schema.TimeoutUpdate), resourceElasticsearchOpenDistroISMPolicyMappingRetry(indexPattern, policyID, d, m))
+	return resource.RetryContext(context.TODO(), d.Timeout(schema.TimeoutUpdate), resourceElasticsearchOpenDistroISMPolicyMappingRetry(indexPattern, policyID, d, m))
 }
 
 func resourceElasticsearchOpenDistroISMPolicyMappingDelete(d *schema.ResourceData, m interface{}) error {

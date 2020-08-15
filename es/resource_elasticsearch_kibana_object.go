@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/structure"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
@@ -250,6 +250,7 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 
 		return err
 	}
+	log.Printf("[TRACE] body: %s", string(resultJSON))
 
 	ds := &resourceDataSetter{d: d}
 	ds.set("index", index)
