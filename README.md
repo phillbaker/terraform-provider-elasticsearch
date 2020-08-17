@@ -42,6 +42,7 @@ Examples of resources can be found in the examples directory. The resources curr
 - [x] [Index template](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices.html)
 - [x] [Ingest pipeline](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest-apis.html)
 - [x] [Snapshot repository](https://www.elastic.co/guide/en/elasticsearch/reference/current/snapshot-restore-apis.html)
+- [x] [Stored Scripts](https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-scripting-using.html#modules-scripting-stored-scripts)
 
 #### Kibana
 
@@ -55,7 +56,7 @@ Examples of resources can be found in the examples directory. The resources curr
 - [ ] [Cross cluster replication](https://www.elastic.co/guide/en/elasticsearch/reference/current/ccr-apis.html)
 - [ ] [Enrich policies](https://www.elastic.co/guide/en/elasticsearch/reference/current/enrich-apis.html)
 - [x] [Index lifecycle management](https://www.elastic.co/guide/en/elasticsearch/reference/current/index-lifecycle-management-api.html)
-- [ ] [License management](https://www.elastic.co/guide/en/elasticsearch/reference/current/licensing-apis.html)
+- [x] [License management](https://www.elastic.co/guide/en/elasticsearch/reference/current/licensing-apis.html)
 - [ ] [Rollup jobs](https://www.elastic.co/guide/en/elasticsearch/reference/current/rollup-apis.html)
 - [x] [Security](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api.html) (Role/Role Mapping/User)
 - [x] [Snapshot lifecycle policy](https://www.elastic.co/guide/en/elasticsearch/reference/current/snapshot-lifecycle-management-api.html)

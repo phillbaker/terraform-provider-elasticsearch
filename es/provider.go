@@ -173,6 +173,7 @@ func Provider() terraform.ResourceProvider {
 			"elasticsearch_kibana_object":                   resourceElasticsearchKibanaObject(),
 			"elasticsearch_monitor":                         resourceElasticsearchDeprecatedMonitor(),
 			"elasticsearch_snapshot_repository":             resourceElasticsearchSnapshotRepository(),
+			"elasticsearch_script":                          resourceElasticsearchScript(),
 			"elasticsearch_watch":                           resourceElasticsearchDeprecatedWatch(),
 			"elasticsearch_opendistro_destination":          resourceElasticsearchOpenDistroDestination(),
 			"elasticsearch_opendistro_ism_policy":           resourceElasticsearchOpenDistroISMPolicy(),
