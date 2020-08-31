@@ -65,11 +65,12 @@ The following arguments are supported:
 * `aws_secret_key` (Optional) - The secret key for use with AWS Elasticsearch Service domains. It can also be sourced from the `AWS_SECRET_ACCESS_KEY` environment variable.
 * `aws_token` (Optional) - The session token for use with AWS Elasticsearch Service domains. It can also be sourced from the `AWS_SESSION_TOKEN` environment variable.
 * `aws_profile` (Optional) - The AWS profile for use with AWS Elasticsearch Service domains
+* `aws_region` (Optional) - The AWS region for use in signing of AWS elasticsearch requests. Must be specified in order to use AWS URL signing with AWS ElasticSearch endpoint exposed on a custom DNS domain.
 * `cacert_file` (Optional) - a custom CA certificate when communicating over SSL. You can specify either a path to the file or the contents of the certificate.
-* `insecure` (Optional) - Disable SSL verification of API calls (defaults to false)
+* `insecure` (Optional) - Disable SSL verification of API calls (defaults to `false`)
 * `client_cert_path` (Optional) - A X509 certificate to connect to elasticsearch. Defaults to `ES_CLIENT_CERTIFICATE_PATH` from the environment
 * `client_key_path` (Optional) - A X509 key to connect to elasticsearch. Defaults to `ES_CLIENT_KEY_PATH`
-* `sign_aws_requests` (Optional) - Enable signing of AWS elasticsearch requests (defauls to true).
+* `sign_aws_requests` (Optional) - Enable signing of AWS elasticsearch requests (defauls to `true`). The `url` must refer to AWS ES domain (`*.<region>.es.amazonaws.com`), or `aws_region` must be specified explicitly.
 * `elasticsearch_version` (Optional) - ElasticSearch Version, if set, skips the version detection at provider start.
 
 ### AWS authentication
