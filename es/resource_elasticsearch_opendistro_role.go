@@ -299,9 +299,9 @@ type RoleResponse struct {
 
 type RoleBody struct {
 	Description        string              `json:"description"`
-	ClusterPermissions []string            `json:"cluster_permissions"`
-	IndexPermissions   []IndexPermissions  `json:"index_permissions"`
-	TenantPermissions  []TenantPermissions `json:"tenant_permissions"`
+	ClusterPermissions []string            `json:"cluster_permissions,omitempty"`
+	IndexPermissions   []IndexPermissions  `json:"index_permissions,omitempty"`
+	TenantPermissions  []TenantPermissions `json:"tenant_permissions,omitempty"`
 }
 
 type IndexPermissions struct {
