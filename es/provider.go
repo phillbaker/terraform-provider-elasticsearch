@@ -86,6 +86,13 @@ func Provider() terraform.ResourceProvider {
 				Description: "The AWS profile for use with AWS Elasticsearch Service domains",
 			},
 
+			"aws_region": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "The AWS region for use in signing of AWS elasticsearch requests. Must be specified in order to use AWS URL signing with AWS ElasticSearch endpoint exposed on a custom DNS domain.",
+			},
+
 			"cacert_file": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -117,7 +124,7 @@ func Provider() terraform.ResourceProvider {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
-				Description: "Enable signing of AWS elasticsearch requests",
+				Description: "Enable signing of AWS elasticsearch requests. The `url` must refer to AWS ES domain (`*.<region>.es.amazonaws.com`), or `aws_region` must be specified explicitly.",
 			},
 			"elasticsearch_version": {
 				Type:        schema.TypeString,
@@ -193,6 +200,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil && signAWSRequests {
 		log.Printf("[INFO] Using AWS: %+v", m[1])
 		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(m[1], d)), elastic7.SetSniff(false))
+	} else if awsRegion := d.Get("aws_region").(string); awsRegion != "" && signAWSRequests {
+		log.Printf("[INFO] Using AWS: %+v", awsRegion)
+		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(awsRegion, d)), elastic7.SetSniff(false))
 	} else if insecure || cacertFile != "" {
 		opts = append(opts, elastic7.SetHttpClient(tlsHttpClient(d)), elastic7.SetSniff(false))
 	}
@@ -233,6 +243,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil && signAWSRequests {
 			log.Printf("[INFO] Using AWS: %+v", m[1])
 			opts = append(opts, elastic6.SetHttpClient(awsHttpClient(m[1], d)), elastic6.SetSniff(false))
+		} else if awsRegion := d.Get("aws_region").(string); awsRegion != "" && signAWSRequests {
+			log.Printf("[INFO] Using AWS: %+v", awsRegion)
+			opts = append(opts, elastic6.SetHttpClient(awsHttpClient(awsRegion, d)), elastic6.SetSniff(false))
 		} else if insecure || cacertFile != "" {
 			opts = append(opts, elastic6.SetHttpClient(tlsHttpClient(d)), elastic6.SetSniff(false))
 		}
@@ -259,6 +272,9 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil && signAWSRequests {
 			opts = append(opts, elastic5.SetHttpClient(awsHttpClient(m[1], d)), elastic5.SetSniff(false))
+		} else if awsRegion := d.Get("aws_region").(string); awsRegion != "" && signAWSRequests {
+			log.Printf("[INFO] Using AWS: %+v", awsRegion)
+			opts = append(opts, elastic5.SetHttpClient(awsHttpClient(awsRegion, d)), elastic5.SetSniff(false))
 		} else if insecure || cacertFile != "" {
 			opts = append(opts, elastic5.SetHttpClient(tlsHttpClient(d)), elastic5.SetSniff(false))
 		}
