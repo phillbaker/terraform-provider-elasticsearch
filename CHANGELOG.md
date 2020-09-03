@@ -1,7 +1,32 @@
 # Changelog
+## Unreleased
+### Changed
+-
+
+### Added
+-
+
+
+## [1.4.2] - 2020-09-03
+### Changed
+- Fixed import for resources: `elasticsearch_opendistro_ism_policy`, `elasticsearch_opendistro_role`, `elasticsearch_opendistro_roles_mapping`.
+- Fixed diffs for sets in `elasticsearch_opendistro_role`.
+- Allow omitting tenant permissions
+- Fix `elasticsearch_xpack_watch` resource not detecting diffs outside (#65).
+
+### Added
+- Allow specifying AWS region for URL signing explicitly
+
+
+## [1.4.1] - 2020-07-27
+### Changed
+- Fixed build process.
+
+
 ## [1.4.0] - 2020-07-27
 ### Changed
 - Releases are now built with goreleaser tooling and packaged as zip files. Binaries are built with `CGO_ENABLED=0` as per the recommendations of goreleaser/terraform, these correspond to the previous `_static` binaries.
+
 
 ## [1.3.0] - 2020-06-20
 ### Added
