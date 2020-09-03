@@ -86,6 +86,17 @@ func TestAccElasticsearchOpenDistroRole(t *testing.T) {
 					),
 				),
 			},
+			{
+				Config: testAccOpenDistroRoleResourceWithoutTenantPermissions(randomName),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckElasticSearchOpenDistroRoleExists("elasticsearch_opendistro_role.test"),
+					resource.TestCheckResourceAttr(
+						"elasticsearch_opendistro_role.test",
+						"tenant_permissions.#",
+						"0",
+					),
+				),
+			},
 		},
 	})
 }
@@ -213,6 +224,36 @@ func testAccOpenDistroRoleResourceUpdated(resourceName string) string {
 
 			allowed_actions = [
 				"kibana_all_write",
+			]
+		}
+
+		cluster_permissions = ["*"]
+	}
+	`, resourceName)
+}
+
+func testAccOpenDistroRoleResourceWithoutTenantPermissions(resourceName string) string {
+	return fmt.Sprintf(`
+	resource "elasticsearch_opendistro_role" "test" {
+		role_name = "%s"
+		description = "test"
+		index_permissions {
+			index_patterns = [
+				"test*",
+			]
+
+			allowed_actions = [
+				"read",
+			]
+		}
+
+		index_permissions {
+			index_patterns = [
+				"?kibana",
+			]
+
+			allowed_actions = [
+				"indices_all",
 			]
 		}
 
