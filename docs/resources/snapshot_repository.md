@@ -12,7 +12,7 @@ Provides an Elasticsearch snapshot repository resource.
 
 ## Example Usage
 
-```
+```hcl
 # Create a snapshot repository
 resource "elasticsearch_snapshot_repository" "repo" {
   name = "es-index-backups"

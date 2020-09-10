@@ -16,7 +16,7 @@ Use the navigation to the left to read about the available resources.
 
 ## Example Usage
 
-```
+```tf
 # Configure the Elasticsearch provider
 provider "elasticsearch" {
   url = "http://127.0.0.1:9200"

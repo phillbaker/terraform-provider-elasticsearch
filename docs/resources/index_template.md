@@ -12,7 +12,7 @@ Provides an Elasticsearch index template resource.
 
 ## Example Usage
 
-```
+```tf
 # Create an index template
 resource "elasticsearch_index_template" "template_1" {
   name = "template_1"
