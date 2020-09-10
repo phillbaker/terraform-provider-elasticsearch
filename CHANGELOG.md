@@ -6,13 +6,16 @@
 ### Added
 -
 
+## [1.4.3]
+### Changed
+- Fixed issue where diffs may not be detected for the resources `elasticsearch_kibana_object`, `elasticsearch_opendistro_destination`, `elasticsearch_opendistro_ism_policy_mapping`, `elasticsearch_opendistro_monitor`, `elasticsearch_xpack_role`, `elasticsearch_xpack_role_mapping`, and data source `elasticsearch_opendistro_destination` (#65).
 
 ## [1.4.2] - 2020-09-03
 ### Changed
 - Fixed import for resources: `elasticsearch_opendistro_ism_policy`, `elasticsearch_opendistro_role`, `elasticsearch_opendistro_roles_mapping`.
 - Fixed diffs for sets in `elasticsearch_opendistro_role`.
 - Allow omitting tenant permissions
-- Fix `elasticsearch_xpack_watch` resource not detecting diffs outside (#65).
+- Fix `elasticsearch_xpack_watch` resource not detecting diffs outside of terraform (#65). The watch API may return default values that were not passed in the original request, e.g. for log actions, `"level": "info"`, which will result in a perpetual diff unless it's pulled into the definition.
 
 ### Added
 - Allow specifying AWS region for URL signing explicitly
