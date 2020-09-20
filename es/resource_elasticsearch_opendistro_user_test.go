@@ -94,6 +94,17 @@ func TestAccElasticsearchOpenDistroUser(t *testing.T) {
 					),
 				),
 			},
+			{
+				Config: testAccOpenDistroUserResourceHash(randomName),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckElasticSearchOpenDistroUserExists("elasticsearch_opendistro_user.test"),
+					resource.TestCheckResourceAttr(
+						"elasticsearch_opendistro_user.test",
+						"id",
+						randomName,
+					),
+				),
+			},
 		},
 	})
 }
@@ -196,6 +207,15 @@ func testAccOpenDistroUserResource(resourceName string) string {
 		attributes = {
 			some_attribute = "alpha"
 		}
+	}
+	`, resourceName)
+}
+
+func testAccOpenDistroUserResourceHash(resourceName string) string {
+	return fmt.Sprintf(`
+	resource "elasticsearch_opendistro_user" "test" {
+		username      = "%s"
+		password_hash = "$2a$04$jQcEXpODnTFoGDuA7DPdSevA84CuH/7MOYkb80M3XZIrH76YMWS9G"
 	}
 	`, resourceName)
 }

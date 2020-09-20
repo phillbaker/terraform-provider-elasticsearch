@@ -25,9 +25,18 @@ func resourceElasticsearchOpenDistroUser() *schema.Resource {
 				Required: true,
 			},
 			"password": {
-				Type:      schema.TypeString,
-				Required:  true,
-				Sensitive: true,
+				Type:             schema.TypeString,
+				Optional:         true,
+				Sensitive:        true,
+				DiffSuppressFunc: onlyDiffOnCreate,
+				ConflictsWith:    []string{"password_hash"},
+			},
+			"password_hash": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Sensitive:        true,
+				DiffSuppressFunc: onlyDiffOnCreate,
+				ConflictsWith:    []string{"password"},
 			},
 			"backend_roles": {
 				Type:     schema.TypeSet,
@@ -159,6 +168,7 @@ func resourceElasticsearchPutOpenDistroUser(d *schema.ResourceData, m interface{
 		Description:  d.Get("description").(string),
 		Attributes:   d.Get("attributes").(map[string]interface{}),
 		Password:     d.Get("password").(string),
+		PasswordHash: d.Get("password_hash").(string),
 	}
 
 	userJSON, err := json.Marshal(userDefinition)
@@ -204,6 +214,7 @@ type UserBody struct {
 	Attributes   map[string]interface{} `json:"attributes"`
 	Description  string                 `json:"description"`
 	Password     string                 `json:"password"`
+	PasswordHash string                 `json:"hash"`
 }
 
 // UserResponse sent by the odfe's API
