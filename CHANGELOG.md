@@ -6,7 +6,11 @@
 ### Added
 -
 
-## [1.4.3]
+## [1.4.4] - 2020-09-23
+### Added
+- Add OpenDistro user resource (#83)
+
+## [1.4.3] - 2020-09-10
 ### Changed
 - Fixed issue where diffs may not be detected for the resources `elasticsearch_kibana_object`, `elasticsearch_opendistro_destination`, `elasticsearch_opendistro_ism_policy_mapping`, `elasticsearch_opendistro_monitor`, `elasticsearch_xpack_role`, `elasticsearch_xpack_role_mapping`, and data source `elasticsearch_opendistro_destination` (#65).
 
