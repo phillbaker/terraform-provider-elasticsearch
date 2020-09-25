@@ -5,6 +5,7 @@
 
 ### Added
 - Validation for kibana objects to prevent provider crashes.
+- Add XPack license resource, compatible with ES version >= 6.2.
 
 ## [1.4.4] - 2020-09-23
 ### Added
