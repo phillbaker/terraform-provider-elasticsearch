@@ -4,7 +4,7 @@
 -
 
 ### Added
--
+- Validation for kibana objects to prevent provider crashes.
 
 ## [1.4.4] - 2020-09-23
 ### Added

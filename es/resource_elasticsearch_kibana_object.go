@@ -7,7 +7,9 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/structure"
+	// "github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
@@ -21,9 +23,37 @@ func resourceElasticsearchKibanaObject() *schema.Resource {
 		Delete: resourceElasticsearchKibanaObjectDelete,
 		Schema: map[string]*schema.Schema{
 			"body": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringIsJSON,
+				Type:     schema.TypeString,
+				Required: true,
+				// ValidateFunc: validation.StringIsJSON,
+				ValidateFunc: func(i interface{}, k string) (warnings []string, errors []error) {
+					v, ok := i.(string)
+					if !ok {
+						errors = append(errors, fmt.Errorf("expected type of %s to be string", k))
+						return warnings, errors
+					}
+
+					if _, err := structure.NormalizeJsonString(v); err != nil {
+						errors = append(errors, fmt.Errorf("%q contains an invalid JSON: %s", k, err))
+						return warnings, errors
+					}
+
+					var body []map[string]interface{}
+					if err := json.Unmarshal([]byte(v), &body); err != nil {
+						errors = append(errors, fmt.Errorf("%q must be an array of objects: %s", k, err))
+						return warnings, errors
+					}
+
+					for _, o := range body {
+						for _, k := range requiredKibanaObjectKeys() {
+							if o[k] == nil {
+								errors = append(errors, fmt.Errorf("object must have the %q key", k))
+							}
+						}
+					}
+
+					return warnings, errors
+				},
 			},
 			"index": {
 				Type:     schema.TypeString,
@@ -40,7 +70,7 @@ const (
 	INDEX_CREATION_FAILED
 )
 
-const deprecatedDocType = "_doc"
+const deprecatedDocType = "doc"
 
 func resourceElasticsearchKibanaObjectCreate(d *schema.ResourceData, meta interface{}) error {
 	index := d.Get("index").(string)
@@ -332,4 +362,8 @@ func objectTypeOrDefault(document map[string]interface{}) string {
 	}
 
 	return deprecatedDocType
+}
+
+func requiredKibanaObjectKeys() []string {
+	return []string{"_source", "_id"}
 }
