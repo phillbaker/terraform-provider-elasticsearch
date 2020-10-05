@@ -145,7 +145,7 @@ func Provider() terraform.ResourceProvider {
 		ResourcesMap: map[string]*schema.Resource{
 			"elasticsearch_destination":                     resourceElasticsearchDeprecatedDestination(),
 			"elasticsearch_index":                           resourceElasticsearchIndex(),
-			"elasticsearch_index_lifecycle_policy":          resourceElasticsearchIndexLifecyclePolicy(),
+			"elasticsearch_index_lifecycle_policy":          resourceElasticsearchDeprecatedIndexLifecyclePolicy(),
 			"elasticsearch_index_template":                  resourceElasticsearchIndexTemplate(),
 			"elasticsearch_ingest_pipeline":                 resourceElasticsearchIngestPipeline(),
 			"elasticsearch_kibana_object":                   resourceElasticsearchKibanaObject(),
@@ -159,6 +159,7 @@ func Provider() terraform.ResourceProvider {
 			"elasticsearch_opendistro_roles_mapping":        resourceElasticsearchOpenDistroRolesMapping(),
 			"elasticsearch_opendistro_role":                 resourceElasticsearchOpenDistroRole(),
 			"elasticsearch_opendistro_user":                 resourceElasticsearchOpenDistroUser(),
+			"elasticsearch_xpack_index_lifecycle_policy":    resourceElasticsearchXpackIndexLifecyclePolicy(),
 			"elasticsearch_xpack_license":                   resourceElasticsearchXpackLicense(),
 			"elasticsearch_xpack_role":                      resourceElasticsearchXpackRole(),
 			"elasticsearch_xpack_role_mapping":              resourceElasticsearchXpackRoleMapping(),

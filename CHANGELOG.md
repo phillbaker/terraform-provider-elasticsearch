@@ -1,7 +1,7 @@
 # Changelog
 ## Unreleased
 ### Changed
--
+- Deprecated elasticsearch_index_lifecycle_policy in favor of elasticsearch_xpack_index_lifecycle_policy.
 
 ### Added
 - Validation for kibana objects to prevent provider crashes.

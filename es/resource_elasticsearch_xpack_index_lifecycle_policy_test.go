@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccElasticsearchIndexLifecyclePolicy(t *testing.T) {
+func TestAccElasticsearchXpackIndexLifecyclePolicy(t *testing.T) {
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
 	if err != nil {
@@ -38,19 +38,19 @@ func TestAccElasticsearchIndexLifecyclePolicy(t *testing.T) {
 			}
 		},
 		Providers:    testAccXPackProviders,
-		CheckDestroy: testCheckElasticsearchIndexLifecyclePolicyDestroy,
+		CheckDestroy: testCheckElasticsearchXpackIndexLifecyclePolicyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccElasticsearchIndexLifecyclePolicy,
+				Config: testAccElasticsearchXpackIndexLifecyclePolicy,
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticsearchIndexLifecyclePolicyExists("elasticsearch_index_lifecycle_policy.test"),
+					testCheckElasticsearchXpackIndexLifecyclePolicyExists("elasticsearch_xpack_index_lifecycle_policy.test"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccElasticsearchIndexLifecyclePolicy_importBasic(t *testing.T) {
+func TestAccElasticsearchXpackIndexLifecyclePolicy_importBasic(t *testing.T) {
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
 	if err != nil {
@@ -73,13 +73,13 @@ func TestAccElasticsearchIndexLifecyclePolicy_importBasic(t *testing.T) {
 			}
 		},
 		Providers:    testAccXPackProviders,
-		CheckDestroy: testCheckElasticsearchIndexLifecyclePolicyDestroy,
+		CheckDestroy: testCheckElasticsearchXpackIndexLifecyclePolicyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccElasticsearchIndexLifecyclePolicy,
+				Config: testAccElasticsearchXpackIndexLifecyclePolicy,
 			},
 			{
-				ResourceName:      "elasticsearch_index_lifecycle_policy.test",
+				ResourceName:      "elasticsearch_xpack_index_lifecycle_policy.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -87,7 +87,7 @@ func TestAccElasticsearchIndexLifecyclePolicy_importBasic(t *testing.T) {
 	})
 }
 
-func testCheckElasticsearchIndexLifecyclePolicyExists(name string) resource.TestCheckFunc {
+func testCheckElasticsearchXpackIndexLifecyclePolicyExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -117,9 +117,9 @@ func testCheckElasticsearchIndexLifecyclePolicyExists(name string) resource.Test
 	}
 }
 
-func testCheckElasticsearchIndexLifecyclePolicyDestroy(s *terraform.State) error {
+func testCheckElasticsearchXpackIndexLifecyclePolicyDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "elasticsearch_index_lifecycle_policy" {
+		if rs.Type != "elasticsearch_xpack_index_lifecycle_policy" {
 			continue
 		}
 
@@ -145,8 +145,8 @@ func testCheckElasticsearchIndexLifecyclePolicyDestroy(s *terraform.State) error
 	return nil
 }
 
-var testAccElasticsearchIndexLifecyclePolicy = `
-resource "elasticsearch_index_lifecycle_policy" "test" {
+var testAccElasticsearchXpackIndexLifecyclePolicy = `
+resource "elasticsearch_xpack_index_lifecycle_policy" "test" {
   name = "terraform-test"
   body = <<EOF
 {

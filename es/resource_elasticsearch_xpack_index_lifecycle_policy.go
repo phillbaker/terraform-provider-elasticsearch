@@ -11,32 +11,48 @@ import (
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
-func resourceElasticsearchIndexLifecyclePolicy() *schema.Resource {
+var xPackIndexLifecyclePolicySchema = map[string]*schema.Schema{
+	"name": {
+		Type:     schema.TypeString,
+		ForceNew: true,
+		Required: true,
+	},
+	"body": {
+		Type:             schema.TypeString,
+		Required:         true,
+		DiffSuppressFunc: diffSuppressIndexLifecyclePolicy,
+		ValidateFunc:     validation.StringIsJSON,
+	},
+}
+
+func resourceElasticsearchDeprecatedIndexLifecyclePolicy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceElasticsearchIndexLifecyclePolicyCreate,
-		Read:   resourceElasticsearchIndexLifecyclePolicyRead,
-		Update: resourceElasticsearchIndexLifecyclePolicyUpdate,
-		Delete: resourceElasticsearchIndexLifecyclePolicyDelete,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
-			},
-			"body": {
-				Type:             schema.TypeString,
-				Required:         true,
-				DiffSuppressFunc: diffSuppressIndexLifecyclePolicy,
-				ValidateFunc:     validation.StringIsJSON,
-			},
+		Create: resourceElasticsearchXpackIndexLifecyclePolicyCreate,
+		Read:   resourceElasticsearchXpackIndexLifecyclePolicyRead,
+		Update: resourceElasticsearchXpackIndexLifecyclePolicyUpdate,
+		Delete: resourceElasticsearchXpackIndexLifecyclePolicyDelete,
+		Schema: xPackIndexLifecyclePolicySchema,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
 		},
+		DeprecationMessage: "elasticsearch_index_lifecycle_policy is deprecated, please use elasticsearch_xpack_index_lifecycle_policy resource instead.",
+	}
+}
+
+func resourceElasticsearchXpackIndexLifecyclePolicy() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceElasticsearchXpackIndexLifecyclePolicyCreate,
+		Read:   resourceElasticsearchXpackIndexLifecyclePolicyRead,
+		Update: resourceElasticsearchXpackIndexLifecyclePolicyUpdate,
+		Delete: resourceElasticsearchXpackIndexLifecyclePolicyDelete,
+		Schema: xPackIndexLifecyclePolicySchema,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 	}
 }
 
-func resourceElasticsearchIndexLifecyclePolicyCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceElasticsearchXpackIndexLifecyclePolicyCreate(d *schema.ResourceData, meta interface{}) error {
 	err := resourceElasticsearchPutIndexLifecyclePolicy(d, meta)
 	if err != nil {
 		return err
@@ -45,7 +61,7 @@ func resourceElasticsearchIndexLifecyclePolicyCreate(d *schema.ResourceData, met
 	return nil
 }
 
-func resourceElasticsearchIndexLifecyclePolicyRead(d *schema.ResourceData, meta interface{}) error {
+func resourceElasticsearchXpackIndexLifecyclePolicyRead(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 
 	var result string
@@ -96,11 +112,11 @@ func elastic6IndexGetLifecyclePolicy(client *elastic6.Client, id string) (string
 	return string(tj), nil
 }
 
-func resourceElasticsearchIndexLifecyclePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceElasticsearchXpackIndexLifecyclePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 	return resourceElasticsearchPutIndexLifecyclePolicy(d, meta)
 }
 
-func resourceElasticsearchIndexLifecyclePolicyDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceElasticsearchXpackIndexLifecyclePolicyDelete(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 
 	var err error
