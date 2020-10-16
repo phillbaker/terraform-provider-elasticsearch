@@ -183,7 +183,7 @@ func resourceElasticsearchPutOpenDistroISMPolicy(d *schema.ResourceData, m inter
 	primTerm := d.Get("primary_term").(int)
 	params := url.Values{}
 
-	if seq > 0 && primTerm > 0 {
+	if seq >= 0 && primTerm > 0 {
 		params.Set("if_seq_no", strconv.Itoa(seq))
 		params.Set("if_primary_term", strconv.Itoa(primTerm))
 	}
