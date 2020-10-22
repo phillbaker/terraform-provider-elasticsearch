@@ -176,6 +176,25 @@ func TestAWSCredsEnvNamedProfile(t *testing.T) {
 	os.Unsetenv("AWS_SDK_LOAD_CONFIG")
 }
 
+// Given:
+// 1. An AWS role ARN is specified
+// 2. No additional AWS configuration is provided to the provider
+//
+// This tests that: we can safely generate a session. Note we cannot get the credentials, because that requires connecting to AWS
+func TestAWSCredsAssumeRole(t *testing.T) {
+	testRegion := "us-east-1"
+
+	testConfig := map[string]interface{}{
+		"aws_assume_role_arn": "test_arn",
+	}
+
+	testConfigData := schema.TestResourceDataRaw(t, Provider().(*schema.Provider).Schema, testConfig)
+	s := awsSession(testRegion, testConfigData)
+	if s == nil {
+		t.Fatalf("awsSession returned nil")
+	}
+}
+
 func getCreds(t *testing.T, region string, config map[string]interface{}) credentials.Value {
 	testConfigData := schema.TestResourceDataRaw(t, Provider().(*schema.Provider).Schema, config)
 	s := awsSession(region, testConfigData)
