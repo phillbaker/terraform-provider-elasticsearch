@@ -128,7 +128,7 @@ resource "elasticsearch_kibana_object" "test_dashboard" {
 }
 ```
 
-Example watches (taaget notification actions must be setup manually before hand)
+Example watches (target notification actions must be setup manually before hand)
 
 ```
 # Monitor cluster status with auth being required
