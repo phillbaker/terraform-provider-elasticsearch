@@ -6,6 +6,7 @@
 ### Added
 - Validation for kibana objects to prevent provider crashes.
 - Add XPack license resource, compatible with ES version >= 6.2.
+- Add `assume_role` support for authenticating to AWS
 
 ## [1.4.4] - 2020-09-23
 ### Added
