@@ -128,6 +128,137 @@ resource "elasticsearch_kibana_object" "test_dashboard" {
 }
 ```
 
+Example watches (target notification actions must be setup manually before hand)
+
+```
+# Monitor cluster status with auth being required
+resource "elasticsearch_xpack_watch" "cluster-status-red" {
+  watch_id = "cluster-status-red"
+  body = <<EOF
+{
+  "trigger": {
+    "schedule": {
+      "interval": "1m"
+    }
+  },
+  "input": {
+    "http": {
+      "request": {
+        "scheme": "http",
+        "host": "localhost",
+        "port": 9200,
+        "method": "get",
+        "path": "/_cluster/health",
+        "params": {},
+        "headers": {
+          "Authorization": "Basic ${base64encode('username:password')}"
+        }
+      }
+    }
+  },
+  "condition": {
+    "compare": {
+      "ctx.payload.status": {
+        "eq": "red"
+      }
+    }
+  },
+  "actions": {
+    "notify-slack": {
+      "throttle_period_in_millis": 300000,
+      "slack": {
+        "account": "monitoring",
+        "message": {
+          "from": "watcher",
+          "to": [
+            "#my-slack-channel"
+          ],
+          "text": "Elasticsearch Monitoring",
+          "attachments": [
+            {
+              "color": "danger",
+              "title": "Cluster Health Warning - RED",
+              "text": "elasticsearch cluster health is RED"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "metadata": {
+    "xpack": {
+      "type": "json"
+    },
+    "name": "Cluster Health Red"
+  }
+}
+EOF
+}
+
+# Monitor JVM memory usage without auth required
+resource "elasticsearch_xpack_watch" "jvm-memory-usage" {
+  watch_id = "jvm-memory-usage"
+  body = <<EOF
+{
+  "trigger": {
+    "schedule": {
+      "interval": "10m"
+    }
+  },
+  "input": {
+    "http": {
+      "request": {
+        "scheme": "http",
+        "host": "localhost",
+        "port": 9200,
+        "method": "get",
+        "path": "/_nodes/stats/jvm",
+        "params": {
+                  "filter_path": "nodes.*.jvm.mem.heap_used_percent"
+                },
+        "headers": {}
+      }
+    }
+  },
+  "condition": {
+    "script": {
+      "lang": "painless",
+      "source": "ctx.payload.nodes.values().stream().anyMatch(node -> node.jvm.mem.heap_used_percent > 75)"
+    }
+  },
+  "actions": {
+    "notify-slack": {
+      "throttle_period_in_millis": 600000,
+      "slack": {
+        "account": "monitoring",
+        "message": {
+          "from": "watcher",
+          "to": [
+            "#my-slack-channel"
+          ],
+          "text": "Elasticsearch Monitoring",
+          "attachments": [
+            {
+              "color": "danger",
+              "title": "JVM Memory Pressure Warning",
+              "text": "JVM Memory Pressure has been > 75% on one or more nodes for the last 5 minutes."
+            }
+          ]
+        }
+      }
+    }
+  },
+  "metadata": {
+    "xpack": {
+      "type": "json"
+    },
+    "name": "JVM Memory Pressure Warning"
+  }
+}
+EOF
+}
+```
+
 ### For use with AWS Elasticsearch domains
 
 Please see [the documentation](./docs/index.md#AWS-authentication) for details.
