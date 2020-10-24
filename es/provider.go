@@ -12,8 +12,10 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	awscredentials "github.com/aws/aws-sdk-go/aws/credentials"
+	awsstscreds "github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	awssession "github.com/aws/aws-sdk-go/aws/session"
 	awssigv4 "github.com/aws/aws-sdk-go/aws/signer/v4"
+	awssts "github.com/aws/aws-sdk-go/service/sts"
 	"github.com/deoxxa/aws_signing_client"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/pathorcontents"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -57,6 +59,12 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_PASSWORD", nil),
 				Description: "Password to use to connect to elasticsearch using basic auth",
+			},
+			"aws_assume_role_arn": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "Amazon Resource Name of an IAM Role to assume prior to making AWS API calls.",
 			},
 			"aws_access_key": {
 				Type:        schema.TypeString,
@@ -291,7 +299,21 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	return relevantClient, nil
 }
 
+func assumeRoleCredentials(region, roleARN string) *awscredentials.Credentials {
+	sess := awssession.Must(awssession.NewSession(&aws.Config{
+		Region: aws.String(region),
+	}))
+	stsClient := awssts.New(sess)
+	assumeRoleProvider := &awsstscreds.AssumeRoleProvider{
+		Client:  stsClient,
+		RoleARN: roleARN,
+	}
+
+	return awscredentials.NewChainCredentials([]awscredentials.Provider{assumeRoleProvider})
+}
+
 func awsSession(region string, d *schema.ResourceData) *awssession.Session {
+	aws_assume_role_arn := d.Get("aws_assume_role_arn").(string)
 	aws_access_key_id := d.Get("aws_access_key").(string)
 	aws_secret_access_key := d.Get("aws_secret_key").(string)
 	aws_session_token := d.Get("aws_token").(string)
@@ -303,12 +325,15 @@ func awsSession(region string, d *schema.ResourceData) *awssession.Session {
 		},
 	}
 	// 1. access keys take priority
-	// 2. next is a profile (for assume role)
-	// 3. let the default credentials provider figure out the rest (env, ec2, etc..)
+	// 2. next is an assume role configuration
+	// 3. followed by a profile (for assume role)
+	// 4. let the default credentials provider figure out the rest (env, ec2, etc..)
 	//
 	// note: if #1 is chosen, then no further providers will be tested, since we've overridden the credentials with just a static provider
 	if aws_access_key_id != "" {
 		sessOpts.Config.Credentials = awscredentials.NewStaticCredentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
+	} else if aws_assume_role_arn != "" {
+		sessOpts.Config.Credentials = assumeRoleCredentials(region, aws_assume_role_arn)
 	} else if aws_profile != "" {
 		sessOpts.Profile = aws_profile
 	}

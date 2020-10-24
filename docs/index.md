@@ -61,6 +61,7 @@ The following arguments are supported:
 * `healthcheck` (Optional) - Set the client healthcheck option for the elastic client. Healthchecking is designed for direct access to the cluster. Defaults to `ELASTICSEARCH_HEALTH` from the environment, or true.
 * `username` (Optional) - Username to use to connect to elasticsearch using basic auth. Defaults to `ELASTICSEARCH_USERNAME` from the environment
 * `password` (Optional) - Password to use to connect to elasticsearch using basic auth. Defaults to `ELASTICSEARCH_PASSWORD` from the environment
+* `aws_assume_role_arn` (Optional) - ARN of role to assume when using AWS Elasticsearch Service domains.
 * `aws_access_key` (Optional) - The access key for use with AWS Elasticsearch Service domains. It can also be sourced from the `AWS_ACCESS_KEY_ID` environment variable.
 * `aws_secret_key` (Optional) - The secret key for use with AWS Elasticsearch Service domains. It can also be sourced from the `AWS_SECRET_ACCESS_KEY` environment variable.
 * `aws_token` (Optional) - The session token for use with AWS Elasticsearch Service domains. It can also be sourced from the `AWS_SESSION_TOKEN` environment variable.
@@ -78,6 +79,7 @@ The following arguments are supported:
 The Elasticsearch provider is flexible in the means of providing credentials for authentication with AWS Elasticsearch domains. The following methods are supported, in this order, and explained below:
 
 - Static credentials
+- Assume role configuration
 - Environment variables
 - Shared credentials file
 
@@ -93,6 +95,19 @@ provider "elasticsearch" {
     aws_access_key = "anaccesskey"
     aws_secret_key = "asecretkey"
     aws_token = "" # if necessary
+}
+```
+
+#### Assume role configuration
+
+You can instruct the provider to assume a role in AWS before interacting with Elasticsearch by setting the `aws_assume_role_arn` variable.
+
+Example usage:
+
+```tf
+provider "elasticsearch" {
+    url = "https://search-foo-bar-pqrhr4w3u4dzervg41frow4mmy.us-east-1.es.amazonaws.com"
+    aws_assume_role_arn = "arn:aws:iam::012345678901:role/rolename`
 }
 ```
 
