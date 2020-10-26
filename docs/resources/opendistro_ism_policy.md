@@ -1,7 +1,7 @@
 ---
 layout: "elasticsearch"
 page_title: "Elasticsearch: elasticsearch_opendistro_ism_policy"
-subcategory: "Elasticsearch Opensource"
+subcategory: "Elasticsearch Open Distro"
 description: |-
   Provides an Elasticsearch Open Distro ISM policy.
 ---

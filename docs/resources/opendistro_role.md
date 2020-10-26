@@ -1,7 +1,7 @@
 ---
 layout: "elasticsearch"
 page_title: "Elasticsearch: elasticsearch_opendistro_role"
-subcategory: "Elasticsearch Opensource"
+subcategory: "Elasticsearch Open Distro"
 description: |-
   Provides an Elasticsearch Open Distro security role resource.
 ---
