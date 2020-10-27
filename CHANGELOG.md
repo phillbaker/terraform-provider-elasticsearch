@@ -1,8 +1,16 @@
 # Changelog
 ## Unreleased
 ### Changed
+-
+
+### Added
+-
+
+## [1.5.0] - 2020-10-26
+### Changed
 - Deprecated elasticsearch_index_lifecycle_policy in favor of elasticsearch_xpack_index_lifecycle_policy.
 - Don't recreate indices which are managed by ILM or ISM for the resource `elasticsearch_index` (#75).
+- Fix opendistro ism policy version conflict
 
 ### Added
 - Validation for kibana objects to prevent provider crashes.
