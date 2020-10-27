@@ -2,6 +2,7 @@
 ## Unreleased
 ### Changed
 - Deprecated elasticsearch_index_lifecycle_policy in favor of elasticsearch_xpack_index_lifecycle_policy.
+- Don't recreate indices which are managed by ILM or ISM for the resource `elasticsearch_index` (#75).
 
 ### Added
 - Validation for kibana objects to prevent provider crashes.

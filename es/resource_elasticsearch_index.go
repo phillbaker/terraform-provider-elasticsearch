@@ -103,6 +103,11 @@ var (
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsJSON,
 		},
+		"rollover_alias": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
 	}
 )
 
@@ -209,6 +214,10 @@ func resourceElasticsearchIndexDelete(d *schema.ResourceData, meta interface{}) 
 		err  error
 	)
 
+	if alias, ok := d.GetOk("rollover_alias"); ok {
+		name = getWriteIndexByAlias(alias.(string), d, meta)
+	}
+
 	// check to see if there are documents in the index
 	allowed := allowIndexDestroy(name, d, meta)
 	if !allowed {
@@ -284,6 +293,10 @@ func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) 
 		err  error
 	)
 
+	if alias, ok := d.GetOk("rollover_alias"); ok {
+		name = getWriteIndexByAlias(alias.(string), d, meta)
+	}
+
 	switch client := meta.(type) {
 	case *elastic7.Client:
 		_, err = client.IndexPutSettings(name).BodyJson(body).Do(ctx)
@@ -302,12 +315,65 @@ func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) 
 	return err
 }
 
+func getWriteIndexByAlias(alias string, d *schema.ResourceData, meta interface{}) string {
+	var (
+		index   = d.Id()
+		ctx     = context.Background()
+		columns = []string{"index", "is_write_index"}
+	)
+
+	switch client := meta.(type) {
+	case *elastic7.Client:
+		r, err := client.CatAliases().Alias(alias).Columns(columns...).Do(ctx)
+		if err != nil {
+			log.Printf("[INFO] getWriteIndexByAlias: %+v", err)
+			return index
+		}
+		for _, column := range r {
+			if column.IsWriteIndex == "true" {
+				return column.Index
+			}
+		}
+
+	case *elastic6.Client:
+		r, err := client.CatAliases().Alias(alias).Columns(columns...).Do(ctx)
+		if err != nil {
+			log.Printf("[INFO] getWriteIndexByAlias: %+v", err)
+			return index
+		}
+		for _, column := range r {
+			if column.IsWriteIndex == "true" {
+				return column.Index
+			}
+		}
+
+	default:
+		elastic5Client := meta.(*elastic5.Client)
+		r, err := elastic5Client.CatAliases().Alias(alias).Columns(columns...).Do(ctx)
+		if err != nil {
+			log.Printf("[INFO] getWriteIndexByAlias: %+v", err)
+			return index
+		}
+		for _, column := range r {
+			if column.IsWriteIndex == "true" {
+				return column.Index
+			}
+		}
+	}
+
+	return index
+}
+
 func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) error {
 	var (
 		index    = d.Id()
 		ctx      = context.Background()
 		settings map[string]interface{}
 	)
+
+	if alias, ok := d.GetOk("rollover_alias"); ok {
+		index = getWriteIndexByAlias(alias.(string), d, meta)
+	}
 
 	// The logic is repeated strictly because of the types
 	switch client := meta.(type) {
@@ -341,13 +407,35 @@ func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) er
 		}
 	}
 
-	name := index
-	if providedName, ok := settings["provided_name"].(string); ok {
-		name = providedName
+	// Don't override name otherwise it will force a replacement
+	if _, ok := d.GetOk("name"); !ok {
+		name := index
+		if providedName, ok := settings["provided_name"].(string); ok {
+			name = providedName
+		}
+		err := d.Set("name", name)
+		if err != nil {
+			return err
+		}
 	}
-	err := d.Set("name", name)
-	if err != nil {
-		return err
+
+	// If index is managed by ILM or ISM set rollover_alias
+	if lifecycle, ok := settings["lifecycle"].(map[string]interface{}); ok {
+		if alias, ok := lifecycle["rollover_alias"].(string); ok {
+			err := d.Set("rollover_alias", alias)
+			if err != nil {
+				log.Printf("[INFO] resourceElasticsearchIndexRead: %+v", err)
+			}
+		}
+	} else if opendistro, ok := settings["opendistro"].(map[string]interface{}); ok {
+		if ism, ok := opendistro["index_state_management"].(map[string]interface{}); ok {
+			if alias, ok := ism["rollover_alias"].(string); ok {
+				err := d.Set("rollover_alias", alias)
+				if err != nil {
+					log.Printf("[INFO] resourceElasticsearchIndexRead: %+v", err)
+				}
+			}
+		}
 	}
 
 	indexResourceDataFromSettings(settings, d)

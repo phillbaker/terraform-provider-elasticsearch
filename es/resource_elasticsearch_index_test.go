@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
 	elastic7 "github.com/olivere/elastic/v7"
@@ -43,6 +44,116 @@ resource "elasticsearch_index" "test_date_math" {
   # name = "%3Ctest-%7Bnow%2Fy%7Byyyy%7D%7D-000001%3E"
   number_of_shards = 1
   number_of_replicas = 1
+}
+`
+	testAccElasticsearchIndexRolloverAliasXpack = `
+resource "elasticsearch_index_lifecycle_policy" "test" {
+  name = "terraform-test"
+  body = <<EOF
+{
+  "policy": {
+    "phases": {
+      "hot": {
+        "min_age": "0ms",
+        "actions": {
+          "rollover": {
+            "max_size": "50gb"
+          }
+        }
+      }
+    }
+  }
+}
+EOF
+}
+
+resource "elasticsearch_index_template" "test" {
+  name = "terraform-test"
+  body = <<EOF
+{
+  "index_patterns": ["terraform-test-*"],
+  "settings": {
+    "index": {
+      "lifecycle": {
+        "name": "${elasticsearch_index_lifecycle_policy.test.name}",
+        "rollover_alias": "terraform-test"
+      }
+    }
+  }
+}
+EOF
+}
+
+resource "elasticsearch_index" "test" {
+  name = "terraform-test-000001"
+  number_of_shards = 1
+  number_of_replicas = 1
+  aliases = jsonencode({
+    "terraform-test" = {
+      "is_write_index" = true
+    }
+  })
+
+  depends_on = [elasticsearch_index_template.test]
+}
+`
+	testAccElasticsearchIndexRolloverAliasOpendistro = `
+resource elasticsearch_opendistro_ism_policy "test" {
+  policy_id = "test"
+  body      = <<EOF
+{
+  "policy": {
+    "description": "Terraform Test",
+    "default_state": "hot",
+    "schema_version": 1,
+    "states": [
+      {
+        "name": "hot",
+        "actions": [
+          {
+            "rollover": {
+              "min_size": "50gb"
+            }
+          }
+        ],
+        "transitions": []
+      }
+    ]
+  }
+}
+  EOF
+}
+
+resource "elasticsearch_index_template" "test" {
+  name = "terraform-test"
+  body = <<EOF
+{
+  "index_patterns": ["terraform-test-*"],
+  "settings": {
+    "index": {
+      "opendistro": {
+        "index_state_management": {
+          "policy_id": "${elasticsearch_opendistro_ism_policy.test.policy_id}",
+          "rollover_alias": "terraform-test"
+        }
+      }
+    }
+  }
+}
+EOF
+}
+
+resource "elasticsearch_index" "test" {
+  name = "terraform-test-000001"
+  number_of_shards = 1
+  number_of_replicas = 1
+  aliases = jsonencode({
+    "terraform-test" = {
+      "is_write_index" = true
+    }
+  })
+
+  depends_on = [elasticsearch_index_template.test]
 }
 `
 )
@@ -108,6 +219,98 @@ func TestAccElasticsearchIndex_dateMath(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkElasticsearchIndexExists("elasticsearch_index.test_date_math"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccElasticsearchIndex_rolloverAliasXpack(t *testing.T) {
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var allowed bool
+	switch meta.(type) {
+	case *elastic5.Client:
+		allowed = false
+	default:
+		allowed = true
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+			if !allowed {
+				t.Skip("Index lifecycles only supported on ES >= 6")
+			}
+		},
+		Providers:    testAccXPackProviders,
+		CheckDestroy: checkElasticsearchIndexRolloverAliasDestroy(testAccXPackProvider, "terraform-test"),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccElasticsearchIndexRolloverAliasXpack,
+				Check: resource.ComposeTestCheckFunc(
+					checkElasticsearchIndexRolloverAliasExists(testAccXPackProvider, "terraform-test"),
+				),
+			},
+			{
+				ResourceName:      "elasticsearch_index.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"aliases",       // not handled by this provider
+					"force_destroy", // not returned from the API
+				},
+				ImportStateCheck: checkElasticsearchIndexRolloverAliasState("terraform-test"),
+			},
+		},
+	})
+}
+
+func TestAccElasticsearchIndex_rolloverAliasOpendistro(t *testing.T) {
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var allowed bool
+	switch meta.(type) {
+	case *elastic6.Client:
+		allowed = false
+	case *elastic5.Client:
+		allowed = false
+	default:
+		allowed = true
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+			if !allowed {
+				t.Skip("Opendistro index policies only supported on ES 7")
+			}
+		},
+		Providers:    testAccOpendistroProviders,
+		CheckDestroy: checkElasticsearchIndexRolloverAliasDestroy(testAccOpendistroProvider, "terraform-test"),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccElasticsearchIndexRolloverAliasOpendistro,
+				Check: resource.ComposeTestCheckFunc(
+					checkElasticsearchIndexRolloverAliasExists(testAccOpendistroProvider, "terraform-test"),
+				),
+			},
+			{
+				ResourceName:      "elasticsearch_index.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"aliases",       // not handled by this provider
+					"force_destroy", // not returned from the API
+				},
+				ImportStateCheck: checkElasticsearchIndexRolloverAliasState("terraform-test"),
 			},
 		},
 	})
@@ -217,4 +420,88 @@ func checkElasticsearchIndexDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func checkElasticsearchIndexRolloverAliasExists(provider *schema.Provider, alias string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		meta := provider.Meta()
+
+		var count int
+		switch client := meta.(type) {
+		case *elastic7.Client:
+			r, err := client.CatAliases().Alias(alias).Do(context.TODO())
+			if err != nil {
+				return err
+			}
+			count = len(r)
+		case *elastic6.Client:
+			r, err := client.CatAliases().Alias(alias).Do(context.TODO())
+			if err != nil {
+				return err
+			}
+			count = len(r)
+		default:
+			elastic5Client := meta.(*elastic5.Client)
+			r, err := elastic5Client.CatAliases().Alias(alias).Do(context.TODO())
+			if err != nil {
+				return err
+			}
+			count = len(r)
+		}
+
+		if count == 0 {
+			return fmt.Errorf("rollover alias %q not found", alias)
+		}
+
+		return nil
+	}
+}
+
+func checkElasticsearchIndexRolloverAliasState(alias string) resource.ImportStateCheckFunc {
+	return func(s []*terraform.InstanceState) error {
+		if len(s) != 1 {
+			return fmt.Errorf("expected 1 state: %+v", s)
+		}
+		rs := s[0]
+		if rs.Attributes["rollover_alias"] != alias {
+			return fmt.Errorf("expected rollover alias %q got %q", alias, rs.Attributes["rollover_alias"])
+		}
+
+		return nil
+	}
+}
+
+func checkElasticsearchIndexRolloverAliasDestroy(provider *schema.Provider, alias string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		meta := provider.Meta()
+
+		var count int
+		switch client := meta.(type) {
+		case *elastic7.Client:
+			r, err := client.CatAliases().Alias(alias).Do(context.TODO())
+			if err != nil {
+				return err
+			}
+			count = len(r)
+		case *elastic6.Client:
+			r, err := client.CatAliases().Alias(alias).Do(context.TODO())
+			if err != nil {
+				return err
+			}
+			count = len(r)
+		default:
+			elastic5Client := meta.(*elastic5.Client)
+			r, err := elastic5Client.CatAliases().Alias(alias).Do(context.TODO())
+			if err != nil {
+				return err
+			}
+			count = len(r)
+		}
+
+		if count > 0 {
+			return fmt.Errorf("rollover alias %q still exists", alias)
+		}
+
+		return nil
+	}
 }
