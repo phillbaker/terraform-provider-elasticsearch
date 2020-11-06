@@ -43,7 +43,11 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 							},
 							Set: schema.HashString,
 						},
-						"fls": {
+						"document_level_security": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"field_level_security": {
 							Type:     schema.TypeSet,
 							Optional: true,
 							Elem: &schema.Schema{
@@ -235,10 +239,11 @@ func resourceElasticsearchPutOpenDistroRole(d *schema.ResourceData, m interface{
 	var indexPermissionsBody []IndexPermissions
 	for _, idx := range indexPermissions {
 		putIdx := IndexPermissions{
-			IndexPatterns:  idx.IndexPatterns,
-			Fls:            idx.Fls,
-			MaskedFields:   idx.MaskedFields,
-			AllowedActions: idx.AllowedActions,
+			IndexPatterns:         idx.IndexPatterns,
+			DocumentLevelSecurity: idx.DocumentLevelSecurity,
+			FieldLevelSecurity:    idx.FieldLevelSecurity,
+			MaskedFields:          idx.MaskedFields,
+			AllowedActions:        idx.AllowedActions,
 		}
 		indexPermissionsBody = append(indexPermissionsBody, putIdx)
 	}
@@ -317,10 +322,11 @@ type RoleBody struct {
 }
 
 type IndexPermissions struct {
-	IndexPatterns  []string `json:"index_patterns"`
-	Fls            []string `json:"fls"`
-	MaskedFields   []string `json:"masked_fields"`
-	AllowedActions []string `json:"allowed_actions"`
+	IndexPatterns         []string `json:"index_patterns"`
+	DocumentLevelSecurity string   `json:"dls"`
+	FieldLevelSecurity    []string `json:"fls"`
+	MaskedFields          []string `json:"masked_fields"`
+	AllowedActions        []string `json:"allowed_actions"`
 }
 
 type TenantPermissions struct {

@@ -338,8 +338,11 @@ func flattenIndexPermissions(permissions []IndexPermissions) []map[string]interf
 		if len(permission.IndexPatterns) > 0 {
 			p["index_patterns"] = flattenStringSet(permission.IndexPatterns)
 		}
-		if len(permission.Fls) > 0 {
-			p["fls"] = flattenStringSet(permission.Fls)
+		if len(permission.DocumentLevelSecurity) > 0 {
+			p["document_level_security"] = permission.DocumentLevelSecurity
+		}
+		if len(permission.FieldLevelSecurity) > 0 {
+			p["fields_level_security"] = flattenStringSet(permission.FieldLevelSecurity)
 		}
 		if len(permission.MaskedFields) > 0 {
 			p["masked_fields"] = flattenStringSet(permission.MaskedFields)
@@ -362,10 +365,11 @@ func expandIndexPermissionsSet(resourcesArray []interface{}) ([]IndexPermissions
 			return vperm, fmt.Errorf("Error asserting data as type []byte : %v", item)
 		}
 		obj := IndexPermissions{
-			IndexPatterns:  expandStringList(data["index_patterns"].(*schema.Set).List()),
-			Fls:            expandStringList(data["fls"].(*schema.Set).List()),
-			MaskedFields:   expandStringList(data["masked_fields"].(*schema.Set).List()),
-			AllowedActions: expandStringList(data["allowed_actions"].(*schema.Set).List()),
+			IndexPatterns:         expandStringList(data["index_patterns"].(*schema.Set).List()),
+			DocumentLevelSecurity: data["document_level_security"].(string),
+			FieldLevelSecurity:    expandStringList(data["field_level_security"].(*schema.Set).List()),
+			MaskedFields:          expandStringList(data["masked_fields"].(*schema.Set).List()),
+			AllowedActions:        expandStringList(data["allowed_actions"].(*schema.Set).List()),
 		}
 		vperm = append(vperm, obj)
 	}
@@ -424,7 +428,12 @@ func indexPermissionsHash(v interface{}) int {
 			buf.WriteString(fmt.Sprintf("%s-", v))
 		}
 	}
-	if v, ok := m["fls"]; ok {
+
+	if v, ok := m["document_level_security"]; ok {
+		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
+	}
+
+	if v, ok := m["field_level_security"]; ok {
 		vs := v.(*schema.Set).List()
 		s := make([]string, len(vs))
 		for i, raw := range vs {

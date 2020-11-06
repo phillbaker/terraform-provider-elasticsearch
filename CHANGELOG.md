@@ -1,16 +1,17 @@
 # Changelog
 ## Unreleased
 ### Changed
--
+- [open distro role] Rename fls in favor of field_level_security
 
 ### Added
--
+- [open distro role] Add support for OpenDistro document-level-security in role.
 
 ## [1.5.1] - 2020-12-23
 ### Changed
 - Gracefully handle the case where `elasticsearch_index_template` objects exist in the terraform state but not in the ES domain (e.g. because they were manually deleted.)
 - Create index `aliases` and `mappings` even if no settings are set.
 - Bump aws client to v1.35.33.
+<<<<<<< HEAD
 - Allow provider variable interpolation by deferring client instantiation, `providerConfigure` only returns a configuration struct.
 - Fix XPack license resource having perpetual diff if using basic license.
 - [aws auth] Pass profile on assume role.
