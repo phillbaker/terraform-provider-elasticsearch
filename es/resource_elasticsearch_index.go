@@ -134,26 +134,26 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 	)
 	if len(settings) > 0 {
 		body["settings"] = settings
+	}
 
-		if aliasJson, ok := d.GetOk("aliases"); ok {
-			var aliases map[string]interface{}
-			bytes := []byte(aliasJson.(string))
-			err = json.Unmarshal(bytes, &aliases)
-			if err != nil {
-				return fmt.Errorf("fail to unmarshal: %v", err)
-			}
-			body["aliases"] = aliases
+	if aliasJSON, ok := d.GetOk("aliases"); ok {
+		var aliases map[string]interface{}
+		bytes := []byte(aliasJSON.(string))
+		err = json.Unmarshal(bytes, &aliases)
+		if err != nil {
+			return fmt.Errorf("fail to unmarshal: %v", err)
 		}
+		body["aliases"] = aliases
+	}
 
-		if mappingsJson, ok := d.GetOk("mappings"); ok {
-			var mappings map[string]interface{}
-			bytes := []byte(mappingsJson.(string))
-			err = json.Unmarshal(bytes, &mappings)
-			if err != nil {
-				return fmt.Errorf("fail to unmarshal: %v", err)
-			}
-			body["mappings"] = mappings
+	if mappingsJSON, ok := d.GetOk("mappings"); ok {
+		var mappings map[string]interface{}
+		bytes := []byte(mappingsJSON.(string))
+		err = json.Unmarshal(bytes, &mappings)
+		if err != nil {
+			return fmt.Errorf("fail to unmarshal: %v", err)
 		}
+		body["mappings"] = mappings
 	}
 
 	// if date math is used, we need to pass the resolved name along to the read

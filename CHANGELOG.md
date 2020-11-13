@@ -1,7 +1,7 @@
 # Changelog
 ## Unreleased
 ### Changed
--
+- Create index `aliases` and `mappings` even if no settings are set.
 
 ### Added
 -
