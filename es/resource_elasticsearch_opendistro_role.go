@@ -47,6 +47,15 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
+						"fls": {
+							Type:     schema.TypeSet,
+							Optional: true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Set:        schema.HashString,
+							Deprecated: "`fls` has been deprecated, please use `field_level_security`",
+						},
 						"field_level_security": {
 							Type:     schema.TypeSet,
 							Optional: true,
@@ -143,7 +152,7 @@ func resourceElasticsearchOpenDistroRoleRead(d *schema.ResourceData, m interface
 	if err := d.Set("cluster_permissions", res.ClusterPermissions); err != nil {
 		return fmt.Errorf("error setting cluster_permissions: %s", err)
 	}
-	if err := d.Set("index_permissions", flattenIndexPermissions(res.IndexPermissions)); err != nil {
+	if err := d.Set("index_permissions", flattenIndexPermissions(res.IndexPermissions, d)); err != nil {
 		return fmt.Errorf("error setting index_permissions: %s", err)
 	}
 	if err := d.Set("description", res.Description); err != nil {

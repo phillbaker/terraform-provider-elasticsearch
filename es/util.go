@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic5 "gopkg.in/olivere/elastic.v5"
@@ -330,9 +329,11 @@ func (ds *resourceDataSetter) set(key string, value interface{}) {
 	ds.err = ds.d.Set(key, value)
 }
 
-func flattenIndexPermissions(permissions []IndexPermissions) []map[string]interface{} {
+func flattenIndexPermissions(permissions []IndexPermissions, d *schema.ResourceData) []map[string]interface{} {
+	indexPermission := d.Get("index_permissions").(*schema.Set).List()
+
 	result := make([]map[string]interface{}, 0, len(permissions))
-	for _, permission := range permissions {
+	for idx, permission := range permissions {
 		p := make(map[string]interface{})
 
 		if len(permission.IndexPatterns) > 0 {
@@ -341,9 +342,17 @@ func flattenIndexPermissions(permissions []IndexPermissions) []map[string]interf
 		if len(permission.DocumentLevelSecurity) > 0 {
 			p["document_level_security"] = permission.DocumentLevelSecurity
 		}
-		if len(permission.FieldLevelSecurity) > 0 {
-			p["fields_level_security"] = flattenStringSet(permission.FieldLevelSecurity)
+
+		indexPermissionSchema := indexPermission[idx].(map[string]interface{})
+		fls := indexPermissionSchema["fls"].(*schema.Set).List()
+		useDeprecatedFls := len(fls) > 0
+		if useDeprecatedFls && len(permission.FieldLevelSecurity) > 0 {
+			p["fls"] = flattenStringSet(permission.FieldLevelSecurity)
 		}
+		if !useDeprecatedFls && len(permission.FieldLevelSecurity) > 0 {
+			p["field_level_security"] = flattenStringSet(permission.FieldLevelSecurity)
+		}
+
 		if len(permission.MaskedFields) > 0 {
 			p["masked_fields"] = flattenStringSet(permission.MaskedFields)
 		}
@@ -364,10 +373,17 @@ func expandIndexPermissionsSet(resourcesArray []interface{}) ([]IndexPermissions
 		if !ok {
 			return vperm, fmt.Errorf("Error asserting data as type []byte : %v", item)
 		}
+
+		fls := data["fls"]
+		if len(fls.(*schema.Set).List()) == 0 {
+			fls = data["field_level_security"]
+		}
+		flsList := fls.(*schema.Set).List()
+
 		obj := IndexPermissions{
 			IndexPatterns:         expandStringList(data["index_patterns"].(*schema.Set).List()),
 			DocumentLevelSecurity: data["document_level_security"].(string),
-			FieldLevelSecurity:    expandStringList(data["field_level_security"].(*schema.Set).List()),
+			FieldLevelSecurity:    expandStringList(flsList),
 			MaskedFields:          expandStringList(data["masked_fields"].(*schema.Set).List()),
 			AllowedActions:        expandStringList(data["allowed_actions"].(*schema.Set).List()),
 		}
@@ -431,6 +447,19 @@ func indexPermissionsHash(v interface{}) int {
 
 	if v, ok := m["document_level_security"]; ok {
 		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
+	}
+
+	if v, ok := m["fls"]; ok {
+		vs := v.(*schema.Set).List()
+		s := make([]string, len(vs))
+		for i, raw := range vs {
+			s[i] = raw.(string)
+		}
+		sort.Strings(s)
+
+		for _, v := range s {
+			buf.WriteString(fmt.Sprintf("%s-", v))
+		}
 	}
 
 	if v, ok := m["field_level_security"]; ok {
