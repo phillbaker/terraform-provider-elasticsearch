@@ -2,6 +2,7 @@
 ## Unreleased
 ### Changed
 - Create index `aliases` and `mappings` even if no settings are set.
+- Bump aws client to v1.35.33.
 
 ### Added
 -

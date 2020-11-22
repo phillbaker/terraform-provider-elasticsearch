@@ -3,7 +3,7 @@ module github.com/phillbaker/terraform-provider-elasticsearch
 go 1.12
 
 require (
-	github.com/aws/aws-sdk-go v1.33.5
+	github.com/aws/aws-sdk-go v1.35.33
 	github.com/deoxxa/aws_signing_client v0.0.0-20161109131055-c20ee106809e
 	github.com/hashicorp/terraform-plugin-sdk v1.12.0
 	github.com/olivere/elastic v6.2.26+incompatible
