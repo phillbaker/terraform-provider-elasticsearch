@@ -110,34 +110,6 @@ func testCheckElasticsearchLicenseDestroy(s *terraform.State) error {
 
 		meta := testAccXPackProvider.Meta()
 
-		// switch meta.(type) {
-		// case *elastic7.Client:
-		// 	client := meta.(*elastic7.Client)
-		// 	res, err := client.API.License.Get(
-		// 		client.API.License.Get.WithContext(context.Background()),
-		// 		client.API.License.Get.WithPretty(),
-		// 	)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	defer res.Body.Close()
-		// 	if res.IsError() {
-		// 		if res.StatusCode == 404 {
-
-		// 			err = forceBasicLicense()
-		// 			if err != nil {
-		// 				return errors.New("Error when enabled trial license for other tests. You need to check by your hand")
-		// 			}
-
-		// 			return nil
-		// 		} else {
-		// 			return err
-		// 		}
-		// 	}
-		// default:
-		// 	return errors.New("License is only supported by the elastic library >= v6!")
-		// }
-
 		var err error
 		switch client := meta.(type) {
 		case *elastic7.Client:
@@ -161,30 +133,6 @@ func testCheckElasticsearchLicenseDestroy(s *terraform.State) error {
 
 	return nil
 }
-
-// func forceBasicLicense() error {
-// 	meta := testAccProvider.Meta()
-
-// 	switch meta.(type) {
-// 	case *elastic7.Client:
-// 		client := meta.(*elastic7.Client)
-// 		res, err := client.API.License.PostStartBasic(
-// 			client.API.License.PostStartBasic.WithContext(context.Background()),
-// 			client.API.License.PostStartBasic.WithPretty(),
-// 			client.API.License.PostStartBasic.WithAcknowledge(true),
-// 		)
-
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		if res.IsError() {
-// 			return errors.New("Error when enabled basic license")
-// 		}
-// 	}
-
-// 	return nil
-// }
 
 var testElasticsearchLicense = `
 resource "elasticsearch_xpack_license" "test" {

@@ -196,23 +196,18 @@ func resourceElasticsearchPutEnterpriseLicense(l string, meta interface{}) (Lice
 
 func resourceElasticsearchPostBasicLicense(meta interface{}) (License, error) {
 	var l License
-	// var body json.RawMessage
 	var err error
 	switch client := meta.(type) {
 	case *elastic7.Client:
-		// var res *elastic7.Response
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "POST",
 			Path:   "/_license/start_basic?acknowledge=true",
 		})
-		// body = res.Body
 	case *elastic6.Client:
-		// var res *elastic6.Response
 		_, err = client.PerformRequest(context.TODO(), elastic6.PerformRequestOptions{
 			Method: "POST",
 			Path:   "/_xpack/license/start_basic?acknowledge=true",
 		})
-		// body = res.Body
 	default:
 		return l, errors.New("License is only supported by the elastic library >= v6!")
 	}
@@ -220,13 +215,6 @@ func resourceElasticsearchPostBasicLicense(meta interface{}) (License, error) {
 	if err != nil {
 		return l, err
 	}
-	// var licenseResponse map[string][]License
-
-	// if err := json.Unmarshal(body, &licenseResponse); err != nil {
-	// 	return l, fmt.Errorf("Error unmarshalling license body: %+v: %+v", err, body)
-	// }
-
-	// return licenseResponse["licenses"][0], err
 	return resourceElasticsearchGetXpackLicense(meta)
 }
 
