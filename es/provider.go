@@ -227,6 +227,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	// Use the v7 client to ping the cluster to determine the version if one was not provided
 	if esVersion == "" {
+		log.Printf("[INFO] Pinging url to determine version %+v", rawUrl)
 		info, _, err := client.Ping(rawUrl).Do(context.TODO())
 		if err != nil {
 			return nil, err
@@ -300,9 +301,12 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	return relevantClient, nil
 }
 
-func assumeRoleCredentials(region, roleARN string) *awscredentials.Credentials {
-	sess := awssession.Must(awssession.NewSession(&aws.Config{
-		Region: aws.String(region),
+func assumeRoleCredentials(region, roleARN, profile string) *awscredentials.Credentials {
+	sess := awssession.Must(awssession.NewSessionWithOptions(awssession.Options{
+		Profile: profile,
+		Config: aws.Config{
+			Region: aws.String(region),
+		},
 	}))
 	stsClient := awssts.New(sess)
 	assumeRoleProvider := &awsstscreds.AssumeRoleProvider{
@@ -314,11 +318,13 @@ func assumeRoleCredentials(region, roleARN string) *awscredentials.Credentials {
 }
 
 func awsSession(region string, d *schema.ResourceData) *awssession.Session {
-	aws_assume_role_arn := d.Get("aws_assume_role_arn").(string)
-	aws_access_key_id := d.Get("aws_access_key").(string)
-	aws_secret_access_key := d.Get("aws_secret_key").(string)
-	aws_session_token := d.Get("aws_token").(string)
-	aws_profile := d.Get("aws_profile").(string)
+	insecure := d.Get("insecure").(bool)
+
+	awsAssumeRoleArn := d.Get("aws_assume_role_arn").(string)
+	awsAccessKeyId := d.Get("aws_access_key").(string)
+	awsSecretAccessKey := d.Get("aws_secret_key").(string)
+	awsSessionToken := d.Get("aws_token").(string)
+	awsProfile := d.Get("aws_profile").(string)
 
 	sessOpts := awssession.Options{
 		Config: aws.Config{
@@ -331,12 +337,20 @@ func awsSession(region string, d *schema.ResourceData) *awssession.Session {
 	// 4. let the default credentials provider figure out the rest (env, ec2, etc..)
 	//
 	// note: if #1 is chosen, then no further providers will be tested, since we've overridden the credentials with just a static provider
-	if aws_access_key_id != "" {
-		sessOpts.Config.Credentials = awscredentials.NewStaticCredentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
-	} else if aws_assume_role_arn != "" {
-		sessOpts.Config.Credentials = assumeRoleCredentials(region, aws_assume_role_arn)
-	} else if aws_profile != "" {
-		sessOpts.Profile = aws_profile
+	if awsAccessKeyId != "" {
+		sessOpts.Config.Credentials = awscredentials.NewStaticCredentials(awsAccessKeyId, awsSecretAccessKey, awsSessionToken)
+	} else if awsAssumeRoleArn != "" {
+		sessOpts.Config.Credentials = assumeRoleCredentials(region, awsAssumeRoleArn, awsProfile)
+	} else if awsProfile != "" {
+		sessOpts.Profile = awsProfile
+	}
+
+	// If configured as insecure, turn off SSL verification
+	if insecure {
+		client := &http.Client{Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}}
+		sessOpts.Config.HTTPClient = client
 	}
 
 	return awssession.Must(awssession.NewSessionWithOptions(sessOpts))
