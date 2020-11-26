@@ -3,6 +3,7 @@ package es
 import (
 	"context"
 	"encoding/json"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -60,6 +61,12 @@ func resourceElasticsearchIndexTemplateRead(d *schema.ResourceData, meta interfa
 		result, err = elastic5IndexGetTemplate(elastic5Client, id)
 	}
 	if err != nil {
+		if elastic7.IsNotFound(err) || elastic6.IsNotFound(err) || elastic5.IsNotFound(err) {
+			log.Printf("[WARN] Index template (%s) not found, removing from state", id)
+			d.SetId("")
+			return nil
+		}
+
 		return err
 	}
 
