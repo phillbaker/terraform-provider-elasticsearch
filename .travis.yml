@@ -2,7 +2,8 @@ sudo: required # required for docker
 language: go
 go:
   - '1.14'
-  - master
+git:
+  depth: false # we depend on full git history for linters
 cache:
   directories:
     - $HOME/gopath/pkg/mod
@@ -34,8 +35,8 @@ install:
   - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.27.0
 before_script:
   - export GO111MODULE=on
-  # linters and checks
-  - golangci-lint run --new-from-rev=bf51aaa --timeout=10m
+  # Linters and checks
+  - golangci-lint run --new-from-rev=bf51aaa --verbose --timeout=10m
   - ./script/test-mod-tidy
   # ensure that ES has come up and is available
   - wget -q --waitretry=1 --retry-connrefused --tries=60 --timeout 60 -O - $ELASTICSEARCH_URL
