@@ -17,15 +17,144 @@ import (
 )
 
 var openDistroMonitorSchema = map[string]*schema.Schema{
+	"name": {
+		Type:          schema.TypeString,
+		Optional:      true,
+		ConflictsWith: []string{"body"},
+	},
+	"enabled": {
+		Type:          schema.TypeBool,
+		Description:   "A boolean that indicates that the monitor should evaluated",
+		Default:       true,
+		Optional:      true,
+		ConflictsWith: []string{"body"},
+	},
+	"schedule_interval": {
+		Type:          schema.TypeString,
+		Optional:      true,
+		ConflictsWith: []string{"body"},
+	},
+	"schedule_unit": {
+		Type:          schema.TypeString,
+		Optional:      true,
+		ConflictsWith: []string{"body"},
+	},
+	"inputs": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"search_indices": {
+					Type:     schema.TypeSet,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+					Set: schema.HashString,
+				},
+				"search_query": {
+					Type:     schema.TypeString,
+					Required: true,
+					StateFunc: func(v interface{}) string {
+						json, _ := structure.NormalizeJsonString(v)
+						return json
+					},
+					ValidateFunc: validation.StringIsJSON,
+				},
+				// OpenDistro seems to add default values to the object after the resource
+				// is saved, e.g. adjust_pure_negative, boost values, so we save the
+				// response in a separate attribute
+				"search_query_response": {
+					Type:        schema.TypeString,
+					Description: "The value of the search query as returned",
+					Computed:    true,
+				},
+				"terminate_after": {
+					Type:     schema.TypeInt,
+					Optional: true,
+				},
+			},
+		},
+		// Set:           monitorInputsHash,
+		ConflictsWith: []string{"body"},
+	},
+	"triggers": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"name": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"severity": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"condition_script": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"condition_language": {
+					Type:     schema.TypeString,
+					Optional: true,
+					Default:  "painless",
+				},
+				"actions": {
+					Type:     schema.TypeSet,
+					Optional: true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"name": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"destination_id": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"message_template": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"message_language": {
+								Type:     schema.TypeString,
+								Optional: true,
+								Default:  "mustache",
+							},
+							"subject_template": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"subject_language": {
+								Type:     schema.TypeString,
+								Optional: true,
+								Default:  "mustache",
+							},
+							"throttle_enabled": {
+								Type:     schema.TypeBool,
+								Default:  false,
+								Optional: true,
+							},
+						},
+					},
+					// Set: monitorActionsHash,
+				},
+			},
+		},
+		// Set:           monitorTriggersHash,
+		ConflictsWith: []string{"body"},
+	},
 	"body": {
 		Type:             schema.TypeString,
-		Required:         true,
+		Optional:         true,
 		DiffSuppressFunc: diffSuppressMonitor,
 		StateFunc: func(v interface{}) string {
 			json, _ := structure.NormalizeJsonString(v)
 			return json
 		},
-		ValidateFunc: validation.StringIsJSON,
+		ValidateFunc:  validation.StringIsJSON,
+		ConflictsWith: []string{"name", "enabled", "schedule_interval", "schedule_unit", "inputs", "triggers"},
 	},
 }
 
@@ -189,10 +318,31 @@ func resourceElasticsearchOpenDistroGetMonitor(monitorID string, m interface{}) 
 }
 
 func resourceElasticsearchOpenDistroPostMonitor(d *schema.ResourceData, m interface{}) (*monitorResponse, error) {
-	monitorJSON := d.Get("body").(string)
-
 	var err error
 	response := new(monitorResponse)
+
+	monitorJSON := d.Get("body").(string)
+	if monitorJSON == "" {
+		// we have to build the json from the attributes
+		monitorDefinition := monitor{
+			Name:    d.Get("name").(string),
+			Enabled: d.Get("enabled").(bool),
+			Schedule: monitorSchedule{
+				Period: monitorPeriod{
+					Interval: d.Get("schedule_interval").(int),
+					Unit:     d.Get("schedule_unit").(string),
+				},
+			},
+			// Inputs: ,
+			// Triggers: ,
+		}
+
+		monitorJSONBytes, err := json.Marshal(monitorDefinition)
+		monitorJSON = string(monitorJSONBytes)
+		if err != nil {
+			return response, fmt.Errorf("Body Error : %s", monitorJSON)
+		}
+	}
 
 	path := "/_opendistro/_alerting/monitors/"
 
@@ -281,6 +431,47 @@ func resourceElasticsearchOpenDistroPutMonitor(d *schema.ResourceData, m interfa
 	}
 
 	return response, nil
+}
+
+type monitorAction struct {
+	Name            string `json:"name"`
+	DestinationId   string `json:"destination_id"`
+	MessageTemplate string `json:"message_template"`
+	MessageLanguage string `json:"message_lang"`
+	SubjectTemplate string `json:"subject_template"`
+	SubjectLanguage string `json:"subject_lang"`
+	ThrottleEnabled bool   `json:"throttle_enabled"`
+}
+
+type monitorTrigger struct {
+	Name              string          `json:"name"`
+	Severity          string          `json:"severity"`
+	ConditionScript   string          `json:"condition_script"`
+	ConditionLanguage string          `json:"condition_lang"`
+	Actions           []monitorAction `json:"actions"`
+}
+
+type monitorInput struct {
+	SearchIndices  []string `json:"indices"`
+	SearchQuery    string   `json:"query"`
+	TerminateAfter int      `json:"terminate_after"`
+}
+
+type monitorPeriod struct {
+	Interval int    `json:"interval"`
+	Unit     string `json:"unit"`
+}
+
+type monitorSchedule struct {
+	Period monitorPeriod `json:"period"`
+}
+
+type monitor struct {
+	Name     string           `json:"name"`
+	Enabled  bool             `json:"enabled"`
+	Schedule monitorSchedule  `json:"schedule"`
+	Inputs   []monitorInput   `json:"inputs"`
+	Triggers []monitorTrigger `json:"triggers"`
 }
 
 type monitorResponse struct {
