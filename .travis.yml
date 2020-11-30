@@ -13,7 +13,7 @@ env:
     - secure: vSQRrg0xFXWfVJrqDA+QLy9xly2M55KhYFCLCotAyLYtf0nWjCcN5rsMcDT+Ik+fwcP24ykdw+4iBqorWxJqGedHtS7fmXcQqSr89lUMij/8ubZeV/mJ1bIpgGzf6FfLYFb1O7MP+D1eLzOFzc7rmAwY8JhRDVJd0j9DdP/pqFB7dAk8W5viIja51vFXENA8XZNinkyXXGkTCCPCRIScBlYLm45B2LSpTBB/WSJqjj+twcpjUJVA0fcfSMDHmcjivL5gJH2l2PZr8NyUme69PQ5BiDVKPuBo5x+naEFBkqpayHoojTYfpzXuWH+0rU2f+GjQJJkldwvmkmhRQ5eMPBjtJl7As3lGxHNs8KaxY5evbmDy2mJMKTMiHSeF4ZdyUra1wKbm1xpUJI1x/46GOAAhwkLRv6vtb9Rrm0Lb3AMIH13Qb4+XuGkEau+0XOkmx22Kz5uGTeCnoZ65hzzBkKLlrpoOc8J7vmM4TBUuN26ayVv6FWf46aRlHptwWJ9znxOjP2A7+rZGL5haQB2y1S97gwt//PRPHcaTwwjZWcVN++Je65Pc1GWxyf3zSMR540lPu1B/RM+x30GlWywQWE/Q18burnzT9KoIY6cPiwE/Ko0e4GHFagGSh5OdY1H3SctMq0dRi7SjuQQb/VmS0N6k0+M5pW8IcFQMzekis4M=
   jobs:
     - ES_VERSION=5.6.16 ES_OSS_IMAGE=elasticsearch:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_COMMAND="elasticsearch -Epath.repo=/tmp"
-    - ES_VERSION=6.8.0 ES_OSS_IMAGE=docker.elastic.co/elasticsearch/elasticsearch-oss:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_OPENDISTRO_IMAGE=amazon/opendistro-for-elasticsearch:0.9.0
+    - ES_VERSION=6.8.9 ES_OSS_IMAGE=docker.elastic.co/elasticsearch/elasticsearch-oss:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_OPENDISTRO_IMAGE=amazon/opendistro-for-elasticsearch:0.9.0
     - ES_VERSION=7.6.1 ES_OSS_IMAGE=docker.elastic.co/elasticsearch/elasticsearch-oss:${ES_VERSION} ES_IMAGE=docker.elastic.co/elasticsearch/elasticsearch:${ES_VERSION} ES_OPENDISTRO_IMAGE=amazon/opendistro-for-elasticsearch:1.6.0
 addons:
   ssh_known_hosts: github.com
