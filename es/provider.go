@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -35,6 +36,8 @@ type ProviderConf struct {
 	cacertFile         string
 	username           string
 	password           string
+	token              string
+	tokenName          string
 	parsedUrl          *url.URL
 	signAWSRequests    bool
 	esVersion          string
@@ -80,6 +83,18 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_PASSWORD", nil),
 				Description: "Password to use to connect to elasticsearch using basic auth",
+			},
+			"token": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "A bearer token or ApiKey for an Authorization header, e.g. Active Directory API key.",
+			},
+			"token_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "ApiKey",
+				Description: "The type of token, usually ApiKey or Bearer",
 			},
 			"aws_assume_role_arn": {
 				Type:        schema.TypeString,
@@ -216,6 +231,8 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		cacertFile:      d.Get("cacert_file").(string),
 		username:        d.Get("username").(string),
 		password:        d.Get("password").(string),
+		token:           d.Get("token").(string),
+		tokenName:       d.Get("token_name").(string),
 		parsedUrl:       parsedUrl,
 		signAWSRequests: d.Get("sign_aws_requests").(bool),
 		esVersion:       d.Get("elasticsearch_version").(string),
@@ -254,6 +271,8 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(awsRegion, conf)), elastic7.SetSniff(false))
 	} else if conf.insecure || conf.cacertFile != "" {
 		opts = append(opts, elastic7.SetHttpClient(tlsHttpClient(conf)), elastic7.SetSniff(false))
+	} else if conf.token != "" {
+		opts = append(opts, elastic7.SetHttpClient(tokenHttpClient(conf.token, conf.tokenName, conf.insecure)), elastic7.SetSniff(false))
 	}
 
 	var relevantClient interface{}
@@ -298,7 +317,10 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 			opts = append(opts, elastic6.SetHttpClient(awsHttpClient(awsRegion, conf)), elastic6.SetSniff(false))
 		} else if conf.insecure || conf.cacertFile != "" {
 			opts = append(opts, elastic6.SetHttpClient(tlsHttpClient(conf)), elastic6.SetSniff(false))
+		} else if conf.token != "" {
+			opts = append(opts, elastic6.SetHttpClient(tokenHttpClient(conf.token, conf.tokenName, conf.insecure)), elastic6.SetSniff(false))
 		}
+
 		relevantClient, err = elastic6.NewClient(opts...)
 		if err != nil {
 			return nil, err
@@ -327,7 +349,10 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 			opts = append(opts, elastic5.SetHttpClient(awsHttpClient(awsRegion, conf)), elastic5.SetSniff(false))
 		} else if conf.insecure || conf.cacertFile != "" {
 			opts = append(opts, elastic5.SetHttpClient(tlsHttpClient(conf)), elastic5.SetSniff(false))
+		} else if conf.token != "" {
+			opts = append(opts, elastic5.SetHttpClient(tokenHttpClient(conf.token, conf.tokenName, conf.insecure)), elastic5.SetSniff(false))
 		}
+
 		relevantClient, err = elastic5.NewClient(opts...)
 		if err != nil {
 			return nil, err
@@ -390,8 +415,21 @@ func awsHttpClient(region string, conf *ProviderConf) *http.Client {
 	return client
 }
 
-func tlsHttpClient(conf *ProviderConf) *http.Client {
+func tokenHttpClient(token string, tokenName string, insecure bool) *http.Client {
+	client := http.DefaultClient
 
+	rt := WithHeader(client.Transport)
+	rt.Set("Authorization", fmt.Sprintf("%s %s", tokenName, token))
+	client.Transport = rt
+
+	if insecure {
+		client.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify = true
+	}
+
+	return client
+}
+
+func tlsHttpClient(conf *ProviderConf) *http.Client {
 	// Configure TLS/SSL
 	tlsConfig := &tls.Config{}
 	if conf.certPemPath != "" && conf.keyPemPath != "" {

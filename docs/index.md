@@ -67,6 +67,8 @@ The following arguments are supported:
 * `aws_token` (Optional) - The session token for use with AWS Elasticsearch Service domains. It can also be sourced from the `AWS_SESSION_TOKEN` environment variable.
 * `aws_profile` (Optional) - The AWS profile for use with AWS Elasticsearch Service domains
 * `aws_region` (Optional) - The AWS region for use in signing of AWS elasticsearch requests. Must be specified in order to use AWS URL signing with AWS ElasticSearch endpoint exposed on a custom DNS domain.
+* `token` (Optional) - A bearer token or ApiKey for an Authorization header, e.g. Active Directory API key. See the [docs](https://www.elastic.co/guide/en/elasticsearch/reference/master/token-authentication-services.html).
+* `token_name` (Optional) - The type of token, usually ApiKey or Bearer. Defaults to ApiKey.
 * `cacert_file` (Optional) - a custom CA certificate when communicating over SSL. You can specify either a path to the file or the contents of the certificate.
 * `insecure` (Optional) - Disable SSL verification of API calls (defaults to `false`)
 * `client_cert_path` (Optional) - A X509 certificate to connect to elasticsearch. Defaults to `ES_CLIENT_CERTIFICATE_PATH` from the environment

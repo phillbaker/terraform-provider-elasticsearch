@@ -3,6 +3,7 @@
 ### Changed
 
 ### Added
+- Support for specifying Authorization header (Bearer or ApiKey) to authenticate to elasticsearch.
 
 ### Fixed
 
@@ -49,7 +50,6 @@
 
 ### Added
 - Composable Index Template resource, available in ESv7.8+
-
 
 ## [1.5.0] - 2020-10-26
 ### Changed
