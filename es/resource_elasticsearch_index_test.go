@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -28,6 +29,27 @@ resource "elasticsearch_index" "test" {
   name = "terraform-test"
   number_of_shards = 1
   number_of_replicas = 2
+}
+`
+	testAccElasticsearchIndexInvalid = `
+resource "elasticsearch_index" "test" {
+  name = "terraform-test"
+  number_of_shards = 1
+  number_of_replicas = 1
+  mappings = <<EOF
+{
+  "people": {
+    "_all": {
+      "enabled": "true"
+    },
+    "properties": {
+      "email": {
+        "type": "text"
+      }
+    }
+  }
+}
+EOF
 }
 `
 	testAccElasticsearchIndexUpdateForceDestroy = `
@@ -181,6 +203,39 @@ func TestAccElasticsearchIndex(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkElasticsearchIndexUpdated("elasticsearch_index.test"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccElasticsearchIndex_handleInvalid(t *testing.T) {
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	var allowed bool
+	switch meta.(type) {
+	case *elastic5.Client:
+		allowed = false
+	default:
+		allowed = true
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+			if !allowed {
+				t.Skip("Only tested on ES >= 6")
+			}
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: checkElasticsearchIndexDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccElasticsearchIndexInvalid,
+				ExpectError: regexp.MustCompile("Failed to parse mapping"),
 			},
 		},
 	})

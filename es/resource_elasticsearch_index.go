@@ -165,19 +165,26 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 	switch client := meta.(type) {
 	case *elastic7.Client:
 		resp, requestErr := client.CreateIndex(name).BodyJson(body).Do(ctx)
-		resolvedName = resp.Index
 		err = requestErr
+		if err == nil {
+			resolvedName = resp.Index
+		}
 
 	case *elastic6.Client:
 		resp, requestErr := client.CreateIndex(name).BodyJson(body).Do(ctx)
-		resolvedName = resp.Index
 		err = requestErr
+		if err == nil {
+			resolvedName = resp.Index
+		}
 
 	default:
 		elastic5Client := meta.(*elastic5.Client)
 		resp, requestErr := elastic5Client.CreateIndex(name).BodyJson(body).Do(ctx)
-		resolvedName = resp.Index
 		err = requestErr
+		if err == nil {
+			resolvedName = resp.Index
+		}
+
 	}
 
 	if err == nil {
