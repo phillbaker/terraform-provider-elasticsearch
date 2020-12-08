@@ -27,7 +27,11 @@ func TestAccElasticsearchLicense_Basic(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var allowed bool
-	switch meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -81,7 +85,11 @@ func testCheckElasticsearchLicenseExists(name string) resource.TestCheckFunc {
 		meta := testAccXPackProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			var resp *elastic7.XPackInfoServiceResponse
 			resp, err = client.XPackInfo().Do(context.TODO())
@@ -111,7 +119,11 @@ func testCheckElasticsearchLicenseDestroy(s *terraform.State) error {
 		meta := testAccXPackProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			var resp *elastic7.XPackInfoServiceResponse
 			resp, err = client.XPackInfo().Do(context.TODO())

@@ -60,7 +60,11 @@ func testCheckElasticsearchSnapshotRepositoryExists(name string) resource.TestCh
 		meta := testAccProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
@@ -87,7 +91,11 @@ func testCheckElasticsearchSnapshotRepositoryDestroy(s *terraform.State) error {
 		meta := testAccProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:

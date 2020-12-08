@@ -162,7 +162,11 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 
 	// Note: the CreateIndex call handles URL encoding under the hood to handle
 	// non-URL friendly characters and functionality like date math
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		resp, requestErr := client.CreateIndex(name).BodyJson(body).Do(ctx)
 		err = requestErr
@@ -231,7 +235,11 @@ func resourceElasticsearchIndexDelete(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("There are documents in the index (or the index could not be , set force_destroy to true to allow destroying.")
 	}
 
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.DeleteIndex(name).Do(ctx)
 
@@ -254,7 +262,11 @@ func allowIndexDestroy(indexName string, d *schema.ResourceData, meta interface{
 		count int64
 		err   error
 	)
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return false
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		count, err = client.Count(indexName).Do(ctx)
 
@@ -304,7 +316,11 @@ func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) 
 		name = getWriteIndexByAlias(alias.(string), d, meta)
 	}
 
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.IndexPutSettings(name).BodyJson(body).Do(ctx)
 
@@ -329,7 +345,12 @@ func getWriteIndexByAlias(alias string, d *schema.ResourceData, meta interface{}
 		columns = []string{"index", "is_write_index"}
 	)
 
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		log.Printf("[INFO] getWriteIndexByAlias: %+v", err)
+		return index
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		r, err := client.CatAliases().Alias(alias).Columns(columns...).Do(ctx)
 		if err != nil {
@@ -383,7 +404,11 @@ func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	// The logic is repeated strictly because of the types
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		r, err := client.IndexGet(index).Do(ctx)
 		if err != nil {

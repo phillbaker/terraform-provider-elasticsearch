@@ -216,7 +216,11 @@ func TestAccElasticsearchIndex_handleInvalid(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var allowed bool
-	switch meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -287,7 +291,11 @@ func TestAccElasticsearchIndex_rolloverAliasXpack(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var allowed bool
-	switch meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -332,7 +340,11 @@ func TestAccElasticsearchIndex_rolloverAliasOpendistro(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var allowed bool
-	switch meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	switch esClient.(type) {
 	case *elastic6.Client:
 		allowed = false
 	case *elastic5.Client:
@@ -384,7 +396,11 @@ func checkElasticsearchIndexExists(name string) resource.TestCheckFunc {
 		meta := testAccProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			_, err = client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
@@ -411,7 +427,12 @@ func checkElasticsearchIndexUpdated(name string) resource.TestCheckFunc {
 		meta := testAccProvider.Meta()
 		var settings map[string]interface{}
 
-		switch client := meta.(type) {
+		var err error
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			resp, err := client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 			if err != nil {
@@ -457,7 +478,11 @@ func checkElasticsearchIndexDestroy(s *terraform.State) error {
 		meta := testAccProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			_, err = client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
@@ -482,7 +507,11 @@ func checkElasticsearchIndexRolloverAliasExists(provider *schema.Provider, alias
 		meta := provider.Meta()
 
 		var count int
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			r, err := client.CatAliases().Alias(alias).Do(context.TODO())
 			if err != nil {
@@ -531,7 +560,11 @@ func checkElasticsearchIndexRolloverAliasDestroy(provider *schema.Provider, alia
 		meta := provider.Meta()
 
 		var count int
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			r, err := client.CatAliases().Alias(alias).Do(context.TODO())
 			if err != nil {

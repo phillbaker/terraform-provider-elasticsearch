@@ -51,7 +51,11 @@ func resourceElasticsearchIngestPipelineRead(d *schema.ResourceData, meta interf
 
 	var result string
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		result, err = elastic7IngestGetPipeline(client, id)
 	case *elastic6.Client:
@@ -124,7 +128,11 @@ func resourceElasticsearchIngestPipelineDelete(d *schema.ResourceData, meta inte
 	id := d.Id()
 
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.IngestDeletePipeline(id).Do(context.TODO())
 	case *elastic6.Client:
@@ -146,7 +154,11 @@ func resourceElasticsearchPutIngestPipeline(d *schema.ResourceData, meta interfa
 	body := d.Get("body").(string)
 
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.IngestPutPipeline(name).BodyString(body).Do(context.TODO())
 	case *elastic6.Client:

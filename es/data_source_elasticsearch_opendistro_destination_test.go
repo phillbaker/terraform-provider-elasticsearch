@@ -18,7 +18,11 @@ func TestAccElasticsearchDataSourceDestination_basic(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var allowed bool
-	switch meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	default:

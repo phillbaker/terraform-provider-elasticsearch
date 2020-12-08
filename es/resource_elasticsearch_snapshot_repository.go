@@ -51,7 +51,11 @@ func resourceElasticsearchSnapshotRepositoryRead(d *schema.ResourceData, meta in
 	var repositoryType string
 	var settings map[string]interface{}
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		repositoryType, settings, err = elastic7SnapshotGetRepository(client, id)
 	case *elastic6.Client:
@@ -110,7 +114,11 @@ func resourceElasticsearchSnapshotRepositoryUpdate(d *schema.ResourceData, meta 
 	}
 
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		err = elastic7SnapshotCreateRepository(client, name, repositoryType, settings)
 	case *elastic6.Client:
@@ -157,7 +165,11 @@ func resourceElasticsearchSnapshotRepositoryDelete(d *schema.ResourceData, meta 
 	id := d.Id()
 
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		err = elastic7SnapshotDeleteRepository(client, id)
 	case *elastic6.Client:

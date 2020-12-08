@@ -75,7 +75,11 @@ func resourceElasticsearchLicenseRead(d *schema.ResourceData, meta interface{}) 
 func resourceElasticsearchLicenseDelete(d *schema.ResourceData, meta interface{}) error {
 	var err error
 
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "DELETE",
@@ -103,7 +107,11 @@ func resourceElasticsearchGetXpackLicense(meta interface{}) (License, error) {
 	var body json.RawMessage
 	var err error
 
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return *license, err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
@@ -161,7 +169,11 @@ func resourceElasticsearchPutEnterpriseLicense(l string, meta interface{}) (Lice
 	var emptyLicense License
 	var body json.RawMessage
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return emptyLicense, err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
@@ -197,7 +209,11 @@ func resourceElasticsearchPutEnterpriseLicense(l string, meta interface{}) (Lice
 func resourceElasticsearchPostBasicLicense(meta interface{}) (License, error) {
 	var l License
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return l, err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "POST",

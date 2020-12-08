@@ -189,15 +189,19 @@ func TestAWSCredsAssumeRole(t *testing.T) {
 	}
 
 	testConfigData := schema.TestResourceDataRaw(t, Provider().(*schema.Provider).Schema, testConfig)
-	s := awsSession(testRegion, testConfigData)
+
+	conf := &ProviderConf{
+		awsAssumeRoleArn: testConfigData.Get("aws_assume_role_arn").(string),
+	}
+	s := awsSession(testRegion, conf)
 	if s == nil {
 		t.Fatalf("awsSession returned nil")
 	}
 }
 
 func getCreds(t *testing.T, region string, config map[string]interface{}) credentials.Value {
-	testConfigData := schema.TestResourceDataRaw(t, Provider().(*schema.Provider).Schema, config)
-	s := awsSession(region, testConfigData)
+	conf := &ProviderConf{}
+	s := awsSession(region, conf)
 	if s == nil {
 		t.Fatalf("awsSession returned nil")
 	}

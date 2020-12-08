@@ -51,13 +51,17 @@ func resourceElasticsearchIndexTemplateRead(d *schema.ResourceData, meta interfa
 
 	var result string
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		result, err = elastic7IndexGetTemplate(client, id)
 	case *elastic6.Client:
 		result, err = elastic6IndexGetTemplate(client, id)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := esClient.(*elastic5.Client)
 		result, err = elastic5IndexGetTemplate(elastic5Client, id)
 	}
 	if err != nil {
@@ -127,7 +131,11 @@ func resourceElasticsearchIndexTemplateDelete(d *schema.ResourceData, meta inter
 	id := d.Id()
 
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		err = elastic7IndexDeleteTemplate(client, id)
 	case *elastic6.Client:
@@ -164,7 +172,11 @@ func resourceElasticsearchPutIndexTemplate(d *schema.ResourceData, meta interfac
 	body := d.Get("body").(string)
 
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		err = elastic7IndexPutTemplate(client, name, body, create)
 	case *elastic6.Client:

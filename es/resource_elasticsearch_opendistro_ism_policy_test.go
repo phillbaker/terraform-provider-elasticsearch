@@ -21,7 +21,11 @@ func TestAccElasticsearchOpenDistroISMPolicy(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var allowed bool
-	switch meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	switch esClient.(type) {
 	case *elastic6.Client:
 		allowed = false
 	case *elastic5.Client:
@@ -68,7 +72,11 @@ func testCheckElasticsearchOpenDistroISMPolicyExists(name string) resource.TestC
 		meta := testAccOpendistroProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			_, err = resourceElasticsearchGetOpenDistroISMPolicy(rs.Primary.ID, client)
 		default:
@@ -91,7 +99,11 @@ func testCheckElasticsearchOpenDistroISMPolicyDestroy(s *terraform.State) error 
 		meta := testAccOpendistroProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			_, err = resourceElasticsearchGetOpenDistroISMPolicy(rs.Primary.ID, client)
 		default:

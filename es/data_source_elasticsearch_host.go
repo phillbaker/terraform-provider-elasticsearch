@@ -32,9 +32,12 @@ func dataSourceElasticsearchHostRead(d *schema.ResourceData, m interface{}) erro
 	// The upstream elastic client does not export the property for the urls
 	// it's using. Presumably the URLS would be available where the client is
 	// intantiated, but in terraform, that's not always practicable.
-
 	var err error
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		urls := reflect.ValueOf(client).Elem().FieldByName("urls")
 		if urls.Len() > 0 {
@@ -46,7 +49,7 @@ func dataSourceElasticsearchHostRead(d *schema.ResourceData, m interface{}) erro
 			d.SetId(urls.Index(0).String())
 		}
 	default:
-		client = m.(*elastic5.Client)
+		client = esClient.(*elastic5.Client)
 
 		urls := reflect.ValueOf(client).Elem().FieldByName("urls")
 		if urls.Len() > 0 {

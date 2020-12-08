@@ -66,7 +66,11 @@ func resourceElasticsearchXpackIndexLifecyclePolicyRead(d *schema.ResourceData, 
 
 	var result string
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		result, err = elastic7IndexGetLifecyclePolicy(client, id)
 	case *elastic6.Client:
@@ -120,7 +124,11 @@ func resourceElasticsearchXpackIndexLifecyclePolicyDelete(d *schema.ResourceData
 	id := d.Id()
 
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		err = elastic7IndexDeleteLifecyclePolicy(client, id)
 	case *elastic6.Client:
@@ -151,7 +159,11 @@ func resourceElasticsearchPutIndexLifecyclePolicy(d *schema.ResourceData, meta i
 	body := d.Get("body").(string)
 
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		err = elastic7IndexPutLifecyclePolicy(client, name, body)
 	case *elastic6.Client:
