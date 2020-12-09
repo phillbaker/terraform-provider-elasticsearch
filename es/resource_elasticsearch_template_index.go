@@ -3,7 +3,7 @@ package es
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -50,20 +50,20 @@ func resourceElasticsearchTemplateIndexCreate(d *schema.ResourceData, meta inter
 func resourceElasticsearchTemplateIndexRead(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 
-	var result string
+	var result, version string
 	var err error
 	switch client := meta.(type) {
 	case *elastic7.Client:
-		version, err := elastic7GetVersion(client)
+		version, err = elastic7GetVersion(client)
 		if err == nil {
 			if version < "7.8.0" {
-				err = errors.New("index_template endpoint only available from ElasticSearch >= 7.8")
+				err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", version)
 			} else {
 				result, err = elastic7GetIndexTemplate(client, id)
 			}
 		}
 	default:
-		err = errors.New("index_template endpoint only available from ElasticSearch >= 7.8")
+		err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", version)
 	}
 	if err != nil {
 		if elastic7.IsNotFound(err) || elastic6.IsNotFound(err) || elastic5.IsNotFound(err) {
@@ -102,19 +102,20 @@ func resourceElasticsearchTemplateIndexUpdate(d *schema.ResourceData, meta inter
 func resourceElasticsearchTemplateIndexDelete(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 
+	var version string
 	var err error
 	switch client := meta.(type) {
 	case *elastic7.Client:
-		version, err := elastic7GetVersion(client)
+		version, err = elastic7GetVersion(client)
 		if err == nil {
 			if version < "7.8.0" {
-				err = errors.New("index_template endpoint only available from ElasticSearch >= 7.8")
+				err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", version)
 			} else {
 				err = elastic7DeleteIndexTemplate(client, id)
 			}
 		}
 	default:
-		err = errors.New("index_template endpoint only available from ElasticSearch >= 7.8")
+		err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", version)
 	}
 
 	if err != nil {
@@ -138,7 +139,7 @@ func resourceElasticsearchPutTemplateIndex(d *schema.ResourceData, meta interfac
 	case *elastic7.Client:
 		err = elastic7PutIndexTemplate(client, name, body, create)
 	default:
-		err = errors.New("index_template endpoint only available from ElasticSearch >= 7.8")
+		err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", version)
 	}
 
 	return err
