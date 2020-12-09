@@ -1,0 +1,93 @@
+on: [push, pull_request]
+name: Test
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.14.x]
+        os: [ubuntu-latest]
+        es-major-version:
+          - "5"
+          - "6"
+          - "7"
+        include:
+        - es-major-version: "5"
+          es-version: 5.6.16
+          ES_COMMAND: "elasticsearch -Epath.repo=/tmp"
+        - es-major-version: "6"
+          es-version: 6.8.9
+          ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:0.9.0"
+        - es-major-version: "7"
+          es-version: 7.9.3
+          ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:1.6.0"
+    name: Test against ES ${{ matrix.es-major-version }} on ${{ matrix.go-version }}/${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    env:
+      ES_OPENDISTRO_IMAGE: "${{matrix.ES_OPENDISTRO_IMAGE}}"
+    steps:
+    - name: Prepare tests
+      run: |
+        sudo sysctl -w vm.max_map_count=262144
+    - name: Setup Go ${{ matrix.go-version }}
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ matrix.go-version }}
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        # we depend on full git history for linters
+        fetch-depth: 0
+    - name: Cache dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/go/pkg/mod              # Module download cache
+          ~/.cache/go-build         # Build cache (Linux)
+          ~/Library/Caches/go-build # Build cache (Mac)
+          '%LocalAppData%\go-build' # Build cache (Windows)
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-go-
+    - name: Run Docker containers
+      run: docker-compose up --detach
+      env:
+        ES_VERSION: ${{ matrix.es-version }}
+        ES_OSS_IMAGE: "elasticsearch:${{ matrix.es-version }}"
+        ES_IMAGE: "docker.elastic.co/elasticsearch/elasticsearch:${{ matrix.es-version }}"
+        ES_COMMAND: "${{matrix.ES_COMMAND}}"
+    - name: Check Docker containers
+      run: docker ps -a
+    # While docker/ES is booting up, run the linters
+    - name: Get dependencies
+      run: |
+        go mod vendor
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v2
+      with:
+        # Required: the version of golangci-lint is required and must be
+        # specified without patch version: we always use the latest patch
+        # version.
+        version: v1.28
+        args: --new-from-rev=bf51aaa --verbose --timeout=10m
+    - name: Run check scripts
+      run: |
+        ./script/test-mod-tidy
+    - name: Wait for Elasticsearch
+      # ensure that ES has come up and is available
+      run: |
+        wget -q --waitretry=1 --retry-connrefused --tries=60 --timeout 60 -O - localhost:9200
+    - name: Warm up OpenDistro
+      # OpenDistro lazily initializes its indexes, see
+      # https://github.com/opendistro-for-elasticsearch/alerting/issues/60
+      run: |
+        if [ -n "$ES_OPENDISTRO_IMAGE" ]; then
+          curl -s http://admin:admin@localhost:9220
+          curl -s -X POST -H 'Content-type: application/json'  -d '{"name":"_warmup","type":"slack","slack":{"url": "http://www.example.com"}}' http://admin:admin@localhost:9220/_opendistro/_alerting/destinations
+        fi
+    - name: Run the tests
+      run: |
+        export ELASTICSEARCH_URL=http://localhost:9200
+        export TF_LOG=INFO
+        TF_ACC=1 go test ./... -v -cover
+
+        # check goreleaser config for deprecations
+        curl -sfL https://git.io/goreleaser | sh -s -- check
