@@ -106,17 +106,7 @@ func testCheckElasticsearchOpenDistroDestinationExists(name string) resource.Tes
 		meta := testAccOpendistroProvider.Meta()
 
 		var err error
-		esClient, err := getClient(meta.(*ProviderConf))
-		if err != nil {
-			return err
-		}
-		switch client := esClient.(type) {
-		case *elastic7.Client:
-			_, err = resourceElasticsearchOpenDistroGetDestination(rs.Primary.ID, client)
-		case *elastic6.Client:
-			_, err = resourceElasticsearchOpenDistroGetDestination(rs.Primary.ID, client)
-		default:
-		}
+		_, err = resourceElasticsearchOpenDistroGetDestination(rs.Primary.ID, meta.(*ProviderConf))
 
 		if err != nil {
 			return err

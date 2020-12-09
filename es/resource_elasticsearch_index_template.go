@@ -182,7 +182,7 @@ func resourceElasticsearchPutIndexTemplate(d *schema.ResourceData, meta interfac
 	case *elastic6.Client:
 		err = elastic6IndexPutTemplate(client, name, body, create)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		err = elastic5IndexPutTemplate(elastic5Client, name, body, create)
 	}
 
