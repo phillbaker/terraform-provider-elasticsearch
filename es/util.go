@@ -97,6 +97,23 @@ func normalizeIndexTemplate(tpl map[string]interface{}) {
 	}
 }
 
+/*
+normalizeTemplateIndex normalizes an index_template (ES >= 7.8) Index template definition.
+For legacy index templates (ES < 7.8) or /_template endpoint on ES >= 7.8 see normalizeIndexTemplate.
+*/
+func normalizeTemplateIndex(tpl map[string]interface{}) {
+	delete(tpl, "version")
+	if innerTpl, ok := tpl["template"]; ok {
+		if innerTplMap, ok := innerTpl.(map[string]interface{}); ok {
+			if settings, ok := innerTplMap["settings"]; ok {
+				if settingsMap, ok := settings.(map[string]interface{}); ok {
+					innerTplMap["settings"] = normalizedIndexSettings(settingsMap)
+				}
+			}
+		}
+	}
+}
+
 func normalizedIndexSettings(settings map[string]interface{}) map[string]interface{} {
 	f := flattenMap(settings)
 	for k, v := range f {

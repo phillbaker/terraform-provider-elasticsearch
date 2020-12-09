@@ -28,7 +28,7 @@ func resourceElasticsearchTemplateIndex() *schema.Resource {
 			"body": {
 				Type:             schema.TypeString,
 				Required:         true,
-				DiffSuppressFunc: diffSuppressIndexTemplate,
+				DiffSuppressFunc: diffSuppressTemplateIndex,
 				ValidateFunc:     validation.StringIsJSON,
 			},
 		},
@@ -63,7 +63,7 @@ func resourceElasticsearchTemplateIndexRead(d *schema.ResourceData, meta interfa
 			}
 		}
 	default:
-		err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", version)
+		err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version < 7.0.0")
 	}
 	if err != nil {
 		if elastic7.IsNotFound(err) || elastic6.IsNotFound(err) || elastic5.IsNotFound(err) {
@@ -87,7 +87,9 @@ func elastic7GetIndexTemplate(client *elastic7.Client, id string) (string, error
 		return "", err
 	}
 
-	t := res.IndexTemplates[0]
+	// No more than 1 element is expected, if the index template is not found, previous call should
+	// return a 404 error
+	t := res.IndexTemplates[0].IndexTemplate
 	tj, err := json.Marshal(t)
 	if err != nil {
 		return "", err
@@ -115,7 +117,7 @@ func resourceElasticsearchTemplateIndexDelete(d *schema.ResourceData, meta inter
 			}
 		}
 	default:
-		err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", version)
+		err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version < 7.0.0")
 	}
 
 	if err != nil {
@@ -139,7 +141,7 @@ func resourceElasticsearchPutTemplateIndex(d *schema.ResourceData, meta interfac
 	case *elastic7.Client:
 		err = elastic7PutIndexTemplate(client, name, body, create)
 	default:
-		err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", version)
+		err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version < 7.0.0")
 	}
 
 	return err
