@@ -141,7 +141,7 @@ func resourceElasticsearchIndexTemplateDelete(d *schema.ResourceData, meta inter
 	case *elastic6.Client:
 		err = elastic6IndexDeleteTemplate(client, id)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		err = elastic5IndexDeleteTemplate(elastic5Client, id)
 	}
 

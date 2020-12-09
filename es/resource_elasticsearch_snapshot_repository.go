@@ -61,7 +61,7 @@ func resourceElasticsearchSnapshotRepositoryRead(d *schema.ResourceData, meta in
 	case *elastic6.Client:
 		repositoryType, settings, err = elastic6SnapshotGetRepository(client, id)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		repositoryType, settings, err = elastic5SnapshotGetRepository(elastic5Client, id)
 	}
 
@@ -124,7 +124,7 @@ func resourceElasticsearchSnapshotRepositoryUpdate(d *schema.ResourceData, meta 
 	case *elastic6.Client:
 		err = elastic6SnapshotCreateRepository(client, name, repositoryType, settings)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		err = elastic5SnapshotCreateRepository(elastic5Client, name, repositoryType, settings)
 	}
 
@@ -175,7 +175,7 @@ func resourceElasticsearchSnapshotRepositoryDelete(d *schema.ResourceData, meta 
 	case *elastic6.Client:
 		err = elastic6SnapshotDeleteRepository(client, id)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		err = elastic5SnapshotDeleteRepository(elastic5Client, id)
 	}
 

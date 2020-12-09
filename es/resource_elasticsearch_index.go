@@ -182,7 +182,7 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 		}
 
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		resp, requestErr := elastic5Client.CreateIndex(name).BodyJson(body).Do(ctx)
 		err = requestErr
 		if err == nil {
@@ -247,7 +247,7 @@ func resourceElasticsearchIndexDelete(d *schema.ResourceData, meta interface{}) 
 		_, err = client.DeleteIndex(name).Do(ctx)
 
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		_, err = elastic5Client.DeleteIndex(name).Do(ctx)
 	}
 
@@ -274,7 +274,7 @@ func allowIndexDestroy(indexName string, d *schema.ResourceData, meta interface{
 		count, err = client.Count(indexName).Do(ctx)
 
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		count, err = elastic5Client.Count(indexName).Do(ctx)
 	}
 
@@ -328,12 +328,12 @@ func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) 
 		_, err = client.IndexPutSettings(name).BodyJson(body).Do(ctx)
 
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		_, err = elastic5Client.IndexPutSettings(name).BodyJson(body).Do(ctx)
 	}
 
 	if err == nil {
-		return resourceElasticsearchIndexRead(d, meta)
+		return resourceElasticsearchIndexRead(d, meta.(*ProviderConf))
 	}
 	return err
 }
@@ -376,7 +376,7 @@ func getWriteIndexByAlias(alias string, d *schema.ResourceData, meta interface{}
 		}
 
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		r, err := elastic5Client.CatAliases().Alias(alias).Columns(columns...).Do(ctx)
 		if err != nil {
 			log.Printf("[INFO] getWriteIndexByAlias: %+v", err)
@@ -428,7 +428,7 @@ func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) er
 			settings = resp.Settings["index"].(map[string]interface{})
 		}
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		r, err := elastic5Client.IndexGet(index).Do(ctx)
 		if err != nil {
 			return err

@@ -61,7 +61,7 @@ func resourceElasticsearchIngestPipelineRead(d *schema.ResourceData, meta interf
 	case *elastic6.Client:
 		result, err = elastic6IngestGetPipeline(client, id)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		result, err = elastic5IngestGetPipeline(elastic5Client, id)
 	}
 	if err != nil {
@@ -138,7 +138,7 @@ func resourceElasticsearchIngestPipelineDelete(d *schema.ResourceData, meta inte
 	case *elastic6.Client:
 		_, err = client.IngestDeletePipeline(id).Do(context.TODO())
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		_, err = elastic5Client.IngestDeletePipeline(id).Do(context.TODO())
 	}
 
@@ -164,7 +164,7 @@ func resourceElasticsearchPutIngestPipeline(d *schema.ResourceData, meta interfa
 	case *elastic6.Client:
 		_, err = client.IngestPutPipeline(name).BodyString(body).Do(context.TODO())
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		_, err = elastic5Client.IngestPutPipeline(name).BodyString(body).Do(context.TODO())
 	}
 

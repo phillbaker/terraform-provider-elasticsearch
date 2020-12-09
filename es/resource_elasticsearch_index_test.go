@@ -216,11 +216,7 @@ func TestAccElasticsearchIndex_handleInvalid(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var allowed bool
-	esClient, err := getClient(meta.(*ProviderConf))
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-	switch esClient.(type) {
+	switch meta.(type) {
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -291,11 +287,8 @@ func TestAccElasticsearchIndex_rolloverAliasXpack(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var allowed bool
-	esClient, err := getClient(meta.(*ProviderConf))
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-	switch esClient.(type) {
+
+	switch meta.(type) {
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -340,11 +333,8 @@ func TestAccElasticsearchIndex_rolloverAliasOpendistro(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var allowed bool
-	esClient, err := getClient(meta.(*ProviderConf))
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-	switch esClient.(type) {
+
+	switch meta.(type) {
 	case *elastic6.Client:
 		allowed = false
 	case *elastic5.Client:
@@ -406,7 +396,7 @@ func checkElasticsearchIndexExists(name string) resource.TestCheckFunc {
 		case *elastic6.Client:
 			_, err = client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			_, err = elastic5Client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 		}
 
@@ -448,7 +438,7 @@ func checkElasticsearchIndexUpdated(name string) resource.TestCheckFunc {
 			settings = resp[rs.Primary.ID].Settings["index"].(map[string]interface{})
 
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			resp, err := elastic5Client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 			if err != nil {
 				return err
@@ -488,7 +478,7 @@ func checkElasticsearchIndexDestroy(s *terraform.State) error {
 		case *elastic6.Client:
 			_, err = client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			_, err = elastic5Client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 		}
 
@@ -525,7 +515,7 @@ func checkElasticsearchIndexRolloverAliasExists(provider *schema.Provider, alias
 			}
 			count = len(r)
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			r, err := elastic5Client.CatAliases().Alias(alias).Do(context.TODO())
 			if err != nil {
 				return err
@@ -578,7 +568,7 @@ func checkElasticsearchIndexRolloverAliasDestroy(provider *schema.Provider, alia
 			}
 			count = len(r)
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			r, err := elastic5Client.CatAliases().Alias(alias).Do(context.TODO())
 			if err != nil {
 				return err

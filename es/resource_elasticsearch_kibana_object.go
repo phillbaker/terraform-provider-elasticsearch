@@ -89,7 +89,7 @@ func resourceElasticsearchKibanaObjectCreate(d *schema.ResourceData, meta interf
 	case *elastic6.Client:
 		success, err = elastic6CreateIndexIfNotExists(client, index, mapping_index)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		success, err = elastic5CreateIndexIfNotExists(elastic5Client, index, mapping_index)
 	}
 
@@ -213,7 +213,7 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 	case *elastic6.Client:
 		result, err = elastic6GetObject(client, objectType, index, id)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		result, err = elastic5GetObject(elastic5Client, objectType, index, id)
 	}
 
@@ -262,7 +262,7 @@ func resourceElasticsearchKibanaObjectDelete(d *schema.ResourceData, meta interf
 	case *elastic6.Client:
 		err = elastic6DeleteIndex(client, objectType, index, id)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		err = elastic5DeleteIndex(elastic5Client, objectType, index, id)
 	}
 
@@ -329,7 +329,7 @@ func resourceElasticsearchPutKibanaObject(d *schema.ResourceData, meta interface
 	case *elastic6.Client:
 		err = elastic6PutIndex(client, objectType, index, id, data)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		err = elastic5PutIndex(elastic5Client, objectType, index, id, data)
 	}
 

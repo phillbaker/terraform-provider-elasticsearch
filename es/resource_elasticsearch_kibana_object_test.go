@@ -27,11 +27,8 @@ func TestAccElasticsearchKibanaObject(t *testing.T) {
 	var visualizationConfig string
 	var indexPatternConfig string
 	meta := testAccProvider.Meta()
-	esClient, err := getClient(meta.(*ProviderConf))
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-	switch esClient.(type) {
+
+	switch meta.(type) {
 	case *elastic7.Client:
 		visualizationConfig = testAccElasticsearch7KibanaVisualization
 		indexPatternConfig = testAccElasticsearch7KibanaIndexPattern
@@ -90,11 +87,8 @@ func TestAccElasticsearchKibanaObject_Rejected(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var allowed bool
-	esClient, err := getClient(meta.(*ProviderConf))
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-	switch esClient.(type) {
+
+	switch meta.(type) {
 	case *elastic6.Client:
 		allowed = true
 	default:
@@ -142,7 +136,7 @@ func testCheckElasticsearchKibanaObjectExists(name string, objectType string, id
 		case *elastic6.Client:
 			_, err = client.Get().Index(".kibana").Type(deprecatedDocType).Id(id).Do(context.TODO())
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			_, err = elastic5Client.Get().Index(".kibana").Type(objectType).Id(id).Do(context.TODO())
 		}
 
@@ -174,7 +168,7 @@ func testCheckElasticsearchKibanaObjectDestroy(s *terraform.State) error {
 		case *elastic6.Client:
 			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			_, err = elastic5Client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
 		}
 

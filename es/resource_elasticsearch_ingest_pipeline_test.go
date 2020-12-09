@@ -22,11 +22,8 @@ func TestAccElasticsearchIngestPipeline(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var config string
-	esClient, err := getClient(meta.(*ProviderConf))
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-	switch esClient.(type) {
+
+	switch meta.(type) {
 	case *elastic7.Client:
 		config = testAccElasticsearchIngestPipelineV7
 	case *elastic6.Client:
@@ -59,11 +56,7 @@ func TestAccElasticsearchIngestPipeline_importBasic(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var config string
-	esClient, err := getClient(meta.(*ProviderConf))
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-	switch esClient.(type) {
+	switch meta.(type) {
 	case *elastic7.Client:
 		config = testAccElasticsearchIngestPipelineV7
 	case *elastic6.Client:
@@ -114,7 +107,7 @@ func testCheckElasticsearchIngestPipelineExists(name string) resource.TestCheckF
 		case *elastic6.Client:
 			_, err = client.IngestGetPipeline(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			_, err = elastic5Client.IngestGetPipeline(rs.Primary.ID).Do(context.TODO())
 		}
 
@@ -145,7 +138,7 @@ func testCheckElasticsearchIngestPipelineDestroy(s *terraform.State) error {
 		case *elastic6.Client:
 			_, err = client.IngestGetPipeline(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			_, err = elastic5Client.IngestGetPipeline(rs.Primary.ID).Do(context.TODO())
 		}
 

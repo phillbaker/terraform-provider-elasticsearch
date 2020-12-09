@@ -27,11 +27,7 @@ func TestAccElasticsearchLicense_Basic(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var allowed bool
-	esClient, err := getClient(meta.(*ProviderConf))
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-	switch esClient.(type) {
+	switch meta.(type) {
 	case *elastic5.Client:
 		allowed = false
 	default:

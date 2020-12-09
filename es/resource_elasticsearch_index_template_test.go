@@ -22,11 +22,7 @@ func TestAccElasticsearchIndexTemplate(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var config string
-	esClient, err := getClient(meta.(*ProviderConf))
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-	switch esClient.(type) {
+	switch meta.(type) {
 	case *elastic7.Client:
 		config = testAccElasticsearchIndexTemplateV7
 	case *elastic6.Client:
@@ -59,11 +55,7 @@ func TestAccElasticsearchIndexTemplate_importBasic(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var config string
-	esClient, err := getClient(meta.(*ProviderConf))
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-	switch esClient.(type) {
+	switch meta.(type) {
 	case *elastic7.Client:
 		config = testAccElasticsearchIndexTemplateV7
 	case *elastic6.Client:
@@ -114,7 +106,7 @@ func testCheckElasticsearchIndexTemplateExists(name string) resource.TestCheckFu
 		case *elastic6.Client:
 			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			_, err = elastic5Client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
 		}
 
@@ -145,7 +137,7 @@ func testCheckElasticsearchIndexTemplateDestroy(s *terraform.State) error {
 		case *elastic6.Client:
 			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			_, err = elastic5Client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
 		}
 

@@ -70,7 +70,7 @@ func testCheckElasticsearchSnapshotRepositoryExists(name string) resource.TestCh
 		case *elastic6.Client:
 			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			_, err = elastic5Client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		}
 
@@ -101,7 +101,7 @@ func testCheckElasticsearchSnapshotRepositoryDestroy(s *terraform.State) error {
 		case *elastic6.Client:
 			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			_, err = elastic5Client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		}
 
