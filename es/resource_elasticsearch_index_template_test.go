@@ -21,8 +21,12 @@ func TestAccElasticsearchIndexTemplate(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var config string
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic7.Client:
 		config = testAccElasticsearchIndexTemplateV7
 	case *elastic6.Client:
@@ -55,7 +59,11 @@ func TestAccElasticsearchIndexTemplate_importBasic(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var config string
-	switch meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	switch esClient.(type) {
 	case *elastic7.Client:
 		config = testAccElasticsearchIndexTemplateV7
 	case *elastic6.Client:

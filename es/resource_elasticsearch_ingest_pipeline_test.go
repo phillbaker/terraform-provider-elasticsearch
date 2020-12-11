@@ -21,9 +21,13 @@ func TestAccElasticsearchIngestPipeline(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var config string
 
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic7.Client:
 		config = testAccElasticsearchIngestPipelineV7
 	case *elastic6.Client:
@@ -55,8 +59,12 @@ func TestAccElasticsearchIngestPipeline_importBasic(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var config string
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic7.Client:
 		config = testAccElasticsearchIngestPipelineV7
 	case *elastic6.Client:

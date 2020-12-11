@@ -23,7 +23,11 @@ func TestAccElasticsearchOpenDistroRolesMapping(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var allowed bool
-	switch meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	case *elastic6.Client:
@@ -93,9 +97,9 @@ func testAccCheckElasticsearchOpenDistroRolesMappingDestroy(s *terraform.State) 
 		if err != nil {
 			return err
 		}
-		switch client := esClient.(type) {
+		switch esClient.(type) {
 		case *elastic7.Client:
-			_, err = resourceElasticsearchGetOpenDistroRolesMapping(rs.Primary.ID, client)
+			_, err = resourceElasticsearchGetOpenDistroRolesMapping(rs.Primary.ID, meta.(*ProviderConf))
 		default:
 		}
 
@@ -122,9 +126,9 @@ func testCheckElasticSearchOpenDistroRolesMappingExists(name string) resource.Te
 			if err != nil {
 				return err
 			}
-			switch client := esClient.(type) {
+			switch esClient.(type) {
 			case *elastic7.Client:
-				_, err = resourceElasticsearchGetOpenDistroRolesMapping(rs.Primary.ID, client)
+				_, err = resourceElasticsearchGetOpenDistroRolesMapping(rs.Primary.ID, meta.(*ProviderConf))
 			default:
 			}
 

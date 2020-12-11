@@ -20,9 +20,13 @@ func TestAccElasticsearchOpenDistroDestination(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var allowed bool
 
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -56,9 +60,13 @@ func TestAccElasticsearchOpenDistroDestination_importBasic(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var allowed bool
 
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -123,11 +131,11 @@ func testCheckElasticsearchOpenDistroDestinationDestroy(s *terraform.State) erro
 		if err != nil {
 			return err
 		}
-		switch client := esClient.(type) {
+		switch esClient.(type) {
 		case *elastic7.Client:
-			_, err = resourceElasticsearchOpenDistroGetDestination(rs.Primary.ID, client)
+			_, err = resourceElasticsearchOpenDistroGetDestination(rs.Primary.ID, meta.(*ProviderConf))
 		case *elastic6.Client:
-			_, err = resourceElasticsearchOpenDistroGetDestination(rs.Primary.ID, client)
+			_, err = resourceElasticsearchOpenDistroGetDestination(rs.Primary.ID, meta.(*ProviderConf))
 		default:
 		}
 

@@ -23,8 +23,12 @@ func TestAccElasticsearchXpackSnapshotLifecyclePolicy(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var allowed bool
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic5.Client, *elastic6.Client:
 		allowed = false
 	default:
@@ -62,7 +66,11 @@ func TestAccElasticsearchXpackSnapshotLifecyclePolicy_importBasic(t *testing.T) 
 	}
 	meta := provider.Meta()
 	var allowed bool
-	switch meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	switch esClient.(type) {
 	case *elastic5.Client, *elastic6.Client:
 		allowed = false
 	default:

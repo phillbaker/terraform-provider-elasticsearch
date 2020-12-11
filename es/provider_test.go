@@ -200,7 +200,24 @@ func TestAWSCredsAssumeRole(t *testing.T) {
 }
 
 func getCreds(t *testing.T, region string, config map[string]interface{}) credentials.Value {
-	conf := &ProviderConf{}
+	awsAccessKey := ""
+	awsSecretKey := ""
+	awsProfile := ""
+	if val, ok := config["aws_access_key"]; ok {
+		awsAccessKey = val.(string)
+	}
+	if val, ok := config["aws_secret_key"]; ok {
+		awsSecretKey = val.(string)
+	}
+	if val, ok := config["aws_profile"]; ok {
+		awsProfile = val.(string)
+	}
+
+	conf := &ProviderConf{
+		awsAccessKeyId:     awsAccessKey,
+		awsSecretAccessKey: awsSecretKey,
+		awsProfile:         awsProfile,
+	}
 	s := awsSession(region, conf)
 	if s == nil {
 		t.Fatalf("awsSession returned nil")
