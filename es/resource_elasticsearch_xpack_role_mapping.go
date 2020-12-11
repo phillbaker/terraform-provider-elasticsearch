@@ -162,39 +162,51 @@ func buildPutRoleMappingBody(d *schema.ResourceData, m interface{}) (string, err
 }
 
 func xpackPutRoleMapping(d *schema.ResourceData, m interface{}, name string, body string) error {
-	if client, ok := m.(*elastic7.Client); ok {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	if client, ok := esClient.(*elastic7.Client); ok {
 		return elastic7PutRoleMapping(client, name, body)
 	}
-	if client, ok := m.(*elastic6.Client); ok {
+	if client, ok := esClient.(*elastic6.Client); ok {
 		return elastic6PutRoleMapping(client, name, body)
 	}
-	if client, ok := m.(*elastic5.Client); ok {
+	if client, ok := esClient.(*elastic5.Client); ok {
 		return elastic5PutRoleMapping(client, name, body)
 	}
 	return errors.New("unhandled client type")
 }
 
 func xpackGetRoleMapping(d *schema.ResourceData, m interface{}, name string) (XPackSecurityRoleMapping, error) {
-	if client, ok := m.(*elastic7.Client); ok {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return XPackSecurityRoleMapping{}, err
+	}
+	if client, ok := esClient.(*elastic7.Client); ok {
 		return elastic7GetRoleMapping(client, name)
 	}
-	if client, ok := m.(*elastic6.Client); ok {
+	if client, ok := esClient.(*elastic6.Client); ok {
 		return elastic6GetRoleMapping(client, name)
 	}
-	if client, ok := m.(*elastic5.Client); ok {
+	if client, ok := esClient.(*elastic5.Client); ok {
 		return elastic5GetRoleMapping(client, name)
 	}
 	return XPackSecurityRoleMapping{}, errors.New("unhandled client type")
 }
 
 func xpackDeleteRoleMapping(d *schema.ResourceData, m interface{}, name string) error {
-	if client, ok := m.(*elastic7.Client); ok {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	if client, ok := esClient.(*elastic7.Client); ok {
 		return elastic7DeleteRoleMapping(client, name)
 	}
-	if client, ok := m.(*elastic6.Client); ok {
+	if client, ok := esClient.(*elastic6.Client); ok {
 		return elastic6DeleteRoleMapping(client, name)
 	}
-	if client, ok := m.(*elastic5.Client); ok {
+	if client, ok := esClient.(*elastic5.Client); ok {
 		return elastic5DeleteRoleMapping(client, name)
 	}
 	return errors.New("unhandled client type")
