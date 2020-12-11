@@ -13,12 +13,12 @@ import (
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
-func resourceElasticsearchTemplateIndex() *schema.Resource {
+func resourceElasticsearchComposableIndexTemplate() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceElasticsearchTemplateIndexCreate,
-		Read:   resourceElasticsearchTemplateIndexRead,
-		Update: resourceElasticsearchTemplateIndexUpdate,
-		Delete: resourceElasticsearchTemplateIndexDelete,
+		Create: resourceElasticsearchComposableIndexTemplateCreate,
+		Read:   resourceElasticsearchComposableIndexTemplateRead,
+		Update: resourceElasticsearchComposableIndexTemplateUpdate,
+		Delete: resourceElasticsearchComposableIndexTemplateDelete,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
@@ -28,7 +28,7 @@ func resourceElasticsearchTemplateIndex() *schema.Resource {
 			"body": {
 				Type:             schema.TypeString,
 				Required:         true,
-				DiffSuppressFunc: diffSuppressTemplateIndex,
+				DiffSuppressFunc: diffSuppressComposableIndexTemplate,
 				ValidateFunc:     validation.StringIsJSON,
 			},
 		},
@@ -38,8 +38,8 @@ func resourceElasticsearchTemplateIndex() *schema.Resource {
 	}
 }
 
-func resourceElasticsearchTemplateIndexCreate(d *schema.ResourceData, meta interface{}) error {
-	err := resourceElasticsearchPutTemplateIndex(d, meta, true)
+func resourceElasticsearchComposableIndexTemplateCreate(d *schema.ResourceData, meta interface{}) error {
+	err := resourceElasticsearchPutComposableIndexTemplate(d, meta, true)
 	if err != nil {
 		return err
 	}
@@ -47,7 +47,7 @@ func resourceElasticsearchTemplateIndexCreate(d *schema.ResourceData, meta inter
 	return nil
 }
 
-func resourceElasticsearchTemplateIndexRead(d *schema.ResourceData, meta interface{}) error {
+func resourceElasticsearchComposableIndexTemplateRead(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 
 	var result, version string
@@ -97,11 +97,11 @@ func elastic7GetIndexTemplate(client *elastic7.Client, id string) (string, error
 	return string(tj), nil
 }
 
-func resourceElasticsearchTemplateIndexUpdate(d *schema.ResourceData, meta interface{}) error {
-	return resourceElasticsearchPutTemplateIndex(d, meta, false)
+func resourceElasticsearchComposableIndexTemplateUpdate(d *schema.ResourceData, meta interface{}) error {
+	return resourceElasticsearchPutComposableIndexTemplate(d, meta, false)
 }
 
-func resourceElasticsearchTemplateIndexDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceElasticsearchComposableIndexTemplateDelete(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 
 	var version string
@@ -132,7 +132,7 @@ func elastic7DeleteIndexTemplate(client *elastic7.Client, id string) error {
 	return err
 }
 
-func resourceElasticsearchPutTemplateIndex(d *schema.ResourceData, meta interface{}, create bool) error {
+func resourceElasticsearchPutComposableIndexTemplate(d *schema.ResourceData, meta interface{}, create bool) error {
 	name := d.Get("name").(string)
 	body := d.Get("body").(string)
 

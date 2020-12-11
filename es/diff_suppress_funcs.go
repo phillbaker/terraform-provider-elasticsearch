@@ -28,10 +28,10 @@ func diffSuppressIndexTemplate(k, old, new string, d *schema.ResourceData) bool 
 }
 
 /*
-diffSuppressTemplateIndex compares an index_template (ES >= 7.8) Index template definition
+diffSuppressComposableIndexTemplate compares an index_template (ES >= 7.8) Index template definition
 For legacy index templates (ES < 7.8) or /_template endpoint on ES >= 7.8 see diffSuppressIndexTemplate.
 */
-func diffSuppressTemplateIndex(k, old, new string, d *schema.ResourceData) bool {
+func diffSuppressComposableIndexTemplate(k, old, new string, d *schema.ResourceData) bool {
 	var oo, no interface{}
 	if err := json.Unmarshal([]byte(old), &oo); err != nil {
 		return false
@@ -41,11 +41,11 @@ func diffSuppressTemplateIndex(k, old, new string, d *schema.ResourceData) bool 
 	}
 
 	if om, ok := oo.(map[string]interface{}); ok {
-		normalizeTemplateIndex(om)
+		normalizeComposableIndexTemplate(om)
 	}
 
 	if nm, ok := no.(map[string]interface{}); ok {
-		normalizeTemplateIndex(nm)
+		normalizeComposableIndexTemplate(nm)
 	}
 
 	return reflect.DeepEqual(oo, no)

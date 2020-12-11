@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccElasticsearchTemplateIndex(t *testing.T) {
+func TestAccElasticsearchComposableIndexTemplate(t *testing.T) {
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
 	if err != nil {
@@ -35,19 +35,19 @@ func TestAccElasticsearchTemplateIndex(t *testing.T) {
 			}
 		},
 		Providers:    testAccProviders,
-		CheckDestroy: testCheckElasticsearchTemplateIndexDestroy,
+		CheckDestroy: testCheckElasticsearchComposableIndexTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccElasticsearchTemplateIndex,
+				Config: testAccElasticsearchComposableIndexTemplate,
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticsearchTemplateIndexExists("elasticsearch_template_index.test"),
+					testCheckElasticsearchComposableIndexTemplateExists("elasticsearch_composable_index_template.test"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccElasticsearchTemplateIndex_importBasic(t *testing.T) {
+func TestAccElasticsearchComposableIndexTemplate_importBasic(t *testing.T) {
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
 	if err != nil {
@@ -69,13 +69,13 @@ func TestAccElasticsearchTemplateIndex_importBasic(t *testing.T) {
 			}
 		},
 		Providers:    testAccProviders,
-		CheckDestroy: testCheckElasticsearchTemplateIndexDestroy,
+		CheckDestroy: testCheckElasticsearchComposableIndexTemplateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccElasticsearchTemplateIndex,
+				Config: testAccElasticsearchComposableIndexTemplate,
 			},
 			{
-				ResourceName:      "elasticsearch_template_index.test",
+				ResourceName:      "elasticsearch_composable_index_template.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -83,7 +83,7 @@ func TestAccElasticsearchTemplateIndex_importBasic(t *testing.T) {
 	})
 }
 
-func testCheckElasticsearchTemplateIndexExists(name string) resource.TestCheckFunc {
+func testCheckElasticsearchComposableIndexTemplateExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -111,9 +111,9 @@ func testCheckElasticsearchTemplateIndexExists(name string) resource.TestCheckFu
 	}
 }
 
-func testCheckElasticsearchTemplateIndexDestroy(s *terraform.State) error {
+func testCheckElasticsearchComposableIndexTemplateDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "elasticsearch_template_index" {
+		if rs.Type != "elasticsearch_composable_index_template" {
 			continue
 		}
 
@@ -137,8 +137,8 @@ func testCheckElasticsearchTemplateIndexDestroy(s *terraform.State) error {
 	return nil
 }
 
-var testAccElasticsearchTemplateIndex = `
-resource "elasticsearch_template_index" "test" {
+var testAccElasticsearchComposableIndexTemplate = `
+resource "elasticsearch_composable_index_template" "test" {
   name = "terraform-test"
   body = <<EOF
 {

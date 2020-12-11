@@ -98,10 +98,10 @@ func normalizeIndexTemplate(tpl map[string]interface{}) {
 }
 
 /*
-normalizeTemplateIndex normalizes an index_template (ES >= 7.8) Index template definition.
+normalizeComposableIndexTemplate normalizes an index_template (ES >= 7.8) Index template definition.
 For legacy index templates (ES < 7.8) or /_template endpoint on ES >= 7.8 see normalizeIndexTemplate.
 */
-func normalizeTemplateIndex(tpl map[string]interface{}) {
+func normalizeComposableIndexTemplate(tpl map[string]interface{}) {
 	delete(tpl, "version")
 	if innerTpl, ok := tpl["template"]; ok {
 		if innerTplMap, ok := innerTpl.(map[string]interface{}); ok {
