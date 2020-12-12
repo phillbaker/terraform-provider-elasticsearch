@@ -235,15 +235,15 @@ func resourceElasticsearchPostBasicLicense(meta interface{}) (License, error) {
 }
 
 type License struct {
-	Status             string `json:"status"`
-	Uid                string `json:"uid"`
-	Type               string `json:"type"`
-	IssueDate          string `json:"issue_date"`
-	IssueDateInMillis  int    `json:"issue_date_in_millis"`
-	ExpiryDate         string `json:"expiry_date"`
-	ExpiryDateInMillis int    `json:"expiry_date_in_millis"`
-	MaxNodes           int    `json:"max_nodes"`
-	IssuedTo           string `json:"issued_to"`
-	Issuer             string `json:"issuer"`
-	StartDateInMillis  int    `json:"start_date_in_millis"`
+	Status             string `json:"status,omitempty"`
+	Uid                string `json:"uid,omitempty"`
+	Type               string `json:"type,omitempty"`
+	IssueDate          string `json:"issue_date,omitempty"`
+	IssueDateInMillis  int    `json:"issue_date_in_millis,omitempty"`
+	ExpiryDate         string `json:"expiry_date,omitempty"`
+	ExpiryDateInMillis int    `json:"expiry_date_in_millis,omitempty"`
+	MaxNodes           int    `json:"max_nodes,omitempty"`
+	IssuedTo           string `json:"issued_to,omitempty"`
+	Issuer             string `json:"issuer,omitempty"`
+	StartDateInMillis  int    `json:"start_date_in_millis,omitempty"`
 }
