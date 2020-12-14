@@ -5,6 +5,7 @@
 - Create index `aliases` and `mappings` even if no settings are set.
 - Bump aws client to v1.35.33.
 - Allow provider variable interpolation by deferring client instanation, `providerConfigure` only returns a configuration struct.
+- Fix XPack license resource having perpetual diff if using basic license.
 
 ### Added
 - Composable Index Template resource, available in ESv7.8+

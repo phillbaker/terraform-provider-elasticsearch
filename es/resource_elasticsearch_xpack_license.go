@@ -29,6 +29,10 @@ func resourceElasticsearchXpackLicense() *schema.Resource {
 				Type:     schema.TypeBool,
 				Required: true,
 			},
+			"license_json": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -63,12 +67,13 @@ func resourceElasticsearchLicenseRead(d *schema.ResourceData, meta interface{}) 
 
 	ds := &resourceDataSetter{d: d}
 	ds.set("use_basic_license", d.Get("use_basic_license").(bool))
+	ds.set("license", d.Get("license").(string))
 
 	out, err := json.Marshal(l)
 	if err != nil {
 		return err
 	}
-	ds.set("license", string(out))
+	ds.set("license_json", string(out))
 	return ds.err
 }
 

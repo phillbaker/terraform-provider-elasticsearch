@@ -43,6 +43,11 @@ func TestAccElasticsearchLicense_Basic(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 
+	license, err := resourceElasticsearchGetXpackLicense(meta)
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -93,11 +98,11 @@ func testCheckElasticsearchLicenseExists(name string) resource.TestCheckFunc {
 		case *elastic7.Client:
 			var resp *elastic7.XPackInfoServiceResponse
 			resp, err = client.XPackInfo().Do(context.TODO())
-			log.Printf("[INFO] %+v", resp)
+			log.Printf("[INFO] testCheckElasticsearchLicenseExists %+v", resp)
 		case *elastic6.Client:
 			var resp *elastic6.XPackInfoServiceResponse
 			resp, err = client.XPackInfo().Do(context.TODO())
-			log.Printf("[INFO] %+v", resp)
+			log.Printf("[INFO] testCheckElasticsearchLicenseExists %+v", resp)
 		default:
 			return errors.New("License is only supported by elasticsearch >= v6!")
 		}
@@ -118,6 +123,7 @@ func testCheckElasticsearchLicenseDestroy(s *terraform.State) error {
 
 		meta := testAccXPackProvider.Meta()
 
+		var licenseUID string
 		var err error
 		esClient, err := getClient(meta.(*ProviderConf))
 		if err != nil {
@@ -127,11 +133,13 @@ func testCheckElasticsearchLicenseDestroy(s *terraform.State) error {
 		case *elastic7.Client:
 			var resp *elastic7.XPackInfoServiceResponse
 			resp, err = client.XPackInfo().Do(context.TODO())
-			log.Printf("[INFO] %+v", resp)
+			log.Printf("[INFO] testCheckElasticsearchLicenseDestroy %+v", resp)
+			licenseUID = resp.License.UID
 		case *elastic6.Client:
 			var resp *elastic6.XPackInfoServiceResponse
 			resp, err = client.XPackInfo().Do(context.TODO())
-			log.Printf("[INFO] %+v", resp)
+			log.Printf("[INFO] testCheckElasticsearchLicenseDestroy %+v", resp)
+			licenseUID = resp.License.UID
 		default:
 			return errors.New("License is only supported by elasticsearch >= v6!")
 		}
@@ -140,7 +148,11 @@ func testCheckElasticsearchLicenseDestroy(s *terraform.State) error {
 			return err
 		}
 
-		return fmt.Errorf("License still exists")
+		if licenseUID != "" {
+			return fmt.Errorf("License still exists")
+		}
+
+		return nil
 	}
 
 	return nil
