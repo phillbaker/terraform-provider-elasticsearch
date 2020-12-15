@@ -155,11 +155,6 @@ func normalizedIndexLifecyclePolicy(policy map[string]interface{}) map[string]in
 	f := flattenMap(policy)
 	for k, v := range f {
 		f[k] = fmt.Sprintf("%v", v)
-		// Supress phases.delete.actions.delete.delete_searchable_snapshot = true that is included by default
-		// starting in 7.8
-		if k == "phases.delete.actions.delete.delete_searchable_snapshot" && fmt.Sprintf("%v", v) == "true" {
-			delete(f, k)
-		}
 	}
 
 	return f
