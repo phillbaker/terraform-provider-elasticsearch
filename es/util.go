@@ -5,9 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
+	"reflect"
 	"sort"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	elastic7 "github.com/olivere/elastic/v7"
@@ -91,6 +93,23 @@ func normalizeIndexTemplate(tpl map[string]interface{}) {
 	if settings, ok := tpl["settings"]; ok {
 		if settingsMap, ok := settings.(map[string]interface{}); ok {
 			tpl["settings"] = normalizedIndexSettings(settingsMap)
+		}
+	}
+}
+
+/*
+normalizeComposableIndexTemplate normalizes an index_template (ES >= 7.8) Index template definition.
+For legacy index templates (ES < 7.8) or /_template endpoint on ES >= 7.8 see normalizeIndexTemplate.
+*/
+func normalizeComposableIndexTemplate(tpl map[string]interface{}) {
+	delete(tpl, "version")
+	if innerTpl, ok := tpl["template"]; ok {
+		if innerTplMap, ok := innerTpl.(map[string]interface{}); ok {
+			if settings, ok := innerTplMap["settings"]; ok {
+				if settingsMap, ok := settings.(map[string]interface{}); ok {
+					innerTplMap["settings"] = normalizedIndexSettings(settingsMap)
+				}
+			}
 		}
 	}
 }
@@ -477,4 +496,9 @@ func tenantPermissionsHash(v interface{}) int {
 	}
 
 	return hashcode.String(buf.String())
+}
+
+func elastic7GetVersion(client *elastic7.Client) (string, error) {
+	urls := reflect.ValueOf(client).Elem().FieldByName("urls")
+	return client.ElasticsearchVersion(urls.Index(0).String())
 }

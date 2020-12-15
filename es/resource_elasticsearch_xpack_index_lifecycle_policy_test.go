@@ -21,17 +21,24 @@ func TestAccElasticsearchXpackIndexLifecyclePolicy(t *testing.T) {
 	if err != nil {
 		t.Skipf("err: %s", err)
 	}
+
 	meta := provider.Meta()
 	esClient, err := getClient(meta.(*ProviderConf))
 	if err != nil {
 		t.Skipf("err: %s", err)
 	}
+
+	var config string
 	var allowed bool
 	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
+	case *elastic6.Client:
+		allowed = true
+		config = testAccElasticsearch6XpackIndexLifecyclePolicy
 	default:
 		allowed = true
+		config = testAccElasticsearch7XpackIndexLifecyclePolicy
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -45,7 +52,7 @@ func TestAccElasticsearchXpackIndexLifecyclePolicy(t *testing.T) {
 		CheckDestroy: testCheckElasticsearchXpackIndexLifecyclePolicyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccElasticsearchXpackIndexLifecyclePolicy,
+				Config: config,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchXpackIndexLifecyclePolicyExists("elasticsearch_xpack_index_lifecycle_policy.test"),
 				),
@@ -60,17 +67,24 @@ func TestAccElasticsearchXpackIndexLifecyclePolicy_importBasic(t *testing.T) {
 	if err != nil {
 		t.Skipf("err: %s", err)
 	}
+
 	meta := provider.Meta()
 	esClient, err := getClient(meta.(*ProviderConf))
 	if err != nil {
 		t.Skipf("err: %s", err)
 	}
+
+	var config string
 	var allowed bool
 	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
+	case *elastic6.Client:
+		allowed = true
+		config = testAccElasticsearch6XpackIndexLifecyclePolicy
 	default:
 		allowed = true
+		config = testAccElasticsearch7XpackIndexLifecyclePolicy
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -84,7 +98,7 @@ func TestAccElasticsearchXpackIndexLifecyclePolicy_importBasic(t *testing.T) {
 		CheckDestroy: testCheckElasticsearchXpackIndexLifecyclePolicyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccElasticsearchXpackIndexLifecyclePolicy,
+				Config: config,
 			},
 			{
 				ResourceName:      "elasticsearch_xpack_index_lifecycle_policy.test",
@@ -161,7 +175,7 @@ func testCheckElasticsearchXpackIndexLifecyclePolicyDestroy(s *terraform.State) 
 	return nil
 }
 
-var testAccElasticsearchXpackIndexLifecyclePolicy = `
+var testAccElasticsearch6XpackIndexLifecyclePolicy = `
 resource "elasticsearch_xpack_index_lifecycle_policy" "test" {
   name = "terraform-test"
   body = <<EOF
@@ -180,6 +194,36 @@ resource "elasticsearch_xpack_index_lifecycle_policy" "test" {
         "min_age": "30d",
         "actions": {
           "delete": {}
+        }
+      }
+    }
+  }
+}
+EOF
+}
+`
+
+var testAccElasticsearch7XpackIndexLifecyclePolicy = `
+resource "elasticsearch_xpack_index_lifecycle_policy" "test" {
+  name = "terraform-test"
+  body = <<EOF
+{
+  "policy": {
+    "phases": {
+      "warm": {
+        "min_age": "10d",
+        "actions": {
+          "forcemerge": {
+            "max_num_segments": 1
+          }
+        }
+      },
+      "delete": {
+        "min_age": "30d",
+        "actions": {
+          "delete": {
+          	"delete_searchable_snapshot": true
+          }
         }
       }
     }
