@@ -6,7 +6,7 @@
 - Bump aws client to v1.35.33.
 
 ### Added
--
+- Composable Index Template resource, available in ESv7.8+
 
 ## [1.5.0] - 2020-10-26
 ### Changed

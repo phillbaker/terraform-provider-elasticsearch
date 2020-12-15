@@ -66,7 +66,7 @@ func resourceElasticsearchComposableIndexTemplateRead(d *schema.ResourceData, me
 		err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version < 7.0.0")
 	}
 	if err != nil {
-		if elastic7.IsNotFound(err) || elastic6.IsNotFound(err) || elastic5.IsNotFound(err) {
+		if elastic7.IsNotFound(err) {
 			log.Printf("[WARN] Index template (%s) not found, removing from state", id)
 			d.SetId("")
 			return nil

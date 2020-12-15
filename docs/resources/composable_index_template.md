@@ -23,9 +23,9 @@ resource "elasticsearch_composable_index_template" "template_1" {
   "index_patterns": ["te*", "bar*"],
   "template": {
     "settings": {
-			"index": {
-	      "number_of_shards": 1
-			}
+      "index": {
+        "number_of_shards": 1
+      }
     },
     "mappings": {
       "properties": {
