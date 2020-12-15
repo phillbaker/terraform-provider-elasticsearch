@@ -189,15 +189,36 @@ func TestAWSCredsAssumeRole(t *testing.T) {
 	}
 
 	testConfigData := schema.TestResourceDataRaw(t, Provider().(*schema.Provider).Schema, testConfig)
-	s := awsSession(testRegion, testConfigData)
+
+	conf := &ProviderConf{
+		awsAssumeRoleArn: testConfigData.Get("aws_assume_role_arn").(string),
+	}
+	s := awsSession(testRegion, conf)
 	if s == nil {
 		t.Fatalf("awsSession returned nil")
 	}
 }
 
 func getCreds(t *testing.T, region string, config map[string]interface{}) credentials.Value {
-	testConfigData := schema.TestResourceDataRaw(t, Provider().(*schema.Provider).Schema, config)
-	s := awsSession(region, testConfigData)
+	awsAccessKey := ""
+	awsSecretKey := ""
+	awsProfile := ""
+	if val, ok := config["aws_access_key"]; ok {
+		awsAccessKey = val.(string)
+	}
+	if val, ok := config["aws_secret_key"]; ok {
+		awsSecretKey = val.(string)
+	}
+	if val, ok := config["aws_profile"]; ok {
+		awsProfile = val.(string)
+	}
+
+	conf := &ProviderConf{
+		awsAccessKeyId:     awsAccessKey,
+		awsSecretAccessKey: awsSecretKey,
+		awsProfile:         awsProfile,
+	}
+	s := awsSession(region, conf)
 	if s == nil {
 		t.Fatalf("awsSession returned nil")
 	}

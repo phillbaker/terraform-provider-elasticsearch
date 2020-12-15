@@ -27,6 +27,27 @@ import (
 
 var awsUrlRegexp = regexp.MustCompile(`([a-z0-9-]+).es.amazonaws.com$`)
 
+type ProviderConf struct {
+	rawUrl             string
+	insecure           bool
+	sniffing           bool
+	healthchecking     bool
+	cacertFile         string
+	username           string
+	password           string
+	parsedUrl          *url.URL
+	signAWSRequests    bool
+	esVersion          string
+	awsRegion          string
+	awsAssumeRoleArn   string
+	awsAccessKeyId     string
+	awsSecretAccessKey string
+	awsSessionToken    string
+	awsProfile         string
+	certPemPath        string
+	keyPemPath         string
+}
+
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -181,42 +202,57 @@ func Provider() terraform.ResourceProvider {
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	rawUrl := d.Get("url").(string)
-	insecure := d.Get("insecure").(bool)
-	sniffing := d.Get("sniff").(bool)
-	healthchecking := d.Get("healthcheck").(bool)
-	cacertFile := d.Get("cacert_file").(string)
-	username := d.Get("username").(string)
-	password := d.Get("password").(string)
 	parsedUrl, err := url.Parse(rawUrl)
-	signAWSRequests := d.Get("sign_aws_requests").(bool)
-	esVersion := d.Get("elasticsearch_version").(string)
 	if err != nil {
 		return nil, err
 	}
 
+	return &ProviderConf{
+		rawUrl:          rawUrl,
+		insecure:        d.Get("insecure").(bool),
+		sniffing:        d.Get("sniff").(bool),
+		healthchecking:  d.Get("healthcheck").(bool),
+		cacertFile:      d.Get("cacert_file").(string),
+		username:        d.Get("username").(string),
+		password:        d.Get("password").(string),
+		parsedUrl:       parsedUrl,
+		signAWSRequests: d.Get("sign_aws_requests").(bool),
+		esVersion:       d.Get("elasticsearch_version").(string),
+		awsRegion:       d.Get("aws_region").(string),
+
+		awsAssumeRoleArn:   d.Get("aws_assume_role_arn").(string),
+		awsAccessKeyId:     d.Get("aws_access_key").(string),
+		awsSecretAccessKey: d.Get("aws_secret_key").(string),
+		awsSessionToken:    d.Get("aws_token").(string),
+		awsProfile:         d.Get("aws_profile").(string),
+		certPemPath:        d.Get("client_cert_path").(string),
+		keyPemPath:         d.Get("client_key_path").(string),
+	}, nil
+}
+func getClient(conf *ProviderConf) (interface{}, error) {
 	opts := []elastic7.ClientOptionFunc{
-		elastic7.SetURL(rawUrl),
-		elastic7.SetScheme(parsedUrl.Scheme),
-		elastic7.SetSniff(sniffing),
-		elastic7.SetHealthcheck(healthchecking),
+		elastic7.SetURL(conf.rawUrl),
+		elastic7.SetScheme(conf.parsedUrl.Scheme),
+		elastic7.SetSniff(conf.sniffing),
+		elastic7.SetHealthcheck(conf.healthchecking),
 	}
 
-	if parsedUrl.User.Username() != "" {
-		p, _ := parsedUrl.User.Password()
-		opts = append(opts, elastic7.SetBasicAuth(parsedUrl.User.Username(), p))
+	if conf.parsedUrl.User.Username() != "" {
+		p, _ := conf.parsedUrl.User.Password()
+		opts = append(opts, elastic7.SetBasicAuth(conf.parsedUrl.User.Username(), p))
 	}
-	if username != "" && password != "" {
-		opts = append(opts, elastic7.SetBasicAuth(username, password))
+	if conf.username != "" && conf.password != "" {
+		opts = append(opts, elastic7.SetBasicAuth(conf.username, conf.password))
 	}
 
-	if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil && signAWSRequests {
+	if m := awsUrlRegexp.FindStringSubmatch(conf.parsedUrl.Hostname()); m != nil && conf.signAWSRequests {
 		log.Printf("[INFO] Using AWS: %+v", m[1])
-		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(m[1], d)), elastic7.SetSniff(false))
-	} else if awsRegion := d.Get("aws_region").(string); awsRegion != "" && signAWSRequests {
+		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(m[1], conf)), elastic7.SetSniff(false))
+	} else if awsRegion := conf.awsRegion; conf.awsRegion != "" && conf.signAWSRequests {
 		log.Printf("[INFO] Using AWS: %+v", awsRegion)
-		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(awsRegion, d)), elastic7.SetSniff(false))
-	} else if insecure || cacertFile != "" {
-		opts = append(opts, elastic7.SetHttpClient(tlsHttpClient(d)), elastic7.SetSniff(false))
+		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(awsRegion, conf)), elastic7.SetSniff(false))
+	} else if conf.insecure || conf.cacertFile != "" {
+		opts = append(opts, elastic7.SetHttpClient(tlsHttpClient(conf)), elastic7.SetSniff(false))
 	}
 
 	var relevantClient interface{}
@@ -227,75 +263,75 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	relevantClient = client
 
 	// Use the v7 client to ping the cluster to determine the version if one was not provided
-	if esVersion == "" {
-		log.Printf("[INFO] Pinging url to determine version %+v", rawUrl)
-		info, _, err := client.Ping(rawUrl).Do(context.TODO())
+	if conf.esVersion == "" {
+		log.Printf("[INFO] Pinging url to determine version %+v", conf.rawUrl)
+		info, _, err := client.Ping(conf.rawUrl).Do(context.TODO())
 		if err != nil {
 			return nil, err
 		}
-		esVersion = info.Version.Number
+		conf.esVersion = info.Version.Number
 	}
 
-	if esVersion < "7.0.0" && esVersion >= "6.0.0" {
+	if conf.esVersion < "7.0.0" && conf.esVersion >= "6.0.0" {
 		log.Printf("[INFO] Using ES 6")
 		opts := []elastic6.ClientOptionFunc{
-			elastic6.SetURL(rawUrl),
-			elastic6.SetScheme(parsedUrl.Scheme),
-			elastic6.SetSniff(sniffing),
-			elastic6.SetHealthcheck(healthchecking),
+			elastic6.SetURL(conf.rawUrl),
+			elastic6.SetScheme(conf.parsedUrl.Scheme),
+			elastic6.SetSniff(conf.sniffing),
+			elastic6.SetHealthcheck(conf.healthchecking),
 		}
 
-		if parsedUrl.User.Username() != "" {
-			p, _ := parsedUrl.User.Password()
-			opts = append(opts, elastic6.SetBasicAuth(parsedUrl.User.Username(), p))
+		if conf.parsedUrl.User.Username() != "" {
+			p, _ := conf.parsedUrl.User.Password()
+			opts = append(opts, elastic6.SetBasicAuth(conf.parsedUrl.User.Username(), p))
 		}
-		if username != "" && password != "" {
-			opts = append(opts, elastic6.SetBasicAuth(username, password))
+		if conf.username != "" && conf.password != "" {
+			opts = append(opts, elastic6.SetBasicAuth(conf.username, conf.password))
 		}
 
-		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil && signAWSRequests {
+		if m := awsUrlRegexp.FindStringSubmatch(conf.parsedUrl.Hostname()); m != nil && conf.signAWSRequests {
 			log.Printf("[INFO] Using AWS: %+v", m[1])
-			opts = append(opts, elastic6.SetHttpClient(awsHttpClient(m[1], d)), elastic6.SetSniff(false))
-		} else if awsRegion := d.Get("aws_region").(string); awsRegion != "" && signAWSRequests {
-			log.Printf("[INFO] Using AWS: %+v", awsRegion)
-			opts = append(opts, elastic6.SetHttpClient(awsHttpClient(awsRegion, d)), elastic6.SetSniff(false))
-		} else if insecure || cacertFile != "" {
-			opts = append(opts, elastic6.SetHttpClient(tlsHttpClient(d)), elastic6.SetSniff(false))
+			opts = append(opts, elastic6.SetHttpClient(awsHttpClient(m[1], conf)), elastic6.SetSniff(false))
+		} else if awsRegion := conf.awsRegion; conf.awsRegion != "" && conf.signAWSRequests {
+			log.Printf("[INFO] Using AWS: %+v", conf.awsRegion)
+			opts = append(opts, elastic6.SetHttpClient(awsHttpClient(awsRegion, conf)), elastic6.SetSniff(false))
+		} else if conf.insecure || conf.cacertFile != "" {
+			opts = append(opts, elastic6.SetHttpClient(tlsHttpClient(conf)), elastic6.SetSniff(false))
 		}
 		relevantClient, err = elastic6.NewClient(opts...)
 		if err != nil {
 			return nil, err
 		}
-	} else if esVersion < "6.0.0" && esVersion >= "5.0.0" {
+	} else if conf.esVersion < "6.0.0" && conf.esVersion >= "5.0.0" {
 		log.Printf("[INFO] Using ES 5")
 		opts := []elastic5.ClientOptionFunc{
-			elastic5.SetURL(rawUrl),
-			elastic5.SetScheme(parsedUrl.Scheme),
-			elastic5.SetSniff(sniffing),
-			elastic5.SetHealthcheck(healthchecking),
+			elastic5.SetURL(conf.rawUrl),
+			elastic5.SetScheme(conf.parsedUrl.Scheme),
+			elastic5.SetSniff(conf.sniffing),
+			elastic5.SetHealthcheck(conf.healthchecking),
 		}
 
-		if parsedUrl.User.Username() != "" {
-			p, _ := parsedUrl.User.Password()
-			opts = append(opts, elastic5.SetBasicAuth(parsedUrl.User.Username(), p))
+		if conf.parsedUrl.User.Username() != "" {
+			p, _ := conf.parsedUrl.User.Password()
+			opts = append(opts, elastic5.SetBasicAuth(conf.parsedUrl.User.Username(), p))
 		}
-		if username != "" && password != "" {
-			opts = append(opts, elastic5.SetBasicAuth(username, password))
+		if conf.username != "" && conf.password != "" {
+			opts = append(opts, elastic5.SetBasicAuth(conf.username, conf.password))
 		}
 
-		if m := awsUrlRegexp.FindStringSubmatch(parsedUrl.Hostname()); m != nil && signAWSRequests {
-			opts = append(opts, elastic5.SetHttpClient(awsHttpClient(m[1], d)), elastic5.SetSniff(false))
-		} else if awsRegion := d.Get("aws_region").(string); awsRegion != "" && signAWSRequests {
-			log.Printf("[INFO] Using AWS: %+v", awsRegion)
-			opts = append(opts, elastic5.SetHttpClient(awsHttpClient(awsRegion, d)), elastic5.SetSniff(false))
-		} else if insecure || cacertFile != "" {
-			opts = append(opts, elastic5.SetHttpClient(tlsHttpClient(d)), elastic5.SetSniff(false))
+		if m := awsUrlRegexp.FindStringSubmatch(conf.parsedUrl.Hostname()); m != nil && conf.signAWSRequests {
+			opts = append(opts, elastic5.SetHttpClient(awsHttpClient(m[1], conf)), elastic5.SetSniff(false))
+		} else if awsRegion := conf.awsRegion; conf.awsRegion != "" && conf.signAWSRequests {
+			log.Printf("[INFO] Using AWS: %+v", conf.awsRegion)
+			opts = append(opts, elastic5.SetHttpClient(awsHttpClient(awsRegion, conf)), elastic5.SetSniff(false))
+		} else if conf.insecure || conf.cacertFile != "" {
+			opts = append(opts, elastic5.SetHttpClient(tlsHttpClient(conf)), elastic5.SetSniff(false))
 		}
 		relevantClient, err = elastic5.NewClient(opts...)
 		if err != nil {
 			return nil, err
 		}
-	} else if esVersion < "5.0.0" {
+	} else if conf.esVersion < "5.0.0" {
 		return nil, errors.New("ElasticSearch is older than 5.0.0!")
 	}
 
@@ -318,15 +354,7 @@ func assumeRoleCredentials(region, roleARN, profile string) *awscredentials.Cred
 	return awscredentials.NewChainCredentials([]awscredentials.Provider{assumeRoleProvider})
 }
 
-func awsSession(region string, d *schema.ResourceData) *awssession.Session {
-	insecure := d.Get("insecure").(bool)
-
-	awsAssumeRoleArn := d.Get("aws_assume_role_arn").(string)
-	awsAccessKeyId := d.Get("aws_access_key").(string)
-	awsSecretAccessKey := d.Get("aws_secret_key").(string)
-	awsSessionToken := d.Get("aws_token").(string)
-	awsProfile := d.Get("aws_profile").(string)
-
+func awsSession(region string, conf *ProviderConf) *awssession.Session {
 	sessOpts := awssession.Options{
 		Config: aws.Config{
 			Region: aws.String(region),
@@ -338,16 +366,16 @@ func awsSession(region string, d *schema.ResourceData) *awssession.Session {
 	// 4. let the default credentials provider figure out the rest (env, ec2, etc..)
 	//
 	// note: if #1 is chosen, then no further providers will be tested, since we've overridden the credentials with just a static provider
-	if awsAccessKeyId != "" {
-		sessOpts.Config.Credentials = awscredentials.NewStaticCredentials(awsAccessKeyId, awsSecretAccessKey, awsSessionToken)
-	} else if awsAssumeRoleArn != "" {
-		sessOpts.Config.Credentials = assumeRoleCredentials(region, awsAssumeRoleArn, awsProfile)
-	} else if awsProfile != "" {
-		sessOpts.Profile = awsProfile
+	if conf.awsAccessKeyId != "" {
+		sessOpts.Config.Credentials = awscredentials.NewStaticCredentials(conf.awsAccessKeyId, conf.awsSecretAccessKey, conf.awsSessionToken)
+	} else if conf.awsAssumeRoleArn != "" {
+		sessOpts.Config.Credentials = assumeRoleCredentials(region, conf.awsAssumeRoleArn, conf.awsProfile)
+	} else if conf.awsProfile != "" {
+		sessOpts.Profile = conf.awsProfile
 	}
 
 	// If configured as insecure, turn off SSL verification
-	if insecure {
+	if conf.insecure {
 		client := &http.Client{Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}}
@@ -357,27 +385,23 @@ func awsSession(region string, d *schema.ResourceData) *awssession.Session {
 	return awssession.Must(awssession.NewSessionWithOptions(sessOpts))
 }
 
-func awsHttpClient(region string, d *schema.ResourceData) *http.Client {
-	signer := awssigv4.NewSigner(awsSession(region, d).Config.Credentials)
+func awsHttpClient(region string, conf *ProviderConf) *http.Client {
+	signer := awssigv4.NewSigner(awsSession(region, conf).Config.Credentials)
 	client, _ := aws_signing_client.New(signer, nil, "es", region)
 
 	return client
 }
 
-func tlsHttpClient(d *schema.ResourceData) *http.Client {
-	insecure := d.Get("insecure").(bool)
-	cacertFile := d.Get("cacert_file").(string)
-	certPemPath := d.Get("client_cert_path").(string)
-	keyPemPath := d.Get("client_key_path").(string)
+func tlsHttpClient(conf *ProviderConf) *http.Client {
 
 	// Configure TLS/SSL
 	tlsConfig := &tls.Config{}
-	if certPemPath != "" && keyPemPath != "" {
-		certPem, _, err := pathorcontents.Read(certPemPath)
+	if conf.certPemPath != "" && conf.keyPemPath != "" {
+		certPem, _, err := pathorcontents.Read(conf.certPemPath)
 		if err != nil {
 			log.Fatal(err)
 		}
-		keyPem, _, err := pathorcontents.Read(keyPemPath)
+		keyPem, _, err := pathorcontents.Read(conf.keyPemPath)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -389,8 +413,8 @@ func tlsHttpClient(d *schema.ResourceData) *http.Client {
 	}
 
 	// If a cacertFile has been specified, use that for cert validation
-	if cacertFile != "" {
-		caCert, _, _ := pathorcontents.Read(cacertFile)
+	if conf.cacertFile != "" {
+		caCert, _, _ := pathorcontents.Read(conf.cacertFile)
 
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM([]byte(caCert))
@@ -398,7 +422,7 @@ func tlsHttpClient(d *schema.ResourceData) *http.Client {
 	}
 
 	// If configured as insecure, turn off SSL verification
-	if insecure {
+	if conf.insecure {
 		tlsConfig.InsecureSkipVerify = true
 	}
 

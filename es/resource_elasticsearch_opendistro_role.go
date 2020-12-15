@@ -165,7 +165,11 @@ func resourceElasticsearchOpenDistroRoleDelete(d *schema.ResourceData, m interfa
 		return fmt.Errorf("error building URL path for role: %+v", err)
 	}
 
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "DELETE",
@@ -191,7 +195,11 @@ func resourceElasticsearchGetOpenDistroRole(roleID string, m interface{}) (RoleB
 	}
 
 	var body json.RawMessage
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return *role, err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
@@ -268,7 +276,11 @@ func resourceElasticsearchPutOpenDistroRole(d *schema.ResourceData, m interface{
 	}
 
 	var body json.RawMessage
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return nil, err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{

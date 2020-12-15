@@ -51,13 +51,17 @@ func resourceElasticsearchSnapshotRepositoryRead(d *schema.ResourceData, meta in
 	var repositoryType string
 	var settings map[string]interface{}
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		repositoryType, settings, err = elastic7SnapshotGetRepository(client, id)
 	case *elastic6.Client:
 		repositoryType, settings, err = elastic6SnapshotGetRepository(client, id)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		repositoryType, settings, err = elastic5SnapshotGetRepository(elastic5Client, id)
 	}
 
@@ -110,13 +114,17 @@ func resourceElasticsearchSnapshotRepositoryUpdate(d *schema.ResourceData, meta 
 	}
 
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		err = elastic7SnapshotCreateRepository(client, name, repositoryType, settings)
 	case *elastic6.Client:
 		err = elastic6SnapshotCreateRepository(client, name, repositoryType, settings)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		err = elastic5SnapshotCreateRepository(elastic5Client, name, repositoryType, settings)
 	}
 
@@ -157,13 +165,17 @@ func resourceElasticsearchSnapshotRepositoryDelete(d *schema.ResourceData, meta 
 	id := d.Id()
 
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		err = elastic7SnapshotDeleteRepository(client, id)
 	case *elastic6.Client:
 		err = elastic6SnapshotDeleteRepository(client, id)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		err = elastic5SnapshotDeleteRepository(elastic5Client, id)
 	}
 

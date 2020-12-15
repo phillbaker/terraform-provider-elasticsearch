@@ -50,7 +50,11 @@ func dataSourceElasticsearchOpenDistroDestinationRead(d *schema.ResourceData, m 
 	var id string
 	var body *json.RawMessage
 	var err error
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		id, body, err = elastic7Search(client, DESTINATION_INDEX, destinationName)
 	case *elastic6.Client:

@@ -117,7 +117,11 @@ func resourceElasticsearchOpenDistroRolesMappingDelete(d *schema.ResourceData, m
 		return fmt.Errorf("error building URL path for role mapping: %+v", err)
 	}
 
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "DELETE",
@@ -142,7 +146,11 @@ func resourceElasticsearchGetOpenDistroRolesMapping(roleID string, m interface{}
 		return *roleMapping, fmt.Errorf("error building URL path for role mapping: %+v", err)
 	}
 	var body json.RawMessage
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return *roleMapping, err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
@@ -194,7 +202,11 @@ func resourceElasticsearchPutOpenDistroRolesMapping(d *schema.ResourceData, m in
 	}
 
 	var body json.RawMessage
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return nil, err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{

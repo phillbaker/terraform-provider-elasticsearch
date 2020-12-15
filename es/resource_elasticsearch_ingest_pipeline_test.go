@@ -21,8 +21,13 @@ func TestAccElasticsearchIngestPipeline(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var config string
-	switch meta.(type) {
+
+	switch esClient.(type) {
 	case *elastic7.Client:
 		config = testAccElasticsearchIngestPipelineV7
 	case *elastic6.Client:
@@ -54,8 +59,12 @@ func TestAccElasticsearchIngestPipeline_importBasic(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var config string
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic7.Client:
 		config = testAccElasticsearchIngestPipelineV7
 	case *elastic6.Client:
@@ -96,13 +105,17 @@ func testCheckElasticsearchIngestPipelineExists(name string) resource.TestCheckF
 		meta := testAccProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			_, err = client.IngestGetPipeline(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
 			_, err = client.IngestGetPipeline(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			_, err = elastic5Client.IngestGetPipeline(rs.Primary.ID).Do(context.TODO())
 		}
 
@@ -123,13 +136,17 @@ func testCheckElasticsearchIngestPipelineDestroy(s *terraform.State) error {
 		meta := testAccProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			_, err = client.IngestGetPipeline(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
 			_, err = client.IngestGetPipeline(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			_, err = elastic5Client.IngestGetPipeline(rs.Primary.ID).Do(context.TODO())
 		}
 

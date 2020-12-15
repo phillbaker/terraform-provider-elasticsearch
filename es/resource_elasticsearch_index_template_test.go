@@ -21,8 +21,12 @@ func TestAccElasticsearchIndexTemplate(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var config string
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic7.Client:
 		config = testAccElasticsearchIndexTemplateV7
 	case *elastic6.Client:
@@ -55,7 +59,11 @@ func TestAccElasticsearchIndexTemplate_importBasic(t *testing.T) {
 	}
 	meta := provider.Meta()
 	var config string
-	switch meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	switch esClient.(type) {
 	case *elastic7.Client:
 		config = testAccElasticsearchIndexTemplateV7
 	case *elastic6.Client:
@@ -96,13 +104,17 @@ func testCheckElasticsearchIndexTemplateExists(name string) resource.TestCheckFu
 		meta := testAccProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
 			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			_, err = elastic5Client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
 		}
 
@@ -123,13 +135,17 @@ func testCheckElasticsearchIndexTemplateDestroy(s *terraform.State) error {
 		meta := testAccProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
 			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := meta.(*elastic5.Client)
+			elastic5Client := client.(*elastic5.Client)
 			_, err = elastic5Client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
 		}
 

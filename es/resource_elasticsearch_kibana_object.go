@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/structure"
+
 	// "github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 
 	elastic7 "github.com/olivere/elastic/v7"
@@ -78,13 +79,17 @@ func resourceElasticsearchKibanaObjectCreate(d *schema.ResourceData, meta interf
 
 	var success int
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		success, err = elastic7CreateIndexIfNotExists(client, index, mapping_index)
 	case *elastic6.Client:
 		success, err = elastic6CreateIndexIfNotExists(client, index, mapping_index)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		success, err = elastic5CreateIndexIfNotExists(elastic5Client, index, mapping_index)
 	}
 
@@ -198,13 +203,17 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 
 	var result *json.RawMessage
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		result, err = elastic7GetObject(client, index, id)
 	case *elastic6.Client:
 		result, err = elastic6GetObject(client, objectType, index, id)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		result, err = elastic5GetObject(elastic5Client, objectType, index, id)
 	}
 
@@ -243,13 +252,17 @@ func resourceElasticsearchKibanaObjectDelete(d *schema.ResourceData, meta interf
 	index := d.Get("index").(string)
 
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		err = elastic7DeleteIndex(client, index, id)
 	case *elastic6.Client:
 		err = elastic6DeleteIndex(client, objectType, index, id)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		err = elastic5DeleteIndex(elastic5Client, objectType, index, id)
 	}
 
@@ -306,13 +319,17 @@ func resourceElasticsearchPutKibanaObject(d *schema.ResourceData, meta interface
 	index := d.Get("index").(string)
 
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return "", err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		err = elastic7PutIndex(client, index, id, data)
 	case *elastic6.Client:
 		err = elastic6PutIndex(client, objectType, index, id, data)
 	default:
-		elastic5Client := meta.(*elastic5.Client)
+		elastic5Client := client.(*elastic5.Client)
 		err = elastic5PutIndex(elastic5Client, objectType, index, id, data)
 	}
 
