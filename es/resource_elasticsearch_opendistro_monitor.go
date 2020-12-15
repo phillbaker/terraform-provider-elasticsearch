@@ -120,7 +120,11 @@ func resourceElasticsearchOpenDistroMonitorDelete(d *schema.ResourceData, m inte
 		return fmt.Errorf("error building URL path for monitor: %+v", err)
 	}
 
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "DELETE",
@@ -150,7 +154,11 @@ func resourceElasticsearchOpenDistroGetMonitor(monitorID string, m interface{}) 
 	}
 
 	var body json.RawMessage
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return nil, err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
@@ -189,7 +197,11 @@ func resourceElasticsearchOpenDistroPostMonitor(d *schema.ResourceData, m interf
 	path := "/_opendistro/_alerting/monitors/"
 
 	var body json.RawMessage
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return nil, err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
@@ -235,7 +247,11 @@ func resourceElasticsearchOpenDistroPutMonitor(d *schema.ResourceData, m interfa
 	}
 
 	var body json.RawMessage
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return nil, err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{

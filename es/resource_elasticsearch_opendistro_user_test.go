@@ -23,8 +23,12 @@ func TestAccElasticsearchOpenDistroUser(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var allowed bool
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	case *elastic6.Client:
@@ -118,9 +122,13 @@ func testAccCheckElasticsearchOpenDistroUserDestroy(s *terraform.State) error {
 		meta := testAccOpendistroProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch esClient.(type) {
 		case *elastic7.Client:
-			_, err = resourceElasticsearchGetOpenDistroUser(rs.Primary.ID, client)
+			_, err = resourceElasticsearchGetOpenDistroUser(rs.Primary.ID, meta.(*ProviderConf))
 		default:
 		}
 
@@ -144,9 +152,13 @@ func testCheckElasticSearchOpenDistroUserExists(name string) resource.TestCheckF
 			meta := testAccOpendistroProvider.Meta()
 
 			var err error
-			switch client := meta.(type) {
+			esClient, err := getClient(meta.(*ProviderConf))
+			if err != nil {
+				return err
+			}
+			switch esClient.(type) {
 			case *elastic7.Client:
-				_, err = resourceElasticsearchGetOpenDistroUser(rs.Primary.ID, client)
+				_, err = resourceElasticsearchGetOpenDistroUser(rs.Primary.ID, meta.(*ProviderConf))
 			default:
 			}
 
@@ -173,7 +185,11 @@ func testCheckElasticSearchOpenDistroUserConnects(name string) resource.TestChec
 			meta := testAccOpendistroProvider.Meta()
 
 			var err error
-			switch meta.(type) {
+			esClient, err := getClient(meta.(*ProviderConf))
+			if err != nil {
+				return err
+			}
+			switch esClient.(type) {
 			case *elastic7.Client:
 				var client *elastic7.Client
 				client, err = elastic7.NewClient(

@@ -20,8 +20,13 @@ func TestAccElasticsearchOpenDistroMonitor(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var allowed bool
-	switch meta.(type) {
+
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -61,11 +66,15 @@ func testCheckElasticsearchOpenDistroMonitorExists(name string) resource.TestChe
 		meta := testAccOpendistroProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch esClient.(type) {
 		case *elastic7.Client:
-			_, err = resourceElasticsearchOpenDistroGetMonitor(rs.Primary.ID, client)
+			_, err = resourceElasticsearchOpenDistroGetMonitor(rs.Primary.ID, meta.(*ProviderConf))
 		case *elastic6.Client:
-			_, err = resourceElasticsearchOpenDistroGetMonitor(rs.Primary.ID, client)
+			_, err = resourceElasticsearchOpenDistroGetMonitor(rs.Primary.ID, meta.(*ProviderConf))
 		default:
 		}
 
@@ -86,12 +95,16 @@ func testCheckElasticsearchMonitorDestroy(s *terraform.State) error {
 		meta := testAccOpendistroProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch esClient.(type) {
 		case *elastic7.Client:
-			_, err = resourceElasticsearchOpenDistroGetMonitor(rs.Primary.ID, client)
+			_, err = resourceElasticsearchOpenDistroGetMonitor(rs.Primary.ID, meta.(*ProviderConf))
 
 		case *elastic6.Client:
-			_, err = resourceElasticsearchOpenDistroGetMonitor(rs.Primary.ID, client)
+			_, err = resourceElasticsearchOpenDistroGetMonitor(rs.Primary.ID, meta.(*ProviderConf))
 		default:
 		}
 

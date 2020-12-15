@@ -50,7 +50,11 @@ func resourceElasticsearchXpackSnapshotLifecyclePolicyRead(d *schema.ResourceDat
 
 	var result string
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		result, err = elastic7SnapshotGetLifecyclePolicy(client, id)
 	default:
@@ -114,7 +118,11 @@ func resourceElasticsearchXpackSnapshotLifecyclePolicyDelete(d *schema.ResourceD
 	id := d.Id()
 
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		err = elastic7SnapshotDeleteLifecyclePolicy(client, id)
 	default:
@@ -141,7 +149,11 @@ func resourceElasticsearchPutSnapshotLifecyclePolicy(d *schema.ResourceData, met
 	body := d.Get("body").(string)
 
 	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		err = elastic7SnapshotPutLifecyclePolicy(client, name, body)
 	default:

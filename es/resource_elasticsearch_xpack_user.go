@@ -200,39 +200,51 @@ func buildPutUserBody(d *schema.ResourceData, m interface{}) (string, error) {
 }
 
 func xpackPutUser(d *schema.ResourceData, m interface{}, name string, body string) error {
-	if client, ok := m.(*elastic7.Client); ok {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	if client, ok := esClient.(*elastic7.Client); ok {
 		return elastic7PutUser(client, name, body)
 	}
-	if client, ok := m.(*elastic6.Client); ok {
+	if client, ok := esClient.(*elastic6.Client); ok {
 		return elastic6PutUser(client, name, body)
 	}
-	if client, ok := m.(*elastic5.Client); ok {
+	if client, ok := esClient.(*elastic5.Client); ok {
 		return elastic5PutUser(client, name, body)
 	}
 	return errors.New("unhandled client type")
 }
 
 func xpackGetUser(d *schema.ResourceData, m interface{}, name string) (XPackSecurityUser, error) {
-	if client, ok := m.(*elastic7.Client); ok {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return XPackSecurityUser{}, err
+	}
+	if client, ok := esClient.(*elastic7.Client); ok {
 		return elastic7GetUser(client, name)
 	}
-	if client, ok := m.(*elastic6.Client); ok {
+	if client, ok := esClient.(*elastic6.Client); ok {
 		return elastic6GetUser(client, name)
 	}
-	if client, ok := m.(*elastic5.Client); ok {
+	if client, ok := esClient.(*elastic5.Client); ok {
 		return elastic5GetUser(client, name)
 	}
 	return XPackSecurityUser{}, errors.New("unhandled client type")
 }
 
 func xpackDeleteUser(d *schema.ResourceData, m interface{}, name string) error {
-	if client, ok := m.(*elastic7.Client); ok {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	if client, ok := esClient.(*elastic7.Client); ok {
 		return elastic7DeleteUser(client, name)
 	}
-	if client, ok := m.(*elastic6.Client); ok {
+	if client, ok := esClient.(*elastic6.Client); ok {
 		return elastic6DeleteUser(client, name)
 	}
-	if client, ok := m.(*elastic5.Client); ok {
+	if client, ok := esClient.(*elastic5.Client); ok {
 		return elastic5DeleteUser(client, name)
 	}
 	return errors.New("unhandled client type")

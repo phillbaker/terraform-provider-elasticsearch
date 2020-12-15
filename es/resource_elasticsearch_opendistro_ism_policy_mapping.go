@@ -157,7 +157,11 @@ func resourceElasticsearchPostOpendistroPolicyMapping(d *schema.ResourceData, m 
 	}
 
 	var body *json.RawMessage
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return nil, err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
@@ -195,7 +199,11 @@ func resourceElasticsearchGetOpendistroPolicyMapping(d *schema.ResourceData, m i
 	}
 
 	var body *json.RawMessage
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return nil, err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{

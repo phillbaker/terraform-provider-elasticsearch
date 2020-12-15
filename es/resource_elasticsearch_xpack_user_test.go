@@ -22,8 +22,12 @@ func TestAccElasticsearchXpackUser(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var allowed bool
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	case *elastic6.Client:
@@ -98,8 +102,11 @@ func testAccCheckUserDestroy(s *terraform.State) error {
 		}
 
 		meta := testAccXPackProvider.Meta()
-
-		if client, ok := meta.(*elastic7.Client); ok {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		if client, ok := esClient.(*elastic7.Client); ok {
 			if _, err := client.XPackSecurityGetUser(rs.Primary.ID).Do(context.TODO()); err != nil {
 				if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
 					return nil
@@ -127,10 +134,14 @@ func testCheckUserExists(name string) resource.TestCheckFunc {
 			return fmt.Errorf("No user mapping ID is set")
 		}
 
-		meta := testAccXPackProvider.Meta()
-
 		var err error
-		if client, ok := meta.(*elastic7.Client); ok {
+		meta := testAccXPackProvider.Meta()
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+
+		if client, ok := esClient.(*elastic7.Client); ok {
 			_, err = client.XPackSecurityGetUser(rs.Primary.ID).Do(context.TODO())
 		}
 		if err != nil {
@@ -187,8 +198,12 @@ func TestAccUserResource_importBasic(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var allowed bool
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	case *elastic6.Client:

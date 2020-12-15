@@ -108,7 +108,11 @@ func resourceElasticsearchOpenDistroDestinationDelete(d *schema.ResourceData, m 
 		return fmt.Errorf("error building URL path for destination: %+v", err)
 	}
 
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "DELETE",
@@ -132,7 +136,11 @@ func resourceElasticsearchOpenDistroGetDestination(destinationID string, m inter
 
 	// See https://github.com/opendistro-for-elasticsearch/alerting/issues/56, no API endpoint for retrieving destination
 	var body *json.RawMessage
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return "", err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		body, err = elastic7GetObject(client, DESTINATION_INDEX, destinationID)
 	case *elastic6.Client:
@@ -166,7 +174,11 @@ func resourceElasticsearchOpenDistroPostDestination(d *schema.ResourceData, m in
 	path := "/_opendistro/_alerting/destinations/"
 
 	var body json.RawMessage
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return nil, err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
@@ -212,7 +224,11 @@ func resourceElasticsearchOpenDistroPutDestination(d *schema.ResourceData, m int
 	}
 
 	var body json.RawMessage
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return nil, err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{

@@ -301,39 +301,51 @@ func buildPutRoleBody(d *schema.ResourceData, m interface{}) (string, error) {
 }
 
 func xpackPutRole(d *schema.ResourceData, m interface{}, name string, body string) error {
-	if client, ok := m.(*elastic7.Client); ok {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	if client, ok := esClient.(*elastic7.Client); ok {
 		return elastic7PutRole(client, name, body)
 	}
-	if client, ok := m.(*elastic6.Client); ok {
+	if client, ok := esClient.(*elastic6.Client); ok {
 		return elastic6PutRole(client, name, body)
 	}
-	if client, ok := m.(*elastic5.Client); ok {
+	if client, ok := esClient.(*elastic5.Client); ok {
 		return elastic5PutRole(client, name, body)
 	}
 	return errors.New("unhandled client type")
 }
 
 func xpackGetRole(d *schema.ResourceData, m interface{}, name string) (XPackSecurityRole, error) {
-	if client, ok := m.(*elastic7.Client); ok {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return XPackSecurityRole{}, err
+	}
+	if client, ok := esClient.(*elastic7.Client); ok {
 		return elastic7GetRole(client, name)
 	}
-	if client, ok := m.(*elastic6.Client); ok {
+	if client, ok := esClient.(*elastic6.Client); ok {
 		return elastic6GetRole(client, name)
 	}
-	if client, ok := m.(*elastic5.Client); ok {
+	if client, ok := esClient.(*elastic5.Client); ok {
 		return elastic5GetRole(client, name)
 	}
 	return XPackSecurityRole{}, errors.New("unhandled client type")
 }
 
 func xpackDeleteRole(d *schema.ResourceData, m interface{}, name string) error {
-	if client, ok := m.(*elastic7.Client); ok {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	if client, ok := esClient.(*elastic7.Client); ok {
 		return elastic7DeleteRole(client, name)
 	}
-	if client, ok := m.(*elastic6.Client); ok {
+	if client, ok := esClient.(*elastic6.Client); ok {
 		return elastic6DeleteRole(client, name)
 	}
-	if client, ok := m.(*elastic5.Client); ok {
+	if client, ok := esClient.(*elastic5.Client); ok {
 		return elastic5DeleteRole(client, name)
 	}
 	return errors.New("unhandled client type")

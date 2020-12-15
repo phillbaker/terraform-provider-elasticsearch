@@ -4,6 +4,7 @@
 - Gracefully handle the case where `elasticsearch_index_template` objects exist in the terraform state but not in the ES domain (e.g. because they were manually deleted.)
 - Create index `aliases` and `mappings` even if no settings are set.
 - Bump aws client to v1.35.33.
+- Allow provider variable interpolation by deferring client instanation, `providerConfigure` only returns a configuration struct.
 
 ### Added
 -

@@ -22,8 +22,12 @@ func TestAccElasticsearchXpackIndexLifecyclePolicy(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var allowed bool
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -57,8 +61,12 @@ func TestAccElasticsearchXpackIndexLifecyclePolicy_importBasic(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var allowed bool
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -100,7 +108,11 @@ func testCheckElasticsearchXpackIndexLifecyclePolicyExists(name string) resource
 		meta := testAccXPackProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			_, err = client.XPackIlmGetLifecycle().Policy(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:
@@ -126,7 +138,11 @@ func testCheckElasticsearchXpackIndexLifecyclePolicyDestroy(s *terraform.State) 
 		meta := testAccXPackProvider.Meta()
 
 		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			_, err = client.XPackIlmGetLifecycle().Policy(rs.Primary.ID).Do(context.TODO())
 		case *elastic6.Client:

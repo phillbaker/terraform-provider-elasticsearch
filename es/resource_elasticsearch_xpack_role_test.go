@@ -23,8 +23,12 @@ func TestAccElasticsearchXpackRole(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var allowed bool
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -96,8 +100,11 @@ func testAccCheckRoleDestroy(s *terraform.State) error {
 			continue
 		}
 		meta := testAccXPackProvider.Meta()
-
-		if client, ok := meta.(*elastic7.Client); ok {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		if client, ok := esClient.(*elastic7.Client); ok {
 			if _, err := client.XPackSecurityGetRole(rs.Primary.ID).Do(context.TODO()); err != nil {
 				if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
 					return nil
@@ -108,7 +115,7 @@ func testAccCheckRoleDestroy(s *terraform.State) error {
 				return err
 			}
 
-		} else if client, ok := meta.(*elastic6.Client); ok {
+		} else if client, ok := esClient.(*elastic6.Client); ok {
 			if _, err := client.XPackSecurityGetRole(rs.Primary.ID).Do(context.TODO()); err != nil {
 				if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
 					return nil
@@ -134,14 +141,17 @@ func testCheckRoleExists(name string) resource.TestCheckFunc {
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No role mapping ID is set")
 		}
-
-		meta := testAccXPackProvider.Meta()
-
 		var err error
-		if client, ok := meta.(*elastic7.Client); ok {
+		meta := testAccXPackProvider.Meta()
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+
+		if client, ok := esClient.(*elastic7.Client); ok {
 			_, err = client.XPackSecurityGetRole(rs.Primary.ID).Do(context.TODO())
 		} else {
-			client := meta.(*elastic6.Client)
+			client := esClient.(*elastic6.Client)
 			_, err = client.XPackSecurityGetRole(rs.Primary.ID).Do(context.TODO())
 		}
 
@@ -278,8 +288,12 @@ func TestAccRoleResource_importBasic(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
 	var allowed bool
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
 	default:

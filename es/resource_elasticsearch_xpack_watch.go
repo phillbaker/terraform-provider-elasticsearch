@@ -100,7 +100,12 @@ func resourceElasticsearchWatchRead(d *schema.ResourceData, m interface{}) error
 	}
 
 	var watch []byte
-	switch m.(type) {
+
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch esClient.(type) {
 	case *elastic7.Client:
 		watchResponse := res.(*elastic7.XPackWatcherGetWatchResponse)
 		watch, err = json.Marshal(watchResponse.Watch)
@@ -132,7 +137,11 @@ func resourceElasticsearchWatchUpdate(d *schema.ResourceData, m interface{}) err
 
 func resourceElasticsearchWatchDelete(d *schema.ResourceData, m interface{}) error {
 	var err error
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.XPackWatchDelete(d.Id()).Do(context.TODO())
 	case *elastic6.Client:
@@ -147,7 +156,11 @@ func resourceElasticsearchWatchDelete(d *schema.ResourceData, m interface{}) err
 func resourceElasticsearchGetWatch(watchID string, m interface{}) (interface{}, error) {
 	var res interface{}
 	var err error
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return "", err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		res, err = client.XPackWatchGet(watchID).Do(context.TODO())
 	case *elastic6.Client:
@@ -164,7 +177,11 @@ func resourceElasticsearchPutWatch(d *schema.ResourceData, m interface{}) (strin
 	watchJSON := d.Get("body").(string)
 
 	var err error
-	switch client := m.(type) {
+	esClient, err := getClient(m.(*ProviderConf))
+	if err != nil {
+		return "", err
+	}
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.XPackWatchPut(watchID).
 			Body(watchJSON).
