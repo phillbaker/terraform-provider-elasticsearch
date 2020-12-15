@@ -163,7 +163,9 @@ resource "elasticsearch_xpack_index_lifecycle_policy" "test" {
       "delete": {
         "min_age": "30d",
         "actions": {
-          "delete": {}
+          "delete": {
+          	"delete_searchable_snapshot": true
+          }
         }
       }
     }
