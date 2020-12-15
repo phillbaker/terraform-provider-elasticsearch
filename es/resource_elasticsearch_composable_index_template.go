@@ -9,8 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
-	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
 func resourceElasticsearchComposableIndexTemplate() *schema.Resource {
