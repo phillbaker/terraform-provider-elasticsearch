@@ -2,7 +2,6 @@ package es
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -17,9 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-// Note the tests run with a trial license enabled, so we need to ensure that
-// we revert to the starting license at the end of the test
-func TestAccElasticsearchLicense_Basic(t *testing.T) {
+// Note the tests run with a trial license enabled, so this test is
+// "destructive" in that once deactivated, a trail license may not be re-
+// activated. Restarting the docker compose container doesn't seem to work.
+func TestAccElasticsearchXpackLicense_Basic(t *testing.T) {
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
 	if err != nil {
@@ -38,19 +38,12 @@ func TestAccElasticsearchLicense_Basic(t *testing.T) {
 		allowed = true
 	}
 
-	license, err := resourceElasticsearchGetXpackLicense(meta)
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-
-	license, err := resourceElasticsearchGetXpackLicense(meta)
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
+			if testing.Short() {
+				t.Skip("Skipping destructive license test because short is set")
+			}
 			if !allowed {
 				t.Skip("License only supported on ES >= 6")
 			}
@@ -66,15 +59,6 @@ func TestAccElasticsearchLicense_Basic(t *testing.T) {
 			},
 		},
 	})
-
-	out, err := json.Marshal(license)
-	if err != nil {
-		t.Fatalf("err %s", err)
-	}
-	_, err = resourceElasticsearchPutEnterpriseLicense(string(out), meta)
-	if err != nil {
-		t.Fatalf("err %s", err)
-	}
 }
 
 func testCheckElasticsearchLicenseExists(name string) resource.TestCheckFunc {
