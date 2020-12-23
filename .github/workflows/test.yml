@@ -80,8 +80,8 @@ jobs:
       # https://github.com/opendistro-for-elasticsearch/alerting/issues/60
       run: |
         if [ -n "$ES_OPENDISTRO_IMAGE" ]; then
-          curl -s http://admin:admin@localhost:9220
-          curl -s -X POST -H 'Content-type: application/json'  -d '{"name":"_warmup","type":"slack","slack":{"url": "http://www.example.com"}}' http://admin:admin@localhost:9220/_opendistro/_alerting/destinations
+          ./script/wait-for-endpoint http://admin:admin@localhost:9220
+          curl -s -v -X POST -H 'Content-type: application/json'  -d '{"name":"_warmup","type":"slack","slack":{"url": "http://www.example.com"}}' http://admin:admin@localhost:9220/_opendistro/_alerting/destinations
         fi
     - name: Run the tests
       run: |
