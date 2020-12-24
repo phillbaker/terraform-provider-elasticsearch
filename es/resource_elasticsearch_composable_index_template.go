@@ -49,8 +49,13 @@ func resourceElasticsearchComposableIndexTemplateRead(d *schema.ResourceData, me
 	id := d.Id()
 
 	var result, version string
-	var err error
-	switch client := meta.(type) {
+
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		version, err = elastic7GetVersion(client)
 		if err == nil {
@@ -103,8 +108,13 @@ func resourceElasticsearchComposableIndexTemplateDelete(d *schema.ResourceData, 
 	id := d.Id()
 
 	var version string
-	var err error
-	switch client := meta.(type) {
+
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		version, err = elastic7GetVersion(client)
 		if err == nil {
@@ -134,8 +144,12 @@ func resourceElasticsearchPutComposableIndexTemplate(d *schema.ResourceData, met
 	name := d.Get("name").(string)
 	body := d.Get("body").(string)
 
-	var err error
-	switch client := meta.(type) {
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+
+	switch client := esClient.(type) {
 	case *elastic7.Client:
 		err = elastic7PutIndexTemplate(client, name, body, create)
 	default:
