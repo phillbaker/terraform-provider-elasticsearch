@@ -20,8 +20,14 @@ func TestAccElasticsearchComposableIndexTemplate(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+
 	var allowed bool
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic7.Client:
 		allowed = true
 	default:
@@ -54,8 +60,14 @@ func TestAccElasticsearchComposableIndexTemplate_importBasic(t *testing.T) {
 		t.Skipf("err: %s", err)
 	}
 	meta := provider.Meta()
+
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+
 	var allowed bool
-	switch meta.(type) {
+	switch esClient.(type) {
 	case *elastic7.Client:
 		allowed = true
 	default:
@@ -95,8 +107,12 @@ func testCheckElasticsearchComposableIndexTemplateExists(name string) resource.T
 
 		meta := testAccProvider.Meta()
 
-		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			_, err = client.IndexGetIndexTemplate(rs.Primary.ID).Do(context.TODO())
 		default:
@@ -119,8 +135,12 @@ func testCheckElasticsearchComposableIndexTemplateDestroy(s *terraform.State) er
 
 		meta := testAccProvider.Meta()
 
-		var err error
-		switch client := meta.(type) {
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+
+		switch client := esClient.(type) {
 		case *elastic7.Client:
 			_, err = client.IndexGetTemplate(rs.Primary.ID).Do(context.TODO())
 		default:
