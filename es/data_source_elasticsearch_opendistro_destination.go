@@ -17,12 +17,14 @@ const DESTINATION_NAME_FIELD = "destination.name.keyword"
 
 var datasourceOpenDistroDestinationSchema = map[string]*schema.Schema{
 	"name": {
-		Type:     schema.TypeString,
-		Required: true,
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "Name of the destrination to retrieve",
 	},
 	"body": {
-		Type:     schema.TypeMap,
-		Computed: true,
+		Type:        schema.TypeMap,
+		Computed:    true,
+		Description: "Map of the attributes of the destination",
 	},
 }
 
@@ -36,8 +38,9 @@ func dataSourceElasticsearchDeprecatedDestination() *schema.Resource {
 
 func dataSourceElasticsearchOpenDistroDestination() *schema.Resource {
 	return &schema.Resource{
-		Read:   dataSourceElasticsearchOpenDistroDestinationRead,
-		Schema: datasourceOpenDistroDestinationSchema,
+		Description: "`elasticsearch_opendistro_destination` can be used to retrieve the destination object by name.",
+		Read:        dataSourceElasticsearchOpenDistroDestinationRead,
+		Schema:      datasourceOpenDistroDestinationSchema,
 	}
 }
 

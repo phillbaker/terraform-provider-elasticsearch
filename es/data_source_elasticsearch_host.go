@@ -12,16 +12,19 @@ import (
 
 func dataSourceElasticsearchHost() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceElasticsearchHostRead,
+		Description: "`elasticsearch_host` can be used to retrieve the host URL for the provider's current elasticsearch cluster.",
+		Read:        dataSourceElasticsearchHostRead,
 
 		Schema: map[string]*schema.Schema{
 			"active": {
-				Type:     schema.TypeBool,
-				Required: true,
+				Type:        schema.TypeBool,
+				Required:    true,
+				Description: "should be set to `true`",
 			},
 			"url": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "the url of the active elasticsearch cluster",
 			},
 		},
 	}
