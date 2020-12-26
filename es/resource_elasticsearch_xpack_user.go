@@ -19,31 +19,36 @@ func onlyDiffOnCreate(_, _, _ string, d *schema.ResourceData) bool {
 
 func resourceElasticsearchXpackUser() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceElasticsearchXpackUserCreate,
-		Read:   resourceElasticsearchXpackUserRead,
-		Update: resourceElasticsearchXpackUserUpdate,
-		Delete: resourceElasticsearchXpackUserDelete,
+		Description: "Provides an Elasticsearch XPack user resource. See the upstream [docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api.html) for more details.",
+		Create:      resourceElasticsearchXpackUserCreate,
+		Read:        resourceElasticsearchXpackUserRead,
+		Update:      resourceElasticsearchXpackUserUpdate,
+		Delete:      resourceElasticsearchXpackUserDelete,
 
 		Schema: map[string]*schema.Schema{
 			"username": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "An identifier for the user. \n\n Usernames must be at least 1 and no more than 1024 characters. They can contain alphanumeric characters (a-z, A-Z, 0-9), spaces, punctuation, and printable symbols in the Basic Latin (ASCII) block. Leading or trailing whitespace is not allowed.",
 			},
 			"fullname": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Required: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Required:    false,
+				Description: "The full name of the user",
 			},
 			"email": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Required: false,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Required:    false,
+				Description: "The email of the user",
 			},
 			"enabled": {
-				Type:     schema.TypeBool,
-				Default:  true,
-				Optional: true,
-				Required: false,
+				Type:        schema.TypeBool,
+				Default:     true,
+				Optional:    true,
+				Required:    false,
+				Description: "Specifies whether the user is enabled, defaults to true.",
 			},
 			"password": {
 				Type:             schema.TypeString,
@@ -51,6 +56,7 @@ func resourceElasticsearchXpackUser() *schema.Resource {
 				Required:         false,
 				Optional:         true,
 				DiffSuppressFunc: onlyDiffOnCreate,
+				Description:      "The user’s password. Passwords must be at least 6 characters long. Mutually exclusive with `password_hash`, one of which must be provided at creation.",
 			},
 			"password_hash": {
 				Type:             schema.TypeString,
@@ -58,6 +64,7 @@ func resourceElasticsearchXpackUser() *schema.Resource {
 				Sensitive:        true,
 				Optional:         true,
 				DiffSuppressFunc: onlyDiffOnCreate,
+				Description:      "A hash of the user’s password. This must be produced using the same hashing algorithm as has been configured for password storage. Mutually exclusive with `password`, one of which must be provided at creation.",
 			},
 			"roles": {
 				Type:     schema.TypeSet,
@@ -66,12 +73,14 @@ func resourceElasticsearchXpackUser() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Description: "A set of roles the user has. The roles determine the user’s access permissions",
 			},
 			"metadata": {
 				Type:             schema.TypeString,
 				Default:          "{}",
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentJson,
+				Description:      "Arbitrary metadata that you want to associate with the user",
 			},
 		},
 		Importer: &schema.ResourceImporter{

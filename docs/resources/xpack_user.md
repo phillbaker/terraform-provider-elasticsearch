@@ -1,0 +1,48 @@
+---
+page_title: "elasticsearch_xpack_user Resource - terraform-provider-elasticsearch"
+subcategory: "Elasticsearch Xpack"
+description: |-
+  Provides an Elasticsearch XPack user resource. See the upstream docs https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api.html for more details.
+---
+
+# Resource `elasticsearch_xpack_user`
+
+Provides an Elasticsearch XPack user resource. See the upstream [docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api.html) for more details.
+
+## Example Usage
+
+```terraform
+resource "elasticsearch_xpack_user" "test" {
+	username = "johndoe"
+	fullname = "John DoDo"
+	email    = "john@do.com"
+	password = "secret"
+	roles    = ["admin"]
+  metadata = <<-EOF
+  {
+    "foo": "bar"
+  }
+  EOF
+}
+```
+
+## Schema
+
+### Required
+
+- **roles** (Set of String) A set of roles the user has. The roles determine the user’s access permissions
+- **username** (String) An identifier for the user.
+
+ Usernames must be at least 1 and no more than 1024 characters. They can contain alphanumeric characters (a-z, A-Z, 0-9), spaces, punctuation, and printable symbols in the Basic Latin (ASCII) block. Leading or trailing whitespace is not allowed.
+
+### Optional
+
+- **email** (String) The email of the user
+- **enabled** (Boolean) Specifies whether the user is enabled, defaults to true.
+- **fullname** (String) The full name of the user
+- **id** (String) The ID of this resource.
+- **metadata** (String) Arbitrary metadata that you want to associate with the user
+- **password** (String, Sensitive) The user’s password. Passwords must be at least 6 characters long. Mutually exclusive with `password_hash`, one of which must be provided at creation.
+- **password_hash** (String, Sensitive) A hash of the user’s password. This must be produced using the same hashing algorithm as has been configured for password storage. Mutually exclusive with `password`, one of which must be provided at creation.
+
+
