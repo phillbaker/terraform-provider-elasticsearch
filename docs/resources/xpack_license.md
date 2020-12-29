@@ -1,12 +1,12 @@
 ---
 layout: "elasticsearch"
-page_title: "Elasticsearch: elasticsearch_license"
+page_title: "Elasticsearch: elasticsearch_xpack_license"
 subcategory: "Elasticsearch Xpack"
 description: |-
   Provides an Elasticsearch xpack license resource.
 ---
 
-# elasticsearch_license
+# elasticsearch_xpack_license
 
 Provides an Elasticsearch xpack license resource.
 
@@ -16,11 +16,11 @@ Note: In Elasticsearch versions greater than v7.7, deleting an existing basic li
 
 ```tf
 # Create an xpack basic license
-resource "elasticsearch_license" "basic" {
+resource "elasticsearch_xpack_license" "basic" {
   use_basic_license = "true"
 }
 
-resource "elasticsearch_license" "enterprise" {
+resource "elasticsearch_xpack_license" "enterprise" {
   license = <<EOF
   {"uid":"893361dc-9749-4997-93cb-802e3d7fa4xx","type":"basic","issue_date_in_millis":1411948800000,"expiry_date_in_millis":1914278399999,"max_nodes":1,"issued_to":"issuedTo","issuer":"issuer","signature":"xx"}
 EOF
