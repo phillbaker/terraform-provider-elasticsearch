@@ -338,12 +338,9 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 	return relevantClient, nil
 }
 
-func assumeRoleCredentials(region, roleARN, profile string) *awscredentials.Credentials {
-	sess := awssession.Must(awssession.NewSessionWithOptions(awssession.Options{
-		Profile: profile,
-		Config: aws.Config{
-			Region: aws.String(region),
-		},
+func assumeRoleCredentials(region, roleARN string) *awscredentials.Credentials {
+	sess := awssession.Must(awssession.NewSession(&aws.Config{
+		Region: aws.String(region),
 	}))
 	stsClient := awssts.New(sess)
 	assumeRoleProvider := &awsstscreds.AssumeRoleProvider{
@@ -369,7 +366,7 @@ func awsSession(region string, conf *ProviderConf) *awssession.Session {
 	if conf.awsAccessKeyId != "" {
 		sessOpts.Config.Credentials = awscredentials.NewStaticCredentials(conf.awsAccessKeyId, conf.awsSecretAccessKey, conf.awsSessionToken)
 	} else if conf.awsAssumeRoleArn != "" {
-		sessOpts.Config.Credentials = assumeRoleCredentials(region, conf.awsAssumeRoleArn, conf.awsProfile)
+		sessOpts.Config.Credentials = assumeRoleCredentials(region, conf.awsAssumeRoleArn)
 	} else if conf.awsProfile != "" {
 		sessOpts.Profile = conf.awsProfile
 	}
