@@ -10,6 +10,8 @@ description: |-
 
 Provides an Elasticsearch xpack license resource.
 
+Note: In Elasticsearch versions greater than v7.7, deleting an existing basic license is a no-op, see [this PR for more details](https://github.com/elastic/elasticsearch/pull/52407).
+
 ## Example Usage
 
 ```tf

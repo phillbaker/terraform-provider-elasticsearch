@@ -107,33 +107,40 @@ func testCheckElasticsearchLicenseDestroy(s *terraform.State) error {
 
 		meta := testAccXPackProvider.Meta()
 
-		var licenseUID string
-		var err error
 		esClient, err := getClient(meta.(*ProviderConf))
 		if err != nil {
 			return err
 		}
 		switch client := esClient.(type) {
 		case *elastic7.Client:
-			var resp *elastic7.XPackInfoServiceResponse
-			resp, err = client.XPackInfo().Do(context.TODO())
+			resp, err := client.XPackInfo().Do(context.TODO())
 			log.Printf("[INFO] testCheckElasticsearchLicenseDestroy %+v", resp)
-			licenseUID = resp.License.UID
+
+			if err != nil {
+				return err
+			}
+
+			// See https://github.com/elastic/elasticsearch/pull/52407, deleting a
+			// basic license is a no-op
+			if resp.License.Type != "basic" && resp.License.UID != "" {
+				return fmt.Errorf("License still exists")
+			} else if resp.License.Type == "basic" && resp.License.UID == "" {
+				return nil
+			}
 		case *elastic6.Client:
-			var resp *elastic6.XPackInfoServiceResponse
-			resp, err = client.XPackInfo().Do(context.TODO())
+			resp, err := client.XPackInfo().Do(context.TODO())
 			log.Printf("[INFO] testCheckElasticsearchLicenseDestroy %+v", resp)
-			licenseUID = resp.License.UID
+			licenseUID := resp.License.UID
+
+			if err != nil {
+				return err
+			}
+
+			if licenseUID != "" {
+				return fmt.Errorf("License still exists")
+			}
 		default:
 			return errors.New("License is only supported by elasticsearch >= v6!")
-		}
-
-		if err != nil {
-			return err
-		}
-
-		if licenseUID != "" {
-			return fmt.Errorf("License still exists")
 		}
 
 		return nil
