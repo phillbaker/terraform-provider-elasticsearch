@@ -24,6 +24,7 @@ var openDistroDestinationSchema = map[string]*schema.Schema{
 		Required:         true,
 		DiffSuppressFunc: diffSuppressDestination,
 		ValidateFunc:     validation.StringIsJSON,
+		Description:      "The JSON body of the destination.",
 	},
 }
 
@@ -43,11 +44,12 @@ func resourceElasticsearchDeprecatedDestination() *schema.Resource {
 
 func resourceElasticsearchOpenDistroDestination() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceElasticsearchOpenDistroDestinationCreate,
-		Read:   resourceElasticsearchOpenDistroDestinationRead,
-		Update: resourceElasticsearchOpenDistroDestinationUpdate,
-		Delete: resourceElasticsearchOpenDistroDestinationDelete,
-		Schema: openDistroDestinationSchema,
+		Description: "Provides an Elasticsearch OpenDistro destination, a reusable communication channel for an action, such as email, Slack, or a webhook URL. Please refer to the OpenDistro [destination documentation](https://opendistro.github.io/for-elasticsearch-docs/docs/alerting/monitors/#create-destinations) for details.",
+		Create:      resourceElasticsearchOpenDistroDestinationCreate,
+		Read:        resourceElasticsearchOpenDistroDestinationRead,
+		Update:      resourceElasticsearchOpenDistroDestinationUpdate,
+		Delete:      resourceElasticsearchOpenDistroDestinationDelete,
+		Schema:      openDistroDestinationSchema,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
