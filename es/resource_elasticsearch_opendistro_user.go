@@ -25,18 +25,18 @@ func resourceElasticsearchOpenDistroUser() *schema.Resource {
 				Required: true,
 			},
 			"password": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Sensitive:        true,
-				DiffSuppressFunc: onlyDiffOnCreate,
-				ConflictsWith:    []string{"password_hash"},
+				Type:          schema.TypeString,
+				Optional:      true,
+				Sensitive:     true,
+				StateFunc:     hashSum,
+				ConflictsWith: []string{"password_hash"},
 			},
 			"password_hash": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Sensitive:        true,
-				DiffSuppressFunc: onlyDiffOnCreate,
-				ConflictsWith:    []string{"password"},
+				Type:          schema.TypeString,
+				Optional:      true,
+				Sensitive:     true,
+				ConflictsWith: []string{"password"},
+				StateFunc:     hashSum,
 			},
 			"backend_roles": {
 				Type:     schema.TypeSet,
@@ -177,6 +177,13 @@ func resourceElasticsearchPutOpenDistroUser(d *schema.ResourceData, m interface{
 		Attributes:   d.Get("attributes").(map[string]interface{}),
 		Password:     d.Get("password").(string),
 		PasswordHash: d.Get("password_hash").(string),
+	}
+
+	if d.HasChange("password") {
+		userDefinition.Password = d.Get("password").(string)
+	}
+	if d.HasChange("password_hash") {
+		userDefinition.PasswordHash = d.Get("password_hash").(string)
 	}
 
 	userJSON, err := json.Marshal(userDefinition)
