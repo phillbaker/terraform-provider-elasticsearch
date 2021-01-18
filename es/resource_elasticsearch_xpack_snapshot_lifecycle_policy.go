@@ -13,21 +13,24 @@ import (
 
 func resourceElasticsearchXpackSnapshotLifecyclePolicy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceElasticsearchXpackSnapshotLifecyclePolicyCreate,
-		Read:   resourceElasticsearchXpackSnapshotLifecyclePolicyRead,
-		Update: resourceElasticsearchXpackSnapshotLifecyclePolicyUpdate,
-		Delete: resourceElasticsearchXpackSnapshotLifecyclePolicyDelete,
+		Description: "Provides an Elasticsearch XPack snapshot lifecycle management policy. These automatically take snapshots and control how long they are retained. See the upstream [docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/snapshot-lifecycle-management-api.html) for more details.",
+		Create:      resourceElasticsearchXpackSnapshotLifecyclePolicyCreate,
+		Read:        resourceElasticsearchXpackSnapshotLifecyclePolicyRead,
+		Update:      resourceElasticsearchXpackSnapshotLifecyclePolicyUpdate,
+		Delete:      resourceElasticsearchXpackSnapshotLifecyclePolicyDelete,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "ID for the snapshot lifecycle policy",
 			},
 			"body": {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: diffSuppressSnapshotLifecyclePolicy,
 				ValidateFunc:     validation.StringIsJSON,
+				Description:      "See the policy definition defined in the [docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/slm-api-put-policy.html#slm-api-put-request-body)",
 			},
 		},
 		Importer: &schema.ResourceImporter{
