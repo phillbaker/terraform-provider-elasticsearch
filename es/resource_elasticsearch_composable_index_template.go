@@ -12,6 +12,8 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 )
 
+var minimalVersion, _ = version.NewVersion("7.8.0")
+
 func resourceElasticsearchComposableIndexTemplate() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceElasticsearchComposableIndexTemplateCreate,
@@ -60,7 +62,6 @@ func resourceElasticsearchComposableIndexTemplateRead(d *schema.ResourceData, me
 	case *elastic7.Client:
 		elasticVersion, err := elastic7GetVersion(client)
 		if err == nil {
-			minimalVersion, _ := version.NewVersion("7.8.0")
 			if elasticVersion.LessThan(minimalVersion) {
 				err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
 			} else {
@@ -118,7 +119,6 @@ func resourceElasticsearchComposableIndexTemplateDelete(d *schema.ResourceData, 
 	case *elastic7.Client:
 		elasticVersion, err := elastic7GetVersion(client)
 		if err == nil {
-			minimalVersion, _ := version.NewVersion("7.8.0")
 			if elasticVersion.LessThan(minimalVersion) {
 				err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
 			} else {
@@ -154,7 +154,6 @@ func resourceElasticsearchPutComposableIndexTemplate(d *schema.ResourceData, met
 	case *elastic7.Client:
 		elasticVersion, err := elastic7GetVersion(client)
 		if err == nil {
-			minimalVersion, _ := version.NewVersion("7.8.0")
 			if elasticVersion.LessThan(minimalVersion) {
 				err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
 			} else {
