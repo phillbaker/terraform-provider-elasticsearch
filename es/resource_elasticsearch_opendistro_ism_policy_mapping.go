@@ -15,33 +15,39 @@ import (
 
 func resourceElasticsearchOpenDistroISMPolicyMapping() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceElasticsearchOpenDistroISMPolicyMappingCreate,
-		Read:   resourceElasticsearchOpenDistroISMPolicyMappingRead,
-		Update: resourceElasticsearchOpenDistroISMPolicyMappingUpdate,
-		Delete: resourceElasticsearchOpenDistroISMPolicyMappingDelete,
+		Description: "Provides an Elasticsearch Open Distro ISM policy. Please refer to the Open Distro [ISM documentation][https://opendistro.github.io/for-elasticsearch-docs/docs/ism/] for details.",
+		Create:      resourceElasticsearchOpenDistroISMPolicyMappingCreate,
+		Read:        resourceElasticsearchOpenDistroISMPolicyMappingRead,
+		Update:      resourceElasticsearchOpenDistroISMPolicyMappingUpdate,
+		Delete:      resourceElasticsearchOpenDistroISMPolicyMappingDelete,
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The name of the policy.",
 			},
 			"indexes": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Name of the index to apply the policy to. You can use an index pattern to update multiple indices at once.",
 			},
 			"state": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "When updating multiple indices, you might want to include a state filter to only affect certain managed indices.",
 			},
 			"include": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeMap},
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeMap},
+				Description: "",
 			},
 			"is_safe": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "",
 			},
 			"managed_indexes": {
 				Type:     schema.TypeSet,
