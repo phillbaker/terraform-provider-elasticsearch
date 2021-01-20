@@ -15,7 +15,7 @@ import (
 
 func resourceElasticsearchOpenDistroISMPolicyMapping() *schema.Resource {
 	return &schema.Resource{
-		Description: "Provides an Elasticsearch Open Distro ISM policy. Please refer to the Open Distro [ISM documentation][https://opendistro.github.io/for-elasticsearch-docs/docs/ism/] for details.",
+		Description: "Provides an Elasticsearch Open Distro ISM policy. Please refer to the Open Distro [ISM documentation](https://opendistro.github.io/for-elasticsearch-docs/docs/ism/) for details.",
 		Create:      resourceElasticsearchOpenDistroISMPolicyMappingCreate,
 		Read:        resourceElasticsearchOpenDistroISMPolicyMappingRead,
 		Update:      resourceElasticsearchOpenDistroISMPolicyMappingUpdate,
@@ -35,13 +35,13 @@ func resourceElasticsearchOpenDistroISMPolicyMapping() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "",
-				Description: "When updating multiple indices, you might want to include a state filter to only affect certain managed indices.",
+				Description: "After a change in policy takes place, specify the state for the index to transition to",
 			},
 			"include": {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeMap},
-				Description: "",
+				Description: "When updating multiple indices, you might want to include a state filter to only affect certain managed indices. The background process only applies the change if the index is currently in the state specified.",
 			},
 			"is_safe": {
 				Type:        schema.TypeBool,
@@ -71,7 +71,8 @@ func resourceElasticsearchOpenDistroISMPolicyMappingCreate(d *schema.ResourceDat
 }
 
 func resourceElasticsearchOpenDistroISMPolicyMappingRead(d *schema.ResourceData, m interface{}) error {
-	indexesList, err := resourceElasticsearchGetOpendistroPolicyMapping(d, m)
+	indexPattern := d.Get("indexes").(string)
+	indices, err := resourceElasticsearchGetOpendistroPolicyMapping(indexPattern, m)
 	concernIndexes := []string{}
 	policyName := d.Get("policy_id").(string)
 
@@ -80,26 +81,36 @@ func resourceElasticsearchOpenDistroISMPolicyMappingRead(d *schema.ResourceData,
 	}
 
 	// If there is no managed indexes we can remove that resource
-	for indexName, parameters := range indexesList {
+	for indexName, parameters := range indices {
 		if parameters.(map[string]interface{})["index.opendistro.index_state_management.policy_id"] == policyName {
 			concernIndexes = append(concernIndexes, indexName)
 		}
 	}
 
-	log.Printf("[INFO] %+v", concernIndexes)
+	log.Printf("[INFO] resourceElasticsearchOpenDistroISMPolicyMappingRead %+v %+v %+v", indexPattern, indices, concernIndexes)
 
+	// If there is no managed indices, remove the resource
 	if len(concernIndexes) == 0 {
+		log.Printf("[INFO] no managed indices, removing mapping")
 		d.SetId("")
 		return nil
 	}
 
 	d.SetId(d.Get("indexes").(string))
-	err = d.Set("managed_indexes", concernIndexes)
-	return err
+
+	ds := &resourceDataSetter{d: d}
+	ds.set("managed_indexes", concernIndexes)
+
+	// TODO
+	// state
+	// include
+	// is_safe
+
+	return ds.err
 }
 
 func resourceElasticsearchOpenDistroISMPolicyMappingUpdate(d *schema.ResourceData, m interface{}) error {
-	if _, err := resourceElasticsearchPostOpendistroPolicyMapping(d, m, "update_policy"); err != nil {
+	if _, err := resourceElasticsearchPostOpendistroPolicyMapping(d, m, "change_policy"); err != nil {
 		if elastic7.IsNotFound(err) {
 			log.Printf("[WARN] OpendistroPolicyMapping (%s) not found, removing from state", d.Id())
 			d.SetId("")
@@ -194,11 +205,10 @@ func resourceElasticsearchPostOpendistroPolicyMapping(d *schema.ResourceData, m 
 	return response, nil
 }
 
-func resourceElasticsearchGetOpendistroPolicyMapping(d *schema.ResourceData, m interface{}) (map[string]interface{}, error) {
-
+func resourceElasticsearchGetOpendistroPolicyMapping(indexPattern string, m interface{}) (map[string]interface{}, error) {
 	response := new(map[string]interface{})
-	path, err := uritemplates.Expand("/_opendistro/_ism/explain/{indexes}", map[string]string{
-		"indexes": d.Get("indexes").(string),
+	path, err := uritemplates.Expand("/_opendistro/_ism/explain/{index_pattern}", map[string]string{
+		"index_pattern": indexPattern,
 	})
 	if err != nil {
 		return *response, fmt.Errorf("error building URL path for policy mapping: %+v", err)
@@ -231,8 +241,6 @@ func resourceElasticsearchGetOpendistroPolicyMapping(d *schema.ResourceData, m i
 	if err := json.Unmarshal(*body, response); err != nil {
 		return *response, fmt.Errorf("error unmarshalling policy explain body: %+v: %+v", err, body)
 	}
-
-	log.Printf("[INFO] %+v", response)
 
 	return *response, nil
 }
