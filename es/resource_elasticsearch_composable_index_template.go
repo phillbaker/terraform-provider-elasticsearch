@@ -152,7 +152,15 @@ func resourceElasticsearchPutComposableIndexTemplate(d *schema.ResourceData, met
 
 	switch client := esClient.(type) {
 	case *elastic7.Client:
-		err = elastic7PutIndexTemplate(client, name, body, create)
+		elasticVersion, err := elastic7GetVersion(client)
+		if err == nil {
+			minimalVersion, _ := version.NewVersion("7.8.0")
+			if elasticVersion.LessThan(minimalVersion) {
+				err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
+			} else {
+				err = elastic7PutIndexTemplate(client, name, body, create)
+			}
+		}
 	default:
 		err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version < 7.0.0")
 	}
