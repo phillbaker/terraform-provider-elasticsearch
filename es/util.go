@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	elastic7 "github.com/olivere/elastic/v7"
@@ -536,7 +537,11 @@ func tenantPermissionsHash(v interface{}) int {
 	return hashcode.String(buf.String())
 }
 
-func elastic7GetVersion(client *elastic7.Client) (string, error) {
+func elastic7GetVersion(client *elastic7.Client) (*version.Version, error) {
 	urls := reflect.ValueOf(client).Elem().FieldByName("urls")
-	return client.ElasticsearchVersion(urls.Index(0).String())
+	versionString, err := client.ElasticsearchVersion(urls.Index(0).String())
+	if err != nil {
+		return nil, err
+	}
+	return version.NewVersion(versionString)
 }

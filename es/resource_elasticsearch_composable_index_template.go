@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	elastic7 "github.com/olivere/elastic/v7"
@@ -48,7 +49,7 @@ func resourceElasticsearchComposableIndexTemplateCreate(d *schema.ResourceData, 
 func resourceElasticsearchComposableIndexTemplateRead(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 
-	var result, version string
+	var result string
 
 	esClient, err := getClient(meta.(*ProviderConf))
 	if err != nil {
@@ -57,10 +58,11 @@ func resourceElasticsearchComposableIndexTemplateRead(d *schema.ResourceData, me
 
 	switch client := esClient.(type) {
 	case *elastic7.Client:
-		version, err = elastic7GetVersion(client)
+		elasticVersion, err := elastic7GetVersion(client)
 		if err == nil {
-			if version < "7.8.0" {
-				err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", version)
+			minimalVersion, _ := version.NewVersion("7.8.0")
+			if elasticVersion.LessThan(minimalVersion) {
+				err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
 			} else {
 				result, err = elastic7GetIndexTemplate(client, id)
 			}
@@ -107,8 +109,6 @@ func resourceElasticsearchComposableIndexTemplateUpdate(d *schema.ResourceData, 
 func resourceElasticsearchComposableIndexTemplateDelete(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 
-	var version string
-
 	esClient, err := getClient(meta.(*ProviderConf))
 	if err != nil {
 		return err
@@ -116,10 +116,11 @@ func resourceElasticsearchComposableIndexTemplateDelete(d *schema.ResourceData, 
 
 	switch client := esClient.(type) {
 	case *elastic7.Client:
-		version, err = elastic7GetVersion(client)
+		elasticVersion, err := elastic7GetVersion(client)
 		if err == nil {
-			if version < "7.8.0" {
-				err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", version)
+			minimalVersion, _ := version.NewVersion("7.8.0")
+			if elasticVersion.LessThan(minimalVersion) {
+				err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
 			} else {
 				err = elastic7DeleteIndexTemplate(client, id)
 			}
