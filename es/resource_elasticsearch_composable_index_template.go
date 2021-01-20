@@ -52,6 +52,7 @@ func resourceElasticsearchComposableIndexTemplateRead(d *schema.ResourceData, me
 	id := d.Id()
 
 	var result string
+	var elasticVersion *version.Version
 
 	esClient, err := getClient(meta.(*ProviderConf))
 	if err != nil {
@@ -60,7 +61,7 @@ func resourceElasticsearchComposableIndexTemplateRead(d *schema.ResourceData, me
 
 	switch client := esClient.(type) {
 	case *elastic7.Client:
-		elasticVersion, err := elastic7GetVersion(client)
+		elasticVersion, err = elastic7GetVersion(client)
 		if err == nil {
 			if elasticVersion.LessThan(minimalVersion) {
 				err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
@@ -110,6 +111,8 @@ func resourceElasticsearchComposableIndexTemplateUpdate(d *schema.ResourceData, 
 func resourceElasticsearchComposableIndexTemplateDelete(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 
+	var elasticVersion *version.Version
+
 	esClient, err := getClient(meta.(*ProviderConf))
 	if err != nil {
 		return err
@@ -117,7 +120,7 @@ func resourceElasticsearchComposableIndexTemplateDelete(d *schema.ResourceData, 
 
 	switch client := esClient.(type) {
 	case *elastic7.Client:
-		elasticVersion, err := elastic7GetVersion(client)
+		elasticVersion, err = elastic7GetVersion(client)
 		if err == nil {
 			if elasticVersion.LessThan(minimalVersion) {
 				err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
@@ -145,6 +148,8 @@ func resourceElasticsearchPutComposableIndexTemplate(d *schema.ResourceData, met
 	name := d.Get("name").(string)
 	body := d.Get("body").(string)
 
+	var elasticVersion *version.Version
+
 	esClient, err := getClient(meta.(*ProviderConf))
 	if err != nil {
 		return err
@@ -152,7 +157,7 @@ func resourceElasticsearchPutComposableIndexTemplate(d *schema.ResourceData, met
 
 	switch client := esClient.(type) {
 	case *elastic7.Client:
-		elasticVersion, err := elastic7GetVersion(client)
+		elasticVersion, err = elastic7GetVersion(client)
 		if err == nil {
 			if elasticVersion.LessThan(minimalVersion) {
 				err = fmt.Errorf("index_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
