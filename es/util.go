@@ -163,6 +163,19 @@ func normalizeComposableIndexTemplate(tpl map[string]interface{}) {
 	}
 }
 
+func normalizeComponentTemplate(tpl map[string]interface{}) {
+	delete(tpl, "version")
+	if innerTpl, ok := tpl["template"]; ok {
+		if innerTplMap, ok := innerTpl.(map[string]interface{}); ok {
+			if settings, ok := innerTplMap["settings"]; ok {
+				if settingsMap, ok := settings.(map[string]interface{}); ok {
+					innerTplMap["settings"] = normalizedIndexSettings(settingsMap)
+				}
+			}
+		}
+	}
+}
+
 func normalizedIndexSettings(settings map[string]interface{}) map[string]interface{} {
 	f := flattenMap(settings)
 	for k, v := range f {
