@@ -12,3 +12,5 @@ require (
 	gopkg.in/olivere/elastic.v5 v5.0.85
 	gopkg.in/olivere/elastic.v6 v6.2.35
 )
+
+replace github.com/olivere/elastic/v7 => github.com/camptocamp/elastic/v7 v7.0.23-0.20210204165908-e3d81ffeb2ca

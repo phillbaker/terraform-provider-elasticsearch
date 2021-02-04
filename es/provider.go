@@ -169,6 +169,7 @@ func Provider() terraform.ResourceProvider {
 			"elasticsearch_index_lifecycle_policy":          resourceElasticsearchDeprecatedIndexLifecyclePolicy(),
 			"elasticsearch_index_template":                  resourceElasticsearchIndexTemplate(),
 			"elasticsearch_composable_index_template":       resourceElasticsearchComposableIndexTemplate(),
+			"elasticsearch_component_template":              resourceElasticsearchComponentTemplate(),
 			"elasticsearch_ingest_pipeline":                 resourceElasticsearchIngestPipeline(),
 			"elasticsearch_kibana_object":                   resourceElasticsearchKibanaObject(),
 			"elasticsearch_monitor":                         resourceElasticsearchDeprecatedMonitor(),
