@@ -1,12 +1,22 @@
 # Changelog
 ## Unreleased
 ### Changed
-- [open distro role] Rename fls in favor of field_level_security
+
+### Added
+
+### Fixed
+
+## [1.5.2] - 2020-02-05
+### Changed
+- [open distro role] Rename fls in favor of field_level_security, deprecate fls.
 - [aws auth] Revert bump aws client to v1.35.33, downgrade to v1.35.20
 - [aws auth] Revert pass profile on assume role.
 
 ### Added
 - [open distro role] Add support for OpenDistro document-level-security in role.
+
+### Fixed
+- [composable template] Fix elasticsearch_composable_index_template with Elasticsearch 7.10 (#134)
 
 ## [1.5.1] - 2020-12-23
 ### Changed
