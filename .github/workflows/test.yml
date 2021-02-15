@@ -19,7 +19,7 @@ jobs:
         # specified without patch version: we always use the latest patch
         # version.
         version: v1.28
-        args: --new-from-rev=bf51aaa --verbose --timeout=10m
+        args: --verbose --timeout=10m
   test:
     strategy:
       matrix:

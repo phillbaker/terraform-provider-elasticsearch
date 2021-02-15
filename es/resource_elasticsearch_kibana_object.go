@@ -36,15 +36,22 @@ func resourceElasticsearchKibanaObject() *schema.Resource {
 						return warnings, errors
 					}
 
-					var body []map[string]interface{}
+					var body []interface{}
 					if err := json.Unmarshal([]byte(v), &body); err != nil {
 						errors = append(errors, fmt.Errorf("%q must be an array of objects: %s", k, err))
 						return warnings, errors
 					}
 
 					for _, o := range body {
+						kibanaObject, ok := o.(map[string]interface{})
+
+						if !ok {
+							errors = append(errors, fmt.Errorf("entries must be objects"))
+							continue
+						}
+
 						for _, k := range requiredKibanaObjectKeys() {
-							if o[k] == nil {
+							if kibanaObject[k] == nil {
 								errors = append(errors, fmt.Errorf("object must have the %q key", k))
 							}
 						}
@@ -188,14 +195,13 @@ func elastic5CreateIndexIfNotExists(client *elastic5.Client, index string, mappi
 
 func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interface{}) error {
 	bodyString := d.Get("body").(string)
-	var body []map[string]interface{}
+	var body map[string]interface{}
 	if err := json.Unmarshal([]byte(bodyString), &body); err != nil {
-		log.Printf("[WARN] Failed to unmarshal: %+v", bodyString)
+		log.Printf("[WARN] Failed to unmarshal on read: %+v", bodyString)
 		return err
 	}
-	// TODO handle multiple objects in json
-	id := body[0]["_id"].(string)
-	objectType := objectTypeOrDefault(body[0])
+	id := body["_id"].(string)
+	objectType := objectTypeOrDefault(body)
 	index := d.Get("index").(string)
 
 	var result *json.RawMessage
@@ -226,7 +232,7 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 
 	ds := &resourceDataSetter{d: d}
 	ds.set("index", index)
-	d.Set("body", result)
+	ds.set("body", string(*result))
 
 	return ds.err
 }
@@ -238,14 +244,18 @@ func resourceElasticsearchKibanaObjectUpdate(d *schema.ResourceData, meta interf
 
 func resourceElasticsearchKibanaObjectDelete(d *schema.ResourceData, meta interface{}) error {
 	bodyString := d.Get("body").(string)
-	var body []map[string]interface{}
+	var body []interface{}
 	if err := json.Unmarshal([]byte(bodyString), &body); err != nil {
 		log.Printf("[WARN] Failed to unmarshal: %+v", bodyString)
 		return err
 	}
 	// TODO handle multiple objects in json
-	id := body[0]["_id"].(string)
-	objectType := objectTypeOrDefault(body[0])
+	object, ok := body[0].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("expected %v to be an object", body[0])
+	}
+	id := object["_id"].(string)
+	objectType := objectTypeOrDefault(object)
 	index := d.Get("index").(string)
 
 	var err error
@@ -304,15 +314,19 @@ func elastic5DeleteIndex(client *elastic5.Client, objectType string, index strin
 
 func resourceElasticsearchPutKibanaObject(d *schema.ResourceData, meta interface{}) (string, error) {
 	bodyString := d.Get("body").(string)
-	var body []map[string]interface{}
+	var body []interface{}
 	if err := json.Unmarshal([]byte(bodyString), &body); err != nil {
-		log.Printf("[WARN] Failed to unmarshal: %+v", bodyString)
+		log.Printf("[WARN] Failed to unmarshal on put: %+v", bodyString)
 		return "", err
 	}
 	// TODO handle multiple objects in json
-	id := body[0]["_id"].(string)
-	objectType := objectTypeOrDefault(body[0])
-	data := body[0]["_source"]
+	object, ok := body[0].(map[string]interface{})
+	if !ok {
+		return "", fmt.Errorf("expected %v to be an object", body[0])
+	}
+	id := object["_id"].(string)
+	objectType := objectTypeOrDefault(object)
+	data := object["_source"]
 	index := d.Get("index").(string)
 
 	var err error
