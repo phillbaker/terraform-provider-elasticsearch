@@ -83,6 +83,8 @@ The Elasticsearch provider is flexible in the means of providing credentials for
 - Environment variables
 - Shared credentials file
 
+If a [custom domain](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-customendpoint.html) is being used (instead of the default, of the form `https://search-mydomain-1a2a3a4a5a6a7a8a9a0a9a8a7a.us-east-1.es.amazonaws.com`), please make sure to set `aws_region` in the provider configuration.
+
 #### Static credentials
 
 Static credentials can be provided by adding an `aws_access_key` and `aws_secret_key` in-line in the Elasticsearch provider block. If applicable, you may also specify a `aws_token` value.
