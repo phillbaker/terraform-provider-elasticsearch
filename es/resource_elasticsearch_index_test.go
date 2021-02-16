@@ -29,6 +29,19 @@ resource "elasticsearch_index" "test" {
   name = "terraform-test"
   number_of_shards = 1
   number_of_replicas = 2
+  routing_partition_size = 1
+  refresh_interval = "10s"
+	max_result_window = 1000
+	max_refresh_listeners = 10
+	blocks_read_only = false
+	blocks_read = false
+	blocks_write = false
+	blocks_metadata = false
+	search_slowlog_threshold_query_warn = "5s"
+	search_slowlog_threshold_fetch_warn = "5s"
+	search_slowlog_level = "warn"
+	indexing_slowlog_threshold_index_warn = "5s"
+	indexing_slowlog_level = "warn"
 }
 `
 	testAccElasticsearchIndexInvalid = `

@@ -7,6 +7,7 @@
 
 ### Added
 - [xpack watcher] Ability to deactivate a watcher. (#173)
+- [index] Add explicit attributes for many index settings
 
 ### Fixed
 - [opendistro ism policy] Fix perpetual diff in ism_template if not specified

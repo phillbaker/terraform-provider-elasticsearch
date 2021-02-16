@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -20,15 +21,49 @@ var (
 		"codec",
 		"routing_partition_size",
 		"load_fixed_bitset_filters_eagerly",
+		"shard.check_on_startup",
 	}
 	dynamicsSettingsKeys = []string{
 		"number_of_replicas",
 		"auto_expand_replicas",
 		"refresh_interval",
-		//"max_result_window"
-		//"max_inner_result_window"
-		//"max_rescore_window"
-		//...
+		"search.idle.after",
+		"max_result_window",
+		"max_inner_result_window",
+		"max_rescore_window",
+		"max_docvalue_fields_search",
+		"max_script_fields",
+		"max_ngram_diff",
+		"max_shingle_diff",
+		"blocks.read_only",
+		"blocks.read_only_allow_delete",
+		"blocks.read",
+		"blocks.write",
+		"blocks.metadata",
+		"max_refresh_listeners",
+		"analyze.max_token_count",
+		"highlight.max_analyzed_offset",
+		"max_terms_count",
+		"max_regex_length",
+		"routing.allocation.enable",
+		"routing.rebalance.enable",
+		"gc_deletes",
+		"default_pipeline",
+		"search.slowlog.threshold.query.warn",
+		"search.slowlog.threshold.query.info",
+		"search.slowlog.threshold.query.debug",
+		"search.slowlog.threshold.query.trace",
+		"search.slowlog.threshold.fetch.warn",
+		"search.slowlog.threshold.fetch.info",
+		"search.slowlog.threshold.fetch.debug",
+		"search.slowlog.threshold.fetch.trace",
+		"search.slowlog.level",
+		"indexing.slowlog.threshold.index.warn",
+		"indexing.slowlog.threshold.index.info",
+		"indexing.slowlog.threshold.index.debug",
+		"indexing.slowlog.threshold.index.trace",
+		"indexing.slowlog.level",
+		"indexing.slowlog.source",
 	}
 	settingsKeys = append(staticSettingsKeys, dynamicsSettingsKeys...)
 )
@@ -56,8 +91,8 @@ var (
 			Optional:    true,
 		},
 		"routing_partition_size": {
-			Type:        schema.TypeInt,
-			Description: "The number of shards a custom routing value can go to. This can be set only on creation.",
+			Type:        schema.TypeString,
+			Description: "The number of shards a custom routing value can go to. A stringified number. This can be set only on creation.",
 			ForceNew:    true,
 			Optional:    true,
 		},
@@ -73,20 +108,211 @@ var (
 			ForceNew:    true,
 			Optional:    true,
 		},
+		"shard_check_on_startup": {
+			Type:        schema.TypeString,
+			Description: "Whether or not shards should be checked for corruption before opening. When corruption is detected, it will prevent the shard from being opened. Accepts `false`, `true`, `checksum`.",
+			ForceNew:    true,
+			Optional:    true,
+		},
 		// Dynamic settings that can be changed at runtime
 		"number_of_replicas": {
 			Type:        schema.TypeString,
-			Description: "Number of shard replicas",
+			Description: "Number of shard replicas. A stringified number.",
 			Optional:    true,
 		},
 		"auto_expand_replicas": {
-			Type:        schema.TypeString, // 0-5 OR 0-all
-			Description: "Set the number of replicas to the node count in the cluster",
+			Type:        schema.TypeString,
+			Description: "Set the number of replicas to the node count in the cluster. Set to a dash delimited lower and upper bound (e.g. 0-5) or use all for the upper bound (e.g. 0-all)",
 			Optional:    true,
 		},
 		"refresh_interval": {
 			Type:        schema.TypeString,
 			Description: "How often to perform a refresh operation, which makes recent changes to the index visible to search. Can be set to `-1` to disable refresh.",
+			Optional:    true,
+		},
+		"search_idle_after": {
+			Type:        schema.TypeString,
+			Description: "How long a shard can not receive a search or get request until it’s considered search idle.",
+			Optional:    true,
+		},
+		"max_result_window": {
+			Type:        schema.TypeString,
+			Description: "The maximum value of `from + size` for searches to this index. A stringified number.",
+			Optional:    true,
+		},
+		"max_inner_result_window": {
+			Type:        schema.TypeString,
+			Description: "The maximum value of `from + size` for inner hits definition and top hits aggregations to this index. A stringified number.",
+			Optional:    true,
+		},
+		"max_rescore_window": {
+			Type:        schema.TypeString,
+			Description: "The maximum value of `window_size` for `rescore` requests in searches of this index. A stringified number.",
+			Optional:    true,
+		},
+		"max_docvalue_fields_search": {
+			Type:        schema.TypeString,
+			Description: "The maximum number of `docvalue_fields` that are allowed in a query. A stringified number.",
+			Optional:    true,
+		},
+		"max_script_fields": {
+			Type:        schema.TypeString,
+			Description: "The maximum number of `script_fields` that are allowed in a query. A stringified number.",
+			Optional:    true,
+		},
+		"max_ngram_diff": {
+			Type:        schema.TypeString,
+			Description: "The maximum allowed difference between min_gram and max_gram for NGramTokenizer and NGramTokenFilter. A stringified number.",
+			Optional:    true,
+		},
+		"max_shingle_diff": {
+			Type:        schema.TypeString,
+			Description: "The maximum allowed difference between max_shingle_size and min_shingle_size for ShingleTokenFilter. A stringified number.",
+			Optional:    true,
+		},
+		"max_refresh_listeners": {
+			Type:        schema.TypeString,
+			Description: "Maximum number of refresh listeners available on each shard of the index. A stringified number.",
+			Optional:    true,
+		},
+		"analyze_max_token_count": {
+			Type:        schema.TypeString,
+			Description: "The maximum number of tokens that can be produced using _analyze API. A stringified number.",
+			Optional:    true,
+		},
+		"highlight_max_analyzed_offset": {
+			Type:        schema.TypeString,
+			Description: "The maximum number of characters that will be analyzed for a highlight request. A stringified number.",
+			Optional:    true,
+		},
+		"max_terms_count": {
+			Type:        schema.TypeString,
+			Description: "The maximum number of terms that can be used in Terms Query. A stringified number.",
+			Optional:    true,
+		},
+		"max_regex_length": {
+			Type:        schema.TypeString,
+			Description: "The maximum length of regex that can be used in Regexp Query. A stringified number.",
+			Optional:    true,
+		},
+		"blocks_read_only": {
+			Type:        schema.TypeBool,
+			Description: "Set to `true` to make the index and index metadata read only, `false` to allow writes and metadata changes.",
+			Optional:    true,
+		},
+		"blocks_read_only_allow_delete": {
+			Type:        schema.TypeBool,
+			Description: "Identical to `index.blocks.read_only` but allows deleting the index to free up resources.",
+			Optional:    true,
+		},
+		"blocks_read": {
+			Type:        schema.TypeBool,
+			Description: "Set to `true` to disable read operations against the index.",
+			Optional:    true,
+		},
+		"blocks_write": {
+			Type:        schema.TypeBool,
+			Description: "Set to `true` to disable data write operations against the index. This setting does not affect metadata.",
+			Optional:    true,
+		},
+		"blocks_metadata": {
+			Type:        schema.TypeBool,
+			Description: "Set to `true` to disable index metadata reads and writes.",
+			Optional:    true,
+		},
+		"routing_allocation_enable": {
+			Type:        schema.TypeString,
+			Description: "Controls shard allocation for this index. It can be set to: `all` , `primaries` , `new_primaries` , `none`.",
+			Optional:    true,
+		},
+		"routing_rebalance_enable": {
+			Type:        schema.TypeString,
+			Description: "Enables shard rebalancing for this index. It can be set to: `all`, `primaries` , `replicas` , `none`.",
+			Optional:    true,
+		},
+		"gc_deletes": {
+			Type:        schema.TypeString,
+			Description: "The length of time that a deleted document's version number remains available for further versioned operations.",
+			Optional:    true,
+		},
+		"default_pipeline": {
+			Type:        schema.TypeString,
+			Description: "The default ingest node pipeline for this index. Index requests will fail if the default pipeline is set and the pipeline does not exist.",
+			Optional:    true,
+		},
+		"search_slowlog_threshold_query_warn": {
+			Type:        schema.TypeString,
+			Description: "Set the cutoff for shard level slow search logging of slow searches in the query phase, in time units, e.g. `10s`",
+			Optional:    true,
+		},
+		"search_slowlog_threshold_query_info": {
+			Type:        schema.TypeString,
+			Description: "Set the cutoff for shard level slow search logging of slow searches in the query phase, in time units, e.g. `5s`",
+			Optional:    true,
+		},
+		"search_slowlog_threshold_query_debug": {
+			Type:        schema.TypeString,
+			Description: "Set the cutoff for shard level slow search logging of slow searches in the query phase, in time units, e.g. `2s`",
+			Optional:    true,
+		},
+		"search_slowlog_threshold_query_trace": {
+			Type:        schema.TypeString,
+			Description: "Set the cutoff for shard level slow search logging of slow searches in the query phase, in time units, e.g. `500ms`",
+			Optional:    true,
+		},
+		"search_slowlog_threshold_fetch_warn": {
+			Type:        schema.TypeString,
+			Description: "Set the cutoff for shard level slow search logging of slow searches in the fetch phase, in time units, e.g. `10s`",
+			Optional:    true,
+		},
+		"search_slowlog_threshold_fetch_info": {
+			Type:        schema.TypeString,
+			Description: "Set the cutoff for shard level slow search logging of slow searches in the fetch phase, in time units, e.g. `5s`",
+			Optional:    true,
+		},
+		"search_slowlog_threshold_fetch_debug": {
+			Type:        schema.TypeString,
+			Description: "Set the cutoff for shard level slow search logging of slow searches in the fetch phase, in time units, e.g. `2s`",
+			Optional:    true,
+		},
+		"search_slowlog_threshold_fetch_trace": {
+			Type:        schema.TypeString,
+			Description: "Set the cutoff for shard level slow search logging of slow searches in the fetch phase, in time units, e.g. `500ms`",
+			Optional:    true,
+		},
+		"search_slowlog_level": {
+			Type:        schema.TypeString,
+			Description: "Set which logging level to use for the search slow log, can be: `warn`, `info`, `debug`, `trace`",
+			Optional:    true,
+		},
+		"indexing_slowlog_threshold_index_warn": {
+			Type:        schema.TypeString,
+			Description: "Set the cutoff for shard level slow search logging of slow searches for indexing queries, in time units, e.g. `10s`",
+			Optional:    true,
+		},
+		"indexing_slowlog_threshold_index_info": {
+			Type:        schema.TypeString,
+			Description: "Set the cutoff for shard level slow search logging of slow searches for indexing queries, in time units, e.g. `5s`",
+			Optional:    true,
+		},
+		"indexing_slowlog_threshold_index_debug": {
+			Type:        schema.TypeString,
+			Description: "Set the cutoff for shard level slow search logging of slow searches for indexing queries, in time units, e.g. `2s`",
+			Optional:    true,
+		},
+		"indexing_slowlog_threshold_index_trace": {
+			Type:        schema.TypeString,
+			Description: "Set the cutoff for shard level slow search logging of slow searches for indexing queries, in time units, e.g. `500ms`",
+			Optional:    true,
+		},
+		"indexing_slowlog_level": {
+			Type:        schema.TypeString,
+			Description: "Set which logging level to use for the search slow log, can be: `warn`, `info`, `debug`, `trace`",
+			Optional:    true,
+		},
+		"indexing_slowlog_source": {
+			Type:        schema.TypeString,
+			Description: "Set the number of characters of the `_source` to include in the slowlog lines, `false` or `0` will skip logging the source entirely and setting it to `true` will log the entire source regardless of size. The original `_source` is reformatted by default to make sure that it fits on a single log line.",
 			Optional:    true,
 		},
 		// Other attributes
@@ -207,7 +433,9 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 func settingsFromIndexResourceData(d *schema.ResourceData) map[string]interface{} {
 	settings := make(map[string]interface{})
 	for _, key := range settingsKeys {
-		if raw, ok := d.GetOk(key); ok {
+		schemaName := strings.Replace(key, ".", "_", -1)
+		if raw, ok := d.GetOk(schemaName); ok {
+			log.Printf("[INFO] settingsFromIndexResourceData: key:%+v schemaName:%+v value:%+v, %+v", key, schemaName, raw, settings)
 			settings[key] = raw
 		}
 	}
@@ -215,6 +443,7 @@ func settingsFromIndexResourceData(d *schema.ResourceData) map[string]interface{
 }
 
 func indexResourceDataFromSettings(settings map[string]interface{}, d *schema.ResourceData) {
+	log.Printf("[INFO] indexResourceDataFromSettings: %+v", settings)
 	for _, key := range settingsKeys {
 		rawValue, okRaw := settings[key]
 		rawPrefixedValue, okPrefixed := settings["index."+key]
@@ -227,9 +456,10 @@ func indexResourceDataFromSettings(settings map[string]interface{}, d *schema.Re
 			value = rawPrefixedValue
 		}
 
-		err := d.Set(key, value)
+		schemaName := strings.Replace(key, ".", "_", -1)
+		err := d.Set(schemaName, value)
 		if err != nil {
-			log.Printf("[WARN] indexResourceDataFromSettings: %+v", err)
+			log.Printf("[ERROR] indexResourceDataFromSettings: %+v", err)
 		}
 	}
 }
@@ -319,6 +549,8 @@ func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) 
 	}
 
 	body := map[string]interface{}{
+		// Note you do not have to explicitly specify the `index` section inside
+		// the `settings` section
 		"settings": settings,
 	}
 
