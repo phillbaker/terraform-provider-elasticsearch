@@ -95,9 +95,9 @@ func resourceElasticsearchOpenDistroKibanaTenantDelete(d *schema.ResourceData, m
 			Method: "DELETE",
 			Path:   path,
 		})
-    default:
-        err = errors.New("Creating tenants requires elastic v7 client")
-    }
+	default:
+		err = errors.New("Creating tenants requires elastic v7 client")
+	}
 
 	return err
 }
@@ -127,9 +127,9 @@ func resourceElasticsearchGetOpenDistroKibanaTenant(tenantID string, m interface
 			Path:   path,
 		})
 		body = res.Body
-    default:
-        err = errors.New("Creating tenants requires elastic v7 client") 
-    }
+	default:
+		err = errors.New("Creating tenants requires elastic v7 client")
+	}
 
 	if err != nil {
 		return *tenant, err
@@ -149,7 +149,7 @@ func resourceElasticsearchPutOpenDistroKibanaTenant(d *schema.ResourceData, m in
 	response := new(TenantResponse)
 
 	tenantsDefinition := TenantBody{
-		Description:        d.Get("description").(string),
+		Description: d.Get("description").(string),
 	}
 
 	tenantJSON, err := json.Marshal(tenantsDefinition)
@@ -178,9 +178,9 @@ func resourceElasticsearchPutOpenDistroKibanaTenant(d *schema.ResourceData, m in
 			Body:   string(tenantJSON),
 		})
 		body = res.Body
-    default:
-        err = errors.New("Creating tenants requires elastic v7 client")
-    }
+	default:
+		err = errors.New("Creating tenants requires elastic v7 client")
+	}
 
 	if err != nil {
 		return response, fmt.Errorf("error creating tenant: %+v: %+v", err, body)
@@ -199,5 +199,5 @@ type TenantResponse struct {
 }
 
 type TenantBody struct {
-	Description        string              `json:"description"`
+	Description string `json:"description"`
 }

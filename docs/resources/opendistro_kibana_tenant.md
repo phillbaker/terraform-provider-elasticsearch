@@ -6,7 +6,7 @@ description: |-
   Provides an Elasticsearch Open Distro Kibana tenant resource.
 ---
 
-# elasticsearch_opendistro_role
+# elasticsearch_opendistro_kibana_tenant
 
 Provides an Elasticsearch Open Distro Kibana tenant resource.
 Please refer to the Open Distro [documentation][1] for details.

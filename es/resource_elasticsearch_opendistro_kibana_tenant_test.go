@@ -74,7 +74,7 @@ func TestAccElasticsearchOpenDistroKibanaTenant(t *testing.T) {
 						"test2",
 					),
 				),
-			}
+			},
 		},
 	})
 }

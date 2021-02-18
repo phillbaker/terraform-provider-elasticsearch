@@ -181,7 +181,7 @@ func Provider() terraform.ResourceProvider {
 			"elasticsearch_opendistro_roles_mapping":        resourceElasticsearchOpenDistroRolesMapping(),
 			"elasticsearch_opendistro_role":                 resourceElasticsearchOpenDistroRole(),
 			"elasticsearch_opendistro_user":                 resourceElasticsearchOpenDistroUser(),
-            "elasticsearch_opendistro_kibana_tenant":        resourceElasticsearchOpenDistroKibanaTenant(),
+			"elasticsearch_opendistro_kibana_tenant":        resourceElasticsearchOpenDistroKibanaTenant(),
 			"elasticsearch_xpack_index_lifecycle_policy":    resourceElasticsearchXpackIndexLifecyclePolicy(),
 			"elasticsearch_xpack_license":                   resourceElasticsearchXpackLicense(),
 			"elasticsearch_xpack_role":                      resourceElasticsearchXpackRole(),
