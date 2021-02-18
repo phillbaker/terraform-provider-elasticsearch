@@ -51,14 +51,14 @@ func TestAccElasticsearchOpenDistroKibanaTenant(t *testing.T) {
 			{
 				Config: testAccOpenDistroKibanaTenantResource(randomName),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticSearchOpenDistroKibanaTenantExists("elasticsearch_opendistro_tenant.test"),
+					testCheckElasticSearchOpenDistroKibanaTenantExists("elasticsearch_opendistro_kibana_tenant.test"),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_opendistro_tenant.test",
+						"elasticsearch_opendistro_kibana_tenant.test",
 						"id",
 						randomName,
 					),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_opendistro_tenant.test",
+						"elasticsearch_opendistro_kibana_tenant.test",
 						"description",
 						"test",
 					),
@@ -67,9 +67,9 @@ func TestAccElasticsearchOpenDistroKibanaTenant(t *testing.T) {
 			{
 				Config: testAccOpenDistroKibanaTenantResourceUpdated(randomName),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticSearchOpenDistroKibanaTenantExists("elasticsearch_opendistro_tenant.test"),
+					testCheckElasticSearchOpenDistroKibanaTenantExists("elasticsearch_opendistro_kibana_tenant.test"),
 					resource.TestCheckResourceAttr(
-						"elasticsearch_opendistro_tenant.test",
+						"elasticsearch_opendistro_kibana_tenant.test",
 						"description",
 						"test2",
 					),
@@ -81,7 +81,7 @@ func TestAccElasticsearchOpenDistroKibanaTenant(t *testing.T) {
 
 func testAccCheckElasticsearchOpenDistroKibanaTenantDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "elasticsearch_opendistro_tenant" {
+		if rs.Type != "elasticsearch_opendistro_kibana_tenant" {
 			continue
 		}
 
@@ -110,7 +110,7 @@ func testAccCheckElasticsearchOpenDistroKibanaTenantDestroy(s *terraform.State) 
 func testCheckElasticSearchOpenDistroKibanaTenantExists(name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "elasticsearch_opendistro_tenant" {
+			if rs.Type != "elasticsearch_opendistro_kibana_tenant" {
 				continue
 			}
 
@@ -140,7 +140,7 @@ func testCheckElasticSearchOpenDistroKibanaTenantExists(name string) resource.Te
 
 func testAccOpenDistroKibanaTenantResource(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_tenant" "test" {
+	resource "elasticsearch_opendistro_kibana_tenant" "test" {
 		tenant_name = "%s"
 		description = "test"
 	}
@@ -149,7 +149,7 @@ func testAccOpenDistroKibanaTenantResource(resourceName string) string {
 
 func testAccOpenDistroKibanaTenantResourceUpdated(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_tenant" "test" {
+	resource "elasticsearch_opendistro_kibana_tenant" "test" {
 		tenant_name = "%s"
 		description = "test2"
 	}
