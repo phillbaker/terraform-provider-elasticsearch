@@ -13,10 +13,6 @@ import (
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
-func onlyDiffOnCreate(_, _, _ string, d *schema.ResourceData) bool {
-	return d.Id() != ""
-}
-
 func resourceElasticsearchXpackUser() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides an Elasticsearch XPack user resource. See the upstream [docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/security-api.html) for more details.",
@@ -51,20 +47,20 @@ func resourceElasticsearchXpackUser() *schema.Resource {
 				Description: "Specifies whether the user is enabled, defaults to true.",
 			},
 			"password": {
-				Type:             schema.TypeString,
-				Sensitive:        true,
-				Required:         false,
-				Optional:         true,
-				DiffSuppressFunc: onlyDiffOnCreate,
-				Description:      "The user’s password. Passwords must be at least 6 characters long. Mutually exclusive with `password_hash`, one of which must be provided at creation.",
+				Type:        schema.TypeString,
+				Sensitive:   true,
+				Required:    false,
+				Optional:    true,
+				StateFunc:   hashSum,
+				Description: "The user’s password. Passwords must be at least 6 characters long. Mutually exclusive with `password_hash`, one of which must be provided at creation.",
 			},
 			"password_hash": {
-				Type:             schema.TypeString,
-				Required:         false,
-				Sensitive:        true,
-				Optional:         true,
-				DiffSuppressFunc: onlyDiffOnCreate,
-				Description:      "A hash of the user’s password. This must be produced using the same hashing algorithm as has been configured for password storage. Mutually exclusive with `password`, one of which must be provided at creation.",
+				Type:        schema.TypeString,
+				Required:    false,
+				Sensitive:   true,
+				Optional:    true,
+				StateFunc:   hashSum,
+				Description: "A hash of the user’s password. This must be produced using the same hashing algorithm as has been configured for password storage. Mutually exclusive with `password`, one of which must be provided at creation.",
 			},
 			"roles": {
 				Type:     schema.TypeSet,
@@ -195,7 +191,10 @@ func buildPutUserBody(d *schema.ResourceData, m interface{}) (string, error) {
 		Enabled:  enabled,
 		Metadata: optionalInterfaceJson(metadata),
 	}
-	if password == "" {
+	if d.HasChange("password") {
+		user.Password = password
+	}
+	if d.HasChange("password_hash") {
 		user.PasswordHash = passwordHash
 	}
 

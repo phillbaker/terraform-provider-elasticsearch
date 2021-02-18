@@ -3,6 +3,7 @@ package es
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -425,6 +426,10 @@ func expandTenantPermissionsSet(resourcesArray []interface{}) ([]TenantPermissio
 		vperm = append(vperm, obj)
 	}
 	return vperm, nil
+}
+
+func hashSum(contents interface{}) string {
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(contents.(string))))
 }
 
 func indexPermissionsHash(v interface{}) int {
