@@ -6,6 +6,15 @@
 
 ### Fixed
 
+
+## [1.5.3] - 2020-02-18
+### Changed
+- [xpack_user,opendistro_user] Hash user passwords in state to detect change (#132)
+
+### Added
+-  Open Distro Kibana tenant resource (#144)
+
+
 ## [1.5.2] - 2020-02-05
 ### Changed
 - [open distro role] Rename fls in favor of field_level_security, deprecate fls.
@@ -17,6 +26,7 @@
 
 ### Fixed
 - [composable template] Fix elasticsearch_composable_index_template with Elasticsearch 7.10 (#134)
+
 
 ## [1.5.1] - 2020-12-23
 ### Changed
@@ -32,6 +42,7 @@
 ### Added
 - Composable Index Template resource, available in ESv7.8+
 
+
 ## [1.5.0] - 2020-10-26
 ### Changed
 - Deprecated elasticsearch_index_lifecycle_policy in favor of elasticsearch_xpack_index_lifecycle_policy.
@@ -43,13 +54,16 @@
 - Add XPack license resource, compatible with ES version >= 6.2.
 - Add `assume_role` support for authenticating to AWS
 
+
 ## [1.4.4] - 2020-09-23
 ### Added
 - Add OpenDistro user resource (#83)
 
+
 ## [1.4.3] - 2020-09-10
 ### Changed
 - Fixed issue where diffs may not be detected for the resources `elasticsearch_kibana_object`, `elasticsearch_opendistro_destination`, `elasticsearch_opendistro_ism_policy_mapping`, `elasticsearch_opendistro_monitor`, `elasticsearch_xpack_role`, `elasticsearch_xpack_role_mapping`, and data source `elasticsearch_opendistro_destination` (#65).
+
 
 ## [1.4.2] - 2020-09-03
 ### Changed
