@@ -50,25 +50,28 @@ var (
 		// Static settings that can only be set on creation
 		"number_of_shards": {
 			Type:        schema.TypeString,
-			Description: "Number of shards for the index",
-			ForceNew:    true, // shards can only set upon creation
+			Description: "Number of shards for the index. This can be set only on creation.",
+			ForceNew:    true,
 			Default:     "1",
 			Optional:    true,
 		},
 		"routing_partition_size": {
-			Type:     schema.TypeInt,
-			ForceNew: true, // shards can only set upon creation
-			Optional: true,
+			Type:        schema.TypeInt,
+			Description: "The number of shards a custom routing value can go to. This can be set only on creation.",
+			ForceNew:    true,
+			Optional:    true,
 		},
 		"load_fixed_bitset_filters_eagerly": {
-			Type:     schema.TypeBool,
-			ForceNew: true,
-			Optional: true,
+			Type:        schema.TypeBool,
+			Description: "Indicates whether cached filters are pre-loaded for nested queries. This can be set only on creation.",
+			ForceNew:    true,
+			Optional:    true,
 		},
 		"codec": {
-			Type:     schema.TypeString,
-			ForceNew: true,
-			Optional: true,
+			Type:        schema.TypeString,
+			Description: "The `default` value compresses stored data with LZ4 compression, but this can be set to `best_compression` which uses DEFLATE for a higher compression ratio. This can be set only on creation.",
+			ForceNew:    true,
+			Optional:    true,
 		},
 		// Dynamic settings that can be changed at runtime
 		"number_of_replicas": {
@@ -82,27 +85,28 @@ var (
 			Optional:    true,
 		},
 		"refresh_interval": {
-			Type:     schema.TypeString, // -1 to disable
-			Optional: true,
+			Type:        schema.TypeString,
+			Description: "How often to perform a refresh operation, which makes recent changes to the index visible to search. Can be set to `-1` to disable refresh.",
+			Optional:    true,
 		},
 		// Other attributes
 		"mappings": {
-			Type:     schema.TypeString,
-			Optional: true,
-			// In order to not handle complexities of field mapping updates, updates
-			// are not allowed via this provider. See
-			// https://www.elastic.co/guide/en/elasticsearch/reference/6.8/indices-put-mapping.html#updating-field-mappings.
+			Type:         schema.TypeString,
+			Description:  "A JSON string defining how documents in the index, and the fields they contain, are stored and indexed. To avoid the complexities of field mapping updates, updates of this field are not allowed via this provider. See the upstream [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/indices-put-mapping.html#updating-field-mappings) for more details.",
+			Optional:     true,
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsJSON,
 		},
 		"aliases": {
-			Type:     schema.TypeString,
-			Optional: true,
+			Type:        schema.TypeString,
+			Description: "A JSON string describing a set of aliases. The index aliases API allows aliasing an index with a name, with all APIs automatically converting the alias name to the actual index name. An alias can also be mapped to more than one index, and when specifying it, the alias will automatically expand to the aliased indices.",
+			Optional:    true,
 			// In order to not handle the separate endpoint of alias updates, updates
 			// are not allowed via this provider currently.
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsJSON,
 		},
+		// Computed attributes
 		"rollover_alias": {
 			Type:     schema.TypeString,
 			Optional: true,
@@ -113,11 +117,12 @@ var (
 
 func resourceElasticsearchIndex() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceElasticsearchIndexCreate,
-		Read:   resourceElasticsearchIndexRead,
-		Update: resourceElasticsearchIndexUpdate,
-		Delete: resourceElasticsearchIndexDelete,
-		Schema: configSchema,
+		Description: "Provides an Elasticsearch index resource.",
+		Create:      resourceElasticsearchIndexCreate,
+		Read:        resourceElasticsearchIndexRead,
+		Update:      resourceElasticsearchIndexUpdate,
+		Delete:      resourceElasticsearchIndexDelete,
+		Schema:      configSchema,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
