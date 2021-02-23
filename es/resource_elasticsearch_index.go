@@ -412,6 +412,12 @@ func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) er
 	case *elastic7.Client:
 		r, err := client.IndexGet(index).Do(ctx)
 		if err != nil {
+			if elastic7.IsNotFound(err) {
+				log.Printf("[WARN] Index (%s) not found, removing from state", index)
+				d.SetId("")
+				return nil
+			}
+
 			return err
 		}
 
@@ -421,6 +427,11 @@ func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) er
 	case *elastic6.Client:
 		r, err := client.IndexGet(index).Do(ctx)
 		if err != nil {
+			if elastic6.IsNotFound(err) {
+				log.Printf("[WARN] Index (%s) not found, removing from state", index)
+				d.SetId("")
+				return nil
+			}
 			return err
 		}
 
@@ -431,6 +442,11 @@ func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) er
 		elastic5Client := client.(*elastic5.Client)
 		r, err := elastic5Client.IndexGet(index).Do(ctx)
 		if err != nil {
+			if elastic5.IsNotFound(err) {
+				log.Printf("[WARN] Index (%s) not found, removing from state", index)
+				d.SetId("")
+				return nil
+			}
 			return err
 		}
 

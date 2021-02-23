@@ -5,7 +5,7 @@
 ### Added
 
 ### Fixed
-
+- [index] Handle not found on resource read
 
 ## [1.5.3] - 2020-02-18
 ### Changed
