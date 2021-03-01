@@ -1,6 +1,25 @@
 on: [push, pull_request]
 name: Test
 jobs:
+  lint:
+    # Separate golangci-lint into its own job because it can override go 
+    # env variables and it runs jobs in parallel: 
+    # https://github.com/golangci/golangci-lint-action#how-to-use
+    name: Runs go linters
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        # we depend on full git history for linters
+        fetch-depth: 0
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v2
+      with:
+        # Required: the version of golangci-lint is required and must be
+        # specified without patch version: we always use the latest patch
+        # version.
+        version: v1.28
+        args: --new-from-rev=bf51aaa --verbose --timeout=10m
   test:
     strategy:
       matrix:
@@ -20,6 +39,7 @@ jobs:
         - es-major-version: "7"
           es-version: 7.9.3
           ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:1.6.0"
+    needs: [lint]
     name: Test against ES ${{ matrix.es-major-version }} on ${{ matrix.go-version }}/${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
@@ -60,21 +80,13 @@ jobs:
     - name: Get dependencies
       run: |
         go mod vendor
-    - name: golangci-lint
-      uses: golangci/golangci-lint-action@v2
-      with:
-        # Required: the version of golangci-lint is required and must be
-        # specified without patch version: we always use the latest patch
-        # version.
-        version: v1.28
-        args: --new-from-rev=bf51aaa --verbose --timeout=10m
     - name: Run check scripts
       run: |
         ./script/test-mod-tidy
     - name: Wait for Elasticsearch
       # ensure that ES has come up and is available
       run: |
-        wget -q --waitretry=1 --retry-connrefused --tries=60 --timeout 60 -O - localhost:9200
+        ./script/wait-for-endpoint --timeout=120 http://localhost:9200
     - name: Warm up OpenDistro
       # OpenDistro lazily initializes its indexes, see
       # https://github.com/opendistro-for-elasticsearch/alerting/issues/60
