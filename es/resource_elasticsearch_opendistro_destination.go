@@ -216,8 +216,6 @@ func resourceElasticsearchOpenDistroPostDestination(d *schema.ResourceData, m in
 		return response, fmt.Errorf("error unmarshalling destination body: %+v: %+v", err, body)
 	}
 
-	normalizeDestination(response.Destination.(map[string]interface{}))
-
 	return response, nil
 }
 
