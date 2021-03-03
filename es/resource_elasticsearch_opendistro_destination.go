@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/olivere/elastic/uritemplates"
 
@@ -24,7 +25,11 @@ var openDistroDestinationSchema = map[string]*schema.Schema{
 		Required:         true,
 		DiffSuppressFunc: diffSuppressDestination,
 		ValidateFunc:     validation.StringIsJSON,
-		Description:      "The JSON body of the destination.",
+		StateFunc: func(v interface{}) string {
+			json, _ := structure.NormalizeJsonString(v)
+			return json
+		},
+		Description: "The JSON body of the destination.",
 	},
 }
 
@@ -159,6 +164,8 @@ func resourceElasticsearchOpenDistroGetDestination(destinationID string, m inter
 		return "", fmt.Errorf("error unmarshalling destination body: %+v: %+v", err, body)
 	}
 
+	normalizeDestination(response.Destination.(map[string]interface{}))
+
 	tj, err := json.Marshal(response.Destination)
 	if err != nil {
 		return "", err
@@ -208,6 +215,8 @@ func resourceElasticsearchOpenDistroPostDestination(d *schema.ResourceData, m in
 	if err := json.Unmarshal(body, response); err != nil {
 		return response, fmt.Errorf("error unmarshalling destination body: %+v: %+v", err, body)
 	}
+
+	normalizeDestination(response.Destination.(map[string]interface{}))
 
 	return response, nil
 }

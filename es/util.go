@@ -73,6 +73,7 @@ func elastic5GetObject(client *elastic5.Client, objectType string, index string,
 }
 
 func normalizeDestination(tpl map[string]interface{}) {
+	delete(tpl, "id")
 	delete(tpl, "last_update_time")
 	delete(tpl, "schema_version")
 }
