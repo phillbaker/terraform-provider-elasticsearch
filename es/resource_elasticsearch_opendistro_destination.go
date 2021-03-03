@@ -164,8 +164,6 @@ func resourceElasticsearchOpenDistroGetDestination(destinationID string, m inter
 		return "", fmt.Errorf("error unmarshalling destination body: %+v: %+v", err, body)
 	}
 
-	normalizeDestination(response.Destination.(map[string]interface{}))
-
 	tj, err := json.Marshal(response.Destination)
 	if err != nil {
 		return "", err
