@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/olivere/elastic/uritemplates"
 
@@ -24,7 +25,11 @@ var openDistroDestinationSchema = map[string]*schema.Schema{
 		Required:         true,
 		DiffSuppressFunc: diffSuppressDestination,
 		ValidateFunc:     validation.StringIsJSON,
-		Description:      "The JSON body of the destination.",
+		StateFunc: func(v interface{}) string {
+			json, _ := structure.NormalizeJsonString(v)
+			return json
+		},
+		Description: "The JSON body of the destination.",
 	},
 }
 
