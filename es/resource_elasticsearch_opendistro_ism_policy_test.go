@@ -27,8 +27,6 @@ func TestAccElasticsearchOpenDistroISMPolicy(t *testing.T) {
 	var allowed bool
 
 	switch esClient.(type) {
-	case *elastic6.Client:
-		allowed = false
 	case *elastic5.Client:
 		allowed = false
 	default:
@@ -39,7 +37,7 @@ func TestAccElasticsearchOpenDistroISMPolicy(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {
-				t.Skip("OpenDistroISMPolicies only supported on ES 7.")
+				t.Skip("OpenDistroISMPolicies only supported on ES 6.8.")
 			}
 		},
 		Providers:    testAccOpendistroProviders,
@@ -80,6 +78,8 @@ func testCheckElasticsearchOpenDistroISMPolicyExists(name string) resource.TestC
 		switch esClient.(type) {
 		case *elastic7.Client:
 			_, err = resourceElasticsearchGetOpenDistroISMPolicy(rs.Primary.ID, meta.(*ProviderConf))
+		case *elastic6.Client:
+			_, err = resourceElasticsearchGetOpenDistroISMPolicy(rs.Primary.ID, meta.(*ProviderConf))
 		default:
 		}
 
@@ -106,6 +106,8 @@ func testCheckElasticsearchOpenDistroISMPolicyDestroy(s *terraform.State) error 
 		}
 		switch esClient.(type) {
 		case *elastic7.Client:
+			_, err = resourceElasticsearchGetOpenDistroISMPolicy(rs.Primary.ID, meta.(*ProviderConf))
+		case *elastic6.Client:
 			_, err = resourceElasticsearchGetOpenDistroISMPolicy(rs.Primary.ID, meta.(*ProviderConf))
 		default:
 		}
