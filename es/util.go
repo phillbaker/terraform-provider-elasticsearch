@@ -346,9 +346,12 @@ func flattenIndexPermissions(permissions []IndexPermissions, d *schema.ResourceD
 			p["document_level_security"] = permission.DocumentLevelSecurity
 		}
 
-		indexPermissionSchema := indexPermission[idx].(map[string]interface{})
-		fls := indexPermissionSchema["fls"].(*schema.Set).List()
-		useDeprecatedFls := len(fls) > 0
+		useDeprecatedFls := false
+		if len(indexPermission) > 0 {
+			indexPermissionSchema := indexPermission[idx].(map[string]interface{})
+			fls := indexPermissionSchema["fls"].(*schema.Set).List()
+			useDeprecatedFls = len(fls) > 0
+		}
 		if useDeprecatedFls && len(permission.FieldLevelSecurity) > 0 {
 			p["fls"] = flattenStringSet(permission.FieldLevelSecurity)
 		}

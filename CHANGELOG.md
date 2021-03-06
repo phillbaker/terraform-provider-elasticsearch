@@ -6,6 +6,7 @@
 
 ### Fixed
 - [index] Handle not found on resource read
+- [opendistro role] Fix crash on import
 
 ## [1.5.3] - 2020-02-18
 ### Changed
