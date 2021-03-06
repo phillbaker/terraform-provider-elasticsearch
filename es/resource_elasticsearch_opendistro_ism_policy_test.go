@@ -37,7 +37,7 @@ func TestAccElasticsearchOpenDistroISMPolicy(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {
-				t.Skip("OpenDistroISMPolicies only supported on ES 6.8.")
+				t.Skip("OpenDistroISMPolicies only supported on ES 6.")
 			}
 		},
 		Providers:    testAccOpendistroProviders,
