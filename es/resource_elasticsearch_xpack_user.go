@@ -105,17 +105,17 @@ func resourceElasticsearchXpackUserRead(d *schema.ResourceData, m interface{}) e
 	user, err := xpackGetUser(d, m, d.Id())
 	if err != nil {
 		fmt.Println("Error during read")
-		if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic7.Error); ok && elastic7.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] User %s not found. Removing from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic6.Error); ok && elastic6.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] User %s not found. Removing from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic5.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic5.Error); ok && elastic5.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] User %s not found. Removing from state\n", d.Id())
 			d.SetId("")
 			return nil
@@ -152,17 +152,17 @@ func resourceElasticsearchXpackUserDelete(d *schema.ResourceData, m interface{})
 	err := xpackDeleteUser(d, m, d.Id())
 	if err != nil {
 		fmt.Println("Error during destroy")
-		if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic7.Error); ok && elastic7.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] User %s not found. Resource removed from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic6.Error); ok && elastic6.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] User %s not found. Resource removed from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic5.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic5.Error); ok && elastic5.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] User %s not found. Resource removed from state\n", d.Id())
 			d.SetId("")
 			return nil
