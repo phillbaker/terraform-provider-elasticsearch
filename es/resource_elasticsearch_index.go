@@ -216,9 +216,20 @@ func settingsFromIndexResourceData(d *schema.ResourceData) map[string]interface{
 
 func indexResourceDataFromSettings(settings map[string]interface{}, d *schema.ResourceData) {
 	for _, key := range settingsKeys {
-		err := d.Set(key, settings[key])
+		rawValue, okRaw := settings[key]
+		rawPrefixedValue, okPrefixed := settings["index."+key]
+		var value interface{}
+		if !okRaw && !okPrefixed {
+			continue
+		} else if okRaw {
+			value = rawValue
+		} else if okPrefixed {
+			value = rawPrefixedValue
+		}
+
+		err := d.Set(key, value)
 		if err != nil {
-			log.Printf("[INFO] indexResourceDataFromSettings: %+v", err)
+			log.Printf("[WARN] indexResourceDataFromSettings: %+v", err)
 		}
 	}
 }
@@ -415,7 +426,7 @@ func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) er
 	}
 	switch client := esClient.(type) {
 	case *elastic7.Client:
-		r, err := client.IndexGet(index).Do(ctx)
+		r, err := client.IndexGetSettings(index).FlatSettings(true).Do(ctx)
 		if err != nil {
 			if elastic7.IsNotFound(err) {
 				log.Printf("[WARN] Index (%s) not found, removing from state", index)
@@ -427,10 +438,10 @@ func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) er
 		}
 
 		if resp, ok := r[index]; ok {
-			settings = resp.Settings["index"].(map[string]interface{})
+			settings = resp.Settings
 		}
 	case *elastic6.Client:
-		r, err := client.IndexGet(index).Do(ctx)
+		r, err := client.IndexGetSettings(index).FlatSettings(true).Do(ctx)
 		if err != nil {
 			if elastic6.IsNotFound(err) {
 				log.Printf("[WARN] Index (%s) not found, removing from state", index)
@@ -441,11 +452,11 @@ func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) er
 		}
 
 		if resp, ok := r[index]; ok {
-			settings = resp.Settings["index"].(map[string]interface{})
+			settings = resp.Settings
 		}
 	default:
 		elastic5Client := client.(*elastic5.Client)
-		r, err := elastic5Client.IndexGet(index).Do(ctx)
+		r, err := elastic5Client.IndexGetSettings(index).FlatSettings(true).Do(ctx)
 		if err != nil {
 			if elastic5.IsNotFound(err) {
 				log.Printf("[WARN] Index (%s) not found, removing from state", index)
@@ -456,14 +467,14 @@ func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) er
 		}
 
 		if resp, ok := r[index]; ok {
-			settings = resp.Settings["index"].(map[string]interface{})
+			settings = resp.Settings
 		}
 	}
 
 	// Don't override name otherwise it will force a replacement
 	if _, ok := d.GetOk("name"); !ok {
 		name := index
-		if providedName, ok := settings["provided_name"].(string); ok {
+		if providedName, ok := settings["index.provided_name"].(string); ok {
 			name = providedName
 		}
 		err := d.Set("name", name)
@@ -473,21 +484,15 @@ func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) er
 	}
 
 	// If index is managed by ILM or ISM set rollover_alias
-	if lifecycle, ok := settings["lifecycle"].(map[string]interface{}); ok {
-		if alias, ok := lifecycle["rollover_alias"].(string); ok {
-			err := d.Set("rollover_alias", alias)
-			if err != nil {
-				log.Printf("[INFO] resourceElasticsearchIndexRead: %+v", err)
-			}
+	if alias, ok := settings["index.lifecycle.rollover_alias"].(string); ok {
+		err := d.Set("rollover_alias", alias)
+		if err != nil {
+			return err
 		}
-	} else if opendistro, ok := settings["opendistro"].(map[string]interface{}); ok {
-		if ism, ok := opendistro["index_state_management"].(map[string]interface{}); ok {
-			if alias, ok := ism["rollover_alias"].(string); ok {
-				err := d.Set("rollover_alias", alias)
-				if err != nil {
-					log.Printf("[INFO] resourceElasticsearchIndexRead: %+v", err)
-				}
-			}
+	} else if alias, ok := settings["index.opendistro.index_state_management.rollover_alias"].(string); ok {
+		err := d.Set("rollover_alias", alias)
+		if err != nil {
+			return err
 		}
 	}
 
