@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -254,6 +255,8 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(awsRegion, conf)), elastic7.SetSniff(false))
 	} else if conf.insecure || conf.cacertFile != "" {
 		opts = append(opts, elastic7.SetHttpClient(tlsHttpClient(conf)), elastic7.SetSniff(false))
+	} else {
+		opts = append(opts, elastic7.SetHttpClient(errorLoggingHttpClient()))
 	}
 
 	var relevantClient interface{}
@@ -429,4 +432,25 @@ func tlsHttpClient(conf *ProviderConf) *http.Client {
 	client := &http.Client{Transport: transport}
 
 	return client
+}
+
+func errorLoggingHttpClient() *http.Client {
+	return &http.Client{
+		Transport: &LoggingTransport{
+			LogRequest: func(req *http.Request) {},
+			LogResponse: func(resp *http.Response) {
+				if resp.StatusCode < 500 {
+					return
+				}
+
+				bodyBytes, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					log.Printf("[INFO] error response, error reading body: %+v", err)
+				}
+				bodyString := string(bodyBytes)
+
+				log.Printf("[INFO] error response: %+v %+v", resp.StatusCode, bodyString)
+			},
+		},
+	}
 }
