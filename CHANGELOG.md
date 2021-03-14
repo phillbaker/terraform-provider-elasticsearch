@@ -3,6 +3,7 @@
 ### Changed
 
 ### Added
+- [opendistro user,role,ism policy] Retry handling for conflicts
 
 ### Fixed
 
