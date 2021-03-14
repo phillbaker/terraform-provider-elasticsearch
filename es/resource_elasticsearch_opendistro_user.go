@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/olivere/elastic/uritemplates"
@@ -115,8 +117,12 @@ func resourceElasticsearchOpenDistroUserDelete(d *schema.ResourceData, m interfa
 	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
-			Method: "DELETE",
-			Path:   path,
+			Method:           "DELETE",
+			Path:             path,
+			RetryStatusCodes: []int{http.StatusConflict, http.StatusInternalServerError},
+			Retrier: elastic7.NewBackoffRetrier(
+				elastic7.NewExponentialBackoff(100*time.Millisecond, 30*time.Second),
+			),
 		})
 	default:
 		err = errors.New("Role resource not implemented prior to Elastic v7")
@@ -204,11 +210,30 @@ func resourceElasticsearchPutOpenDistroUser(d *schema.ResourceData, m interface{
 	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.Response
+		log.Printf("[INFO] put opendistro user: %+v", userDefinition)
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "PUT",
 			Path:   path,
 			Body:   string(userJSON),
+			// see https://github.com/opendistro-for-
+			// elasticsearch/security/issues/1095, this should return a 409, but
+			// retry on the 500 as well. We can't parse the message to only retry on
+			// the conlict exception becaues the elastic client doesn't directly
+			// expose the error response body
+			RetryStatusCodes: []int{http.StatusConflict, http.StatusInternalServerError},
+			Retrier: elastic7.NewBackoffRetrier(
+				elastic7.NewExponentialBackoff(100*time.Millisecond, 30*time.Second),
+			),
 		})
+		if err != nil {
+			e, ok := err.(*elastic7.Error)
+			if !ok {
+				log.Printf("[INFO] expected error to be of type *elastic.Error")
+			} else {
+				log.Printf("[INFO] error creating user: %v %v %v", res, res.Body, e)
+			}
+		}
+
 		body = res.Body
 	default:
 		err = errors.New("User resource not implemented prior to Elastic v7")

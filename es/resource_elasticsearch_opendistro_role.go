@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/olivere/elastic/uritemplates"
@@ -185,8 +187,12 @@ func resourceElasticsearchOpenDistroRoleDelete(d *schema.ResourceData, m interfa
 	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
-			Method: "DELETE",
-			Path:   path,
+			Method:           "DELETE",
+			Path:             path,
+			RetryStatusCodes: []int{http.StatusConflict, http.StatusInternalServerError},
+			Retrier: elastic7.NewBackoffRetrier(
+				elastic7.NewExponentialBackoff(100*time.Millisecond, 30*time.Second),
+			),
 		})
 	default:
 		err = errors.New("role resource not implemented prior to Elastic v7")
@@ -301,6 +307,15 @@ func resourceElasticsearchPutOpenDistroRole(d *schema.ResourceData, m interface{
 			Method: "PUT",
 			Path:   path,
 			Body:   string(roleJSON),
+			// see https://github.com/opendistro-for-
+			// elasticsearch/security/issues/1095, this should return a 409, but
+			// retry on the 500 as well. We can't parse the message to only retry on
+			// the conlict exception becaues the elastic client doesn't directly
+			// expose the error response body
+			RetryStatusCodes: []int{http.StatusConflict, http.StatusInternalServerError},
+			Retrier: elastic7.NewBackoffRetrier(
+				elastic7.NewExponentialBackoff(100*time.Millisecond, 30*time.Second),
+			),
 		})
 		body = res.Body
 	default:

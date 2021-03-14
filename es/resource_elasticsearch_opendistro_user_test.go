@@ -114,6 +114,50 @@ func TestAccElasticsearchOpenDistroUser(t *testing.T) {
 	})
 }
 
+func TestAccElasticsearchOpenDistroUserMultiple(t *testing.T) {
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	var allowed bool
+	switch esClient.(type) {
+	case *elastic5.Client:
+		allowed = false
+	case *elastic6.Client:
+		allowed = false
+	default:
+		allowed = true
+	}
+
+	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+			if !allowed {
+				t.Skip("Users only supported on ES >= 7")
+			}
+		},
+		Providers:    testAccOpendistroProviders,
+		CheckDestroy: testAccCheckElasticsearchOpenDistroUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOpenDistroUserMultiple(randomName),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckElasticSearchOpenDistroUserExists("elasticsearch_opendistro_user.testuser1"),
+				),
+				// ExpectError: regexp.MustCompile("Failed to parse mapping"),
+			},
+		},
+	})
+}
+
 func testAccCheckElasticsearchOpenDistroUserDestroy(s *terraform.State) error {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "elasticsearch_opendistro_user" {
@@ -270,4 +314,26 @@ func testAccOpenDistroUserResourceMinimal(resourceName string) string {
 		password = "passw0rd"
 	}
 	`, resourceName)
+}
+
+func testAccOpenDistroUserMultiple(resourceName string) string {
+	return fmt.Sprintf(`
+	resource "elasticsearch_opendistro_user" "testuser1" {
+	  username = "%s-testuser1"
+	  password = "testuser1"
+	  description   = "testuser1"
+	}
+
+	resource "elasticsearch_opendistro_user" "testuser2" {
+	  username = "%s-testuser2"
+	  password = "testuser2"
+	  description   = "testuser2"
+	}
+
+	resource "elasticsearch_opendistro_user" "testuser3" {
+	  username = "%s-testuser3"
+	  password = "testuser3"
+	  description   = "testuser3"
+	}
+	`, resourceName, resourceName, resourceName)
 }

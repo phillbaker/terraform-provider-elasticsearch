@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/structure"
@@ -128,6 +129,10 @@ func resourceElasticsearchOpenDistroISMPolicyDelete(d *schema.ResourceData, m in
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
 			Method: "DELETE",
 			Path:   path,
+			RetryStatusCodes: []int{http.StatusConflict},
+			Retrier: elastic7.NewBackoffRetrier(
+				elastic7.NewExponentialBackoff(100*time.Millisecond, 30*time.Second),
+			),
 		})
 
 		if err != nil {
@@ -239,6 +244,9 @@ func resourceElasticsearchPutOpenDistroISMPolicy(d *schema.ResourceData, m inter
 			Params:           params,
 			Body:             string(policyJSON),
 			RetryStatusCodes: []int{http.StatusConflict},
+			Retrier: elastic7.NewBackoffRetrier(
+				elastic7.NewExponentialBackoff(100*time.Millisecond, 30*time.Second),
+			),
 		})
 		if err != nil {
 			return response, fmt.Errorf("error putting policy: %+v : %+v : %+v", path, policyJSON, err)
