@@ -217,7 +217,7 @@ func resourceElasticsearchPutOpenDistroUser(d *schema.ResourceData, m interface{
 	}
 
 	if err != nil {
-		return response, fmt.Errorf("Error creating user mapping: %+v: %+v: %+v", err, body, string(userJSON))
+		return response, fmt.Errorf("Error creating user: %+v: %+v: %+v", err, body, string(userJSON))
 	}
 
 	if err := json.Unmarshal(body, response); err != nil {
