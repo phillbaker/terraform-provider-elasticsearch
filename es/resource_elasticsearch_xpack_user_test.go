@@ -52,6 +52,7 @@ func TestAccElasticsearchXpackUser(t *testing.T) {
 				Config: testAccUserResource(randomName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckUserExists("elasticsearch_xpack_user.test"),
+					testCheckUserCanLogIn("elasticsearch_xpack_user.test"),
 					resource.TestCheckResourceAttr(
 						"elasticsearch_xpack_user.test",
 						"id",
@@ -73,6 +74,7 @@ func TestAccElasticsearchXpackUser(t *testing.T) {
 				Config: testAccUserResource_Updated(randomName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckUserExists("elasticsearch_xpack_user.test"),
+					testCheckUserCanLogIn("elasticsearch_xpack_user.test"),
 					resource.TestCheckResourceAttr(
 						"elasticsearch_xpack_user.test",
 						"metadata",
@@ -152,6 +154,46 @@ func testCheckUserExists(name string) resource.TestCheckFunc {
 	}
 }
 
+// test the password works by creating a new client
+func testCheckUserCanLogIn(name string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("Not found: %s", name)
+		}
+
+		var err error
+		meta := testAccXPackProvider.Meta()
+		config := meta.(*ProviderConf)
+		esClient, err := getClient(config)
+		if err != nil {
+			return err
+		}
+
+		switch esClient.(type) {
+		case *elastic7.Client:
+			var client *elastic7.Client
+			url := config.parsedUrl.Scheme + "://" + config.parsedUrl.Host
+			client, err = elastic7.NewClient(
+				elastic7.SetURL(url),
+				elastic7.SetScheme(config.parsedUrl.Scheme),
+				elastic7.SetSniff(false),
+				elastic7.SetBasicAuth(rs.Primary.ID, "secret"),
+				elastic7.SetHealthcheck(false),
+			)
+			if err != nil {
+				return err
+			}
+			_, err = client.XPackSecurityGetUser(rs.Primary.ID).Do(context.TODO())
+		}
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
 func testAccUserResource(resourceName string) string {
 	return fmt.Sprintf(`
 resource "elasticsearch_xpack_user" "test" {
@@ -159,7 +201,7 @@ resource "elasticsearch_xpack_user" "test" {
 	fullname = "John Do"
 	email    = "john@do.com"
 	password = "secret"
-	roles    = ["admin"]
+	roles    = ["superuser"]
 }
 `, resourceName)
 }
@@ -171,7 +213,7 @@ resource "elasticsearch_xpack_user" "test" {
 	fullname = "John DoDo"
 	email    = "john@do.com"
 	password = "secret"
-	roles    = ["admin"]
+	roles    = ["superuser", "kibana_admin"]
   metadata = <<-EOF
   {
     "foo": "bar"

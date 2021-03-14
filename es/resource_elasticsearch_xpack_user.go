@@ -186,11 +186,11 @@ func buildPutUserBody(d *schema.ResourceData, m interface{}) (string, error) {
 		Username: username,
 		Roles:    roles,
 		Fullname: fullname,
-		Password: password,
 		Email:    email,
 		Enabled:  enabled,
 		Metadata: optionalInterfaceJson(metadata),
 	}
+
 	if d.HasChange("password") {
 		user.Password = password
 	}
@@ -203,7 +203,7 @@ func buildPutUserBody(d *schema.ResourceData, m interface{}) (string, error) {
 		fmt.Printf("Body : %s", body)
 		err = fmt.Errorf("Body Error : %s", body)
 	}
-	log.Printf("[INFO] put body: %+v", body)
+	log.Printf("[INFO] put body: %+v", user)
 	return string(body[:]), err
 }
 
