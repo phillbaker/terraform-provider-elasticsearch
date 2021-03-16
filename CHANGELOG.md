@@ -7,6 +7,8 @@
 ### Fixed
 - [index] Handle not found on resource read
 - [opendistro role] Fix crash on import
+- [opendistro/xpack user] Fix user update leading to the password being set to the hashed value
+#157
 
 ## [1.5.3] - 2020-02-18
 ### Changed

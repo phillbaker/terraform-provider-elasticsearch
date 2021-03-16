@@ -53,6 +53,7 @@ func TestAccElasticsearchOpenDistroUser(t *testing.T) {
 				Config: testAccOpenDistroUserResource(randomName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticSearchOpenDistroUserExists("elasticsearch_opendistro_user.test"),
+					testCheckElasticSearchOpenDistroUserConnects("elasticsearch_opendistro_user.test"),
 					resource.TestCheckResourceAttr(
 						"elasticsearch_opendistro_user.test",
 						"id",

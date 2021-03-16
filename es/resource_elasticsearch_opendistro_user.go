@@ -175,8 +175,6 @@ func resourceElasticsearchPutOpenDistroUser(d *schema.ResourceData, m interface{
 		BackendRoles: d.Get("backend_roles").(*schema.Set).List(),
 		Description:  d.Get("description").(string),
 		Attributes:   d.Get("attributes").(map[string]interface{}),
-		Password:     d.Get("password").(string),
-		PasswordHash: d.Get("password_hash").(string),
 	}
 
 	if d.HasChange("password") {
@@ -186,6 +184,7 @@ func resourceElasticsearchPutOpenDistroUser(d *schema.ResourceData, m interface{
 		userDefinition.PasswordHash = d.Get("password_hash").(string)
 	}
 
+	log.Printf("[INFO] put body: %+v", userDefinition)
 	userJSON, err := json.Marshal(userDefinition)
 	if err != nil {
 		return response, fmt.Errorf("Body Error : %s", userJSON)
@@ -217,7 +216,7 @@ func resourceElasticsearchPutOpenDistroUser(d *schema.ResourceData, m interface{
 	}
 
 	if err != nil {
-		return response, fmt.Errorf("Error creating user mapping: %+v: %+v: %+v", err, body, string(userJSON))
+		return response, fmt.Errorf("Error creating user: %+v: %+v: %+v", err, body, string(userJSON))
 	}
 
 	if err := json.Unmarshal(body, response); err != nil {
