@@ -5,10 +5,15 @@
 ### Added
 
 ### Fixed
+
+## [1.5.4] - 2020-03-17
+### Fixed
+- [opendistro destination] normalize destination for nested "id" key in newer versions of ES (#148)
 - [index] Handle not found on resource read
-- [opendistro role] Fix crash on import
+- [opendistro role] Fix crash on import (#150)
 - [opendistro/xpack user] Fix user update leading to the password being set to the hashed value
 #157
+
 
 ## [1.5.3] - 2020-02-18
 ### Changed
