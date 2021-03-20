@@ -232,7 +232,7 @@ func testAccOpenDistroUserResourceHash(resourceName string) string {
 	return fmt.Sprintf(`
 	resource "elasticsearch_opendistro_user" "test" {
 		username      = "%s"
-		password_hash = "$2a$04$jQcEXpODnTFoGDuA7DPdSevA84CuH/7MOYkb80M3XZIrH76YMWS9G"
+		password_hash = "$2y$12$WsMIMIIJ3LmmK9OsMfvloeizSdvaLmUlNEwTtK54zBvwQ6SETNY8a"
 	}
 	`, resourceName)
 }
