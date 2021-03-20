@@ -2,8 +2,8 @@ on: [push, pull_request]
 name: Test
 jobs:
   lint:
-    # Separate golangci-lint into its own job because it can override go 
-    # env variables and it runs jobs in parallel: 
+    # Separate golangci-lint into its own job because it can override go
+    # env variables and it runs jobs in parallel:
     # https://github.com/golangci/golangci-lint-action#how-to-use
     name: Runs go linters
     runs-on: ubuntu-latest
@@ -38,7 +38,7 @@ jobs:
           ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:0.9.0"
         - es-major-version: "7"
           es-version: 7.9.3
-          ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:1.6.0"
+          ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:1.10.1"
     needs: [lint]
     name: Test against ES ${{ matrix.es-major-version }} on ${{ matrix.go-version }}/${{ matrix.os }}
     runs-on: ${{ matrix.os }}
