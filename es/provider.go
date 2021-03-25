@@ -269,7 +269,7 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 	} else if awsRegion := conf.awsRegion; conf.awsRegion != "" && conf.signAWSRequests {
 		log.Printf("[INFO] Using AWS: %+v", awsRegion)
 		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(awsRegion, conf)), elastic7.SetSniff(false))
-	} else if conf.insecure || conf.cacertFile != "" {
+	} else if conf.parsedUrl.Scheme == "https" {
 		opts = append(opts, elastic7.SetHttpClient(tlsHttpClient(conf)), elastic7.SetSniff(false))
 	} else if conf.token != "" {
 		opts = append(opts, elastic7.SetHttpClient(tokenHttpClient(conf.token, conf.tokenName, conf.insecure)), elastic7.SetSniff(false))
@@ -315,7 +315,7 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 		} else if awsRegion := conf.awsRegion; conf.awsRegion != "" && conf.signAWSRequests {
 			log.Printf("[INFO] Using AWS: %+v", conf.awsRegion)
 			opts = append(opts, elastic6.SetHttpClient(awsHttpClient(awsRegion, conf)), elastic6.SetSniff(false))
-		} else if conf.insecure || conf.cacertFile != "" {
+		} else if conf.parsedUrl.Scheme == "https" {
 			opts = append(opts, elastic6.SetHttpClient(tlsHttpClient(conf)), elastic6.SetSniff(false))
 		} else if conf.token != "" {
 			opts = append(opts, elastic6.SetHttpClient(tokenHttpClient(conf.token, conf.tokenName, conf.insecure)), elastic6.SetSniff(false))
@@ -347,7 +347,7 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 		} else if awsRegion := conf.awsRegion; conf.awsRegion != "" && conf.signAWSRequests {
 			log.Printf("[INFO] Using AWS: %+v", conf.awsRegion)
 			opts = append(opts, elastic5.SetHttpClient(awsHttpClient(awsRegion, conf)), elastic5.SetSniff(false))
-		} else if conf.insecure || conf.cacertFile != "" {
+		} else if conf.parsedUrl.Scheme == "https" {
 			opts = append(opts, elastic5.SetHttpClient(tlsHttpClient(conf)), elastic5.SetSniff(false))
 		} else if conf.token != "" {
 			opts = append(opts, elastic5.SetHttpClient(tokenHttpClient(conf.token, conf.tokenName, conf.insecure)), elastic5.SetSniff(false))
