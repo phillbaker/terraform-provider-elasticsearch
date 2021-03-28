@@ -4,6 +4,9 @@ services:
   elasticsearch:
     image: ${ES_OSS_IMAGE}
     hostname: elasticsearch
+    container_name: elasticsearch
+    networks:
+      - elasticsearch
     environment:
       - cluster.name=elasticsearch
       - bootstrap.memory_lock=true
@@ -26,6 +29,7 @@ services:
   xpack:
     image: ${ES_IMAGE}
     hostname: elasticsearch-xpack
+    container_name: elasticsearch-xpack
     environment:
       - cluster.name=xpack
       - bootstrap.memory_lock=true
@@ -52,6 +56,7 @@ services:
   opendistro:
     image: ${ES_OPENDISTRO_IMAGE:-rwgrim/docker-noop}
     hostname: elasticsearch-opendistro
+    container_name: elasticsearch-opendistro
     environment:
       - cluster.name=opendistro
       - bootstrap.memory_lock=true
@@ -72,3 +77,27 @@ services:
         hard: -1
     ports:
       - 9220:9220
+  kibana:
+    image: ${ES_KIBANA_IMAGE:-rwgrim/docker-noop}
+    hostname: elasticsearch-kibana
+    container_name: elasticsearch-kibana
+    networks:
+      - elasticsearch
+    environment:
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: aaaa1111bbbb2222cccc3333dddd4444
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    ulimits:
+      nproc: 65536
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 5601:5601
+networks:
+  elasticsearch:
+    driver: bridge
