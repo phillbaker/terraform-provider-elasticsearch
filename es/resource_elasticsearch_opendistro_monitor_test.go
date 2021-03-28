@@ -133,7 +133,7 @@ resource "elasticsearch_opendistro_monitor" "test_monitor" {
   },
   "inputs": [{
     "search": {
-      "indices": ["movies"],
+      "indices": ["*"],
       "query": {
         "size": 0,
         "aggregations": {},
