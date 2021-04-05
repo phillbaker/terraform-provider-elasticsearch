@@ -18,6 +18,9 @@ var testAccXPackProvider *schema.Provider
 var testAccOpendistroProviders map[string]terraform.ResourceProvider
 var testAccOpendistroProvider *schema.Provider
 
+var testAccKibanaProviders map[string]terraform.ResourceProvider
+var testAccKibanaProvider *schema.Provider
+
 func init() {
 	testAccProvider = Provider().(*schema.Provider)
 	testAccProviders = map[string]terraform.ResourceProvider{
@@ -50,6 +53,20 @@ func init() {
 			return nil, err
 		}
 		return opendistroOriginalConfigureFunc(d)
+	}
+
+	testAccKibanaProvider = Provider().(*schema.Provider)
+	testAccKibanaProviders = map[string]terraform.ResourceProvider{
+		"elasticsearch": testAccKibanaProvider,
+	}
+
+	kibanaOriginalConfigureFunc := testAccKibanaProvider.ConfigureFunc
+	testAccKibanaProvider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+		err := d.Set("kibana_url", "http://127.0.0.1:5601")
+		if err != nil {
+			return nil, err
+		}
+		return kibanaOriginalConfigureFunc(d)
 	}
 }
 
