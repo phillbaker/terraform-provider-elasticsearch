@@ -1,6 +1,7 @@
 # Changelog
 ## Unreleased
 ### Changed
+- Updated AWS client to v1.37.0 for AWS SSO auth using `aws_provider_profile` (#162)
 
 ### Added
 - Support for specifying Authorization header (Bearer or ApiKey) to authenticate to elasticsearch.
