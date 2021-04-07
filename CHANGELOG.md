@@ -4,6 +4,7 @@
 
 ### Added
 - [opendistro user,role,ism policy] Retry handling for conflicts
+- [kibana alert] Add kibana alert resource
 
 ### Fixed
 

@@ -9,7 +9,9 @@ import (
 	"log"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
@@ -333,7 +335,19 @@ func flattenStringList(list []string) []interface{} {
 }
 
 func flattenStringSet(list []string) *schema.Set {
-	return schema.NewSet(schema.HashString, flattenStringList(list))
+	return flattenInterfaceSet(flattenStringList(list))
+}
+
+func flattenInterfaceSet(list []interface{}) *schema.Set {
+	return schema.NewSet(schema.HashString, list)
+}
+
+func flattenFloatSet(list []interface{}) *schema.Set {
+	hashFloat := func(v interface{}) int {
+		return hashcode.String(strconv.FormatFloat(v.(float64), 'f', -1, 64))
+	}
+
+	return schema.NewSet(hashFloat, list)
 }
 
 func expandApplicationPermissionSet(resourcesArray []interface{}) ([]XPackSecurityApplicationPrivileges, error) {
@@ -616,4 +630,51 @@ func elastic7GetVersion(client *elastic7.Client) (*version.Version, error) {
 		return nil, err
 	}
 	return version.NewVersion(versionString)
+}
+
+func toCamelCase(underScored string, startUpperCased bool) (camelCased string) {
+	isToUpper := false
+
+	for k, v := range underScored {
+		if k == 0 {
+			if startUpperCased {
+				camelCased = strings.ToUpper(string(underScored[0]))
+			} else {
+				camelCased = strings.ToLower(string(underScored[0]))
+			}
+		} else {
+			if isToUpper {
+				camelCased += strings.ToUpper(string(v))
+				isToUpper = false
+			} else {
+				if v == '_' {
+					isToUpper = true
+				} else {
+					camelCased += string(v)
+				}
+			}
+		}
+	}
+	return
+}
+
+func toUnderscore(s string) string {
+	var res = make([]rune, 0, len(s))
+	var p = '_'
+	for i, r := range s {
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) {
+			res = append(res, '_')
+		} else if unicode.IsUpper(r) && i > 0 {
+			if unicode.IsLetter(p) && !unicode.IsUpper(p) || unicode.IsDigit(p) {
+				res = append(res, '_', unicode.ToLower(r))
+			} else {
+				res = append(res, unicode.ToLower(r))
+			}
+		} else {
+			res = append(res, unicode.ToLower(r))
+		}
+
+		p = r
+	}
+	return string(res)
 }
