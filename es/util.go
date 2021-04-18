@@ -110,8 +110,13 @@ func normalizeMonitorTriggerActions(actions []interface{}) {
 
 func normalizePolicy(tpl map[string]interface{}) {
 	delete(tpl, "last_updated_time")
-	delete(tpl, "error_notification")
 	delete(tpl, "policy_id")
+	// ignore if set to null in response (ie not specified)
+	if error_notification, ok := tpl["error_notification"]; ok {
+		if error_notification == nil {
+			delete(tpl, "error_notification")
+		}
+	}
 }
 
 func normalizeIndexTemplate(tpl map[string]interface{}) {

@@ -5,6 +5,7 @@
 ### Added
 
 ### Fixed
+- Fix perpetual diff in error_notification, only delete the attribute if it's null. (#165)
 
 
 ## [1.5.5] - 2020-04-06
