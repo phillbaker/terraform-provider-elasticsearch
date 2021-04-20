@@ -47,8 +47,6 @@ func dataSourceElasticsearchOpenDistroDestination() *schema.Resource {
 func dataSourceElasticsearchOpenDistroDestinationRead(d *schema.ResourceData, m interface{}) error {
 	destinationName := d.Get("name").(string)
 
-	response := new(destinationResponse)
-
 	// See https://github.com/opendistro-for-elasticsearch/alerting/issues/70, no tags or API endpoint for searching destination
 	var id string
 	var body *json.RawMessage
@@ -73,7 +71,8 @@ func dataSourceElasticsearchOpenDistroDestinationRead(d *schema.ResourceData, m 
 		return nil
 	}
 
-	if err := json.Unmarshal(*body, response); err != nil {
+	destination := make(map[string]interface{})
+	if err := json.Unmarshal(*body, &destination); err != nil {
 		return fmt.Errorf("error unmarshalling destination body: %+v: %+v", err, body)
 	}
 
@@ -82,7 +81,7 @@ func dataSourceElasticsearchOpenDistroDestinationRead(d *schema.ResourceData, m 
 	// we get a non-uniform map[string]interface{} back for the body, terraform
 	// only accepts a mapping of string to primitive values
 	simplifiedBody := map[string]string{}
-	for key, value := range response.Destination.(map[string]interface{}) {
+	for key, value := range destination["destination"].(map[string]interface{}) {
 		if stringified, ok := value.(string); ok {
 			simplifiedBody[key] = stringified
 		} else {
