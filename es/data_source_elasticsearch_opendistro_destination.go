@@ -59,9 +59,9 @@ func dataSourceElasticsearchOpenDistroDestinationRead(d *schema.ResourceData, m 
 	}
 	switch client := esClient.(type) {
 	case *elastic7.Client:
-		id, body, err = elastic7Search(client, DESTINATION_INDEX, destinationName)
+		id, body, err = destinationElasticsearch7Search(client, DESTINATION_INDEX, destinationName)
 	case *elastic6.Client:
-		id, body, err = elastic6Search(client, DESTINATION_INDEX, destinationName)
+		id, body, err = destinationElasticsearch6Search(client, DESTINATION_INDEX, destinationName)
 	default:
 		err = errors.New("destination resource not implemented prior to Elastic v6")
 	}
@@ -93,7 +93,7 @@ func dataSourceElasticsearchOpenDistroDestinationRead(d *schema.ResourceData, m 
 	return err
 }
 
-func elastic7Search(client *elastic7.Client, index string, name string) (string, *json.RawMessage, error) {
+func destinationElasticsearch7Search(client *elastic7.Client, index string, name string) (string, *json.RawMessage, error) {
 	termQuery := elastic7.NewTermQuery(DESTINATION_NAME_FIELD, name)
 	result, err := client.Search().
 		Index(index).
@@ -112,7 +112,7 @@ func elastic7Search(client *elastic7.Client, index string, name string) (string,
 	}
 }
 
-func elastic6Search(client *elastic6.Client, index string, name string) (string, *json.RawMessage, error) {
+func destinationElasticsearch6Search(client *elastic6.Client, index string, name string) (string, *json.RawMessage, error) {
 	termQuery := elastic6.NewTermQuery(DESTINATION_NAME_FIELD, name)
 	result, err := client.Search().
 		Index(index).
