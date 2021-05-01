@@ -111,6 +111,15 @@ func normalizeMonitorTriggerActions(actions []interface{}) {
 func normalizePolicy(tpl map[string]interface{}) {
 	delete(tpl, "last_updated_time")
 	delete(tpl, "policy_id")
+	delete(tpl, "schema_version")
+	if ism_template, ok := tpl["ism_template"]; ok {
+		switch v := ism_template.(type) {
+		case map[string]interface{}:
+			delete(v, "last_updated_time")
+		default:
+			// unknown type
+		}
+	}
 	// ignore if set to null in response (ie not specified)
 	if error_notification, ok := tpl["error_notification"]; ok {
 		if error_notification == nil {
