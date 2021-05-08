@@ -1,6 +1,7 @@
 # Changelog
 ## Unreleased
 ### Changed
+- [opendistro destination] Use API to get in odfe>=1.11.0 (#158)
 
 ### Added
 
