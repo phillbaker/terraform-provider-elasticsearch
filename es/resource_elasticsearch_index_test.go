@@ -127,7 +127,6 @@ resource elasticsearch_opendistro_ism_policy "test" {
   "policy": {
     "description": "Terraform Test",
     "default_state": "hot",
-    "schema_version": 1,
     "states": [
       {
         "name": "hot",

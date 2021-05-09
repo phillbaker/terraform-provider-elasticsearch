@@ -127,7 +127,6 @@ resource "elasticsearch_opendistro_ism_policy" "test_policy" {
   {
 		"policy": {
 		  "description": "ingesting logs",
-		  "schema_version": 1,
 		  "default_state": "ingest",
 		  "error_notification": {
         "destination": {
