@@ -1,12 +1,22 @@
 # Changelog
 ## Unreleased
 ### Changed
-- [opendistro destination] Use API to get in odfe>=1.11.0 (#158)
 
 ### Added
 
 ### Fixed
-- Fix perpetual diff in error_notification, only delete the attribute if it's null. (#165)
+
+
+## [1.5.6] - 2020-05-10
+### Changed
+- [opendistro destination] Use API to get in odfe>=1.11.0 (#158)
+
+### Added
+- [aws auth] Set pass profile on assume role
+
+### Fixed
+- [opendistro ism policy] Fix perpetual diff in error_notification, only delete the attribute if it's null. (#165)
+- [opendistro monitor] Normalize IDs
 
 
 ## [1.5.5] - 2020-04-06
