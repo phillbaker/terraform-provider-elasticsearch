@@ -205,7 +205,11 @@ func resourceElasticsearchPutWatch(d *schema.ResourceData, m interface{}) (strin
 		return "", err
 	}
 
-	activateWatcher(esClient, watchID, isActive)
+	_, err = activateWatcher(esClient, watchID, isActive)
+
+	if err != nil {
+		return "", err
+	}
 
 	return watchID, nil
 }
