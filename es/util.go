@@ -114,6 +114,10 @@ func normalizePolicy(tpl map[string]interface{}) {
 	delete(tpl, "policy_id")
 	delete(tpl, "schema_version")
 	if ism_template, ok := tpl["ism_template"]; ok {
+		if ism_template == nil {
+			delete(tpl, "ism_template")
+		}
+
 		switch v := ism_template.(type) {
 		case map[string]interface{}:
 			delete(v, "last_updated_time")
