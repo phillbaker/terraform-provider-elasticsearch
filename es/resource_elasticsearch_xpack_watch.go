@@ -106,6 +106,7 @@ func resourceElasticsearchWatchRead(d *schema.ResourceData, m interface{}) error
 	}
 
 	var watch []byte
+	status := false
 
 	esClient, err := getClient(m.(*ProviderConf))
 	if err != nil {
@@ -115,9 +116,11 @@ func resourceElasticsearchWatchRead(d *schema.ResourceData, m interface{}) error
 	case *elastic7.Client:
 		watchResponse := res.(*elastic7.XPackWatcherGetWatchResponse)
 		watch, err = json.Marshal(watchResponse.Watch)
+		status = watchResponse.Status.State.Active
 	case *elastic6.Client:
 		watchResponse := res.(*elastic6.XPackWatcherGetWatchResponse)
 		watch, err = json.Marshal(watchResponse.Watch)
+		status = watchResponse.Status.State.Active
 	}
 
 	if err != nil {
@@ -127,6 +130,7 @@ func resourceElasticsearchWatchRead(d *schema.ResourceData, m interface{}) error
 	ds := &resourceDataSetter{d: d}
 	ds.set("body", string(watch))
 	ds.set("watch_id", d.Id())
+	ds.set("active", status)
 
 	return ds.err
 }
