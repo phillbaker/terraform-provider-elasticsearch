@@ -32,10 +32,11 @@ var xPackWatchSchema = map[string]*schema.Schema{
 		},
 	},
 	"active": {
-		Type:     schema.TypeBool,
-		Required: false,
-		Optional: true,
-		Default:  true,
+		Type:        schema.TypeBool,
+		Required:    false,
+		Optional:    true,
+		Default:     true,
+		Description: "Boolean to activate the xpack watcher, defaults `true`",
 	},
 }
 

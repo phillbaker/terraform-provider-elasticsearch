@@ -3,13 +3,8 @@
 ### Changed
 
 ### Added
-
-### [1.5.7] - 2021-05-17
-
-### Changed
-
-### Added
 - [xpack watcher] Ability to deactivate a watcher. (#173)
+
 ### Fixed
 
 ## [1.5.6] - 2020-05-10
