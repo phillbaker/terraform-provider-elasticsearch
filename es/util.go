@@ -118,9 +118,13 @@ func normalizePolicy(tpl map[string]interface{}) {
 			delete(tpl, "ism_template")
 		}
 
-		switch v := ism_template.(type) {
+		switch templates := ism_template.(type) {
 		case map[string]interface{}:
-			delete(v, "last_updated_time")
+			delete(templates, "last_updated_time")
+		case []map[string]interface{}:
+			for _, t := range templates {
+				delete(t, "last_updated_time")
+			}
 		default:
 			// unknown type
 		}
