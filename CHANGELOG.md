@@ -3,10 +3,10 @@
 ### Changed
 
 ### Added
+- [xpack watcher] Ability to deactivate a watcher. (#173)
 
 ### Fixed
 - [opendistro ism policy] Fix perpetual diff in ism_template if not specified
-
 
 ## [1.5.6] - 2020-05-10
 ### Changed

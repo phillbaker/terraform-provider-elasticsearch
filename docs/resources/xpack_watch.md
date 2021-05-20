@@ -16,6 +16,7 @@ Provides an Elasticsearch xpack watch resource.
 # Create an xpack watch
 resource "elasticsearch_xpack_watch" "watch_1" {
   name = "watch_1"
+  active = true
   body = <<EOF
 {
   "trigger": {
@@ -83,6 +84,7 @@ The following arguments are supported:
 
 * `name` - (Required) The name of the xpack watch.
 * `body` - (Required) The JSON body of the xpack watch.
+* `active` - (Optional) Boolean to activate the xpack watcher, defaults `true`
 
 ## Attributes Reference
 

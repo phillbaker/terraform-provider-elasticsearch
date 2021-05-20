@@ -31,6 +31,13 @@ var xPackWatchSchema = map[string]*schema.Schema{
 			return json
 		},
 	},
+	"active": {
+		Type:        schema.TypeBool,
+		Required:    false,
+		Optional:    true,
+		Default:     true,
+		Description: "Boolean to activate the xpack watcher, defaults `true`",
+	},
 }
 
 func resourceElasticsearchDeprecatedWatch() *schema.Resource {
@@ -100,6 +107,7 @@ func resourceElasticsearchWatchRead(d *schema.ResourceData, m interface{}) error
 	}
 
 	var watch []byte
+	status := false
 
 	esClient, err := getClient(m.(*ProviderConf))
 	if err != nil {
@@ -109,9 +117,11 @@ func resourceElasticsearchWatchRead(d *schema.ResourceData, m interface{}) error
 	case *elastic7.Client:
 		watchResponse := res.(*elastic7.XPackWatcherGetWatchResponse)
 		watch, err = json.Marshal(watchResponse.Watch)
+		status = watchResponse.Status.State.Active
 	case *elastic6.Client:
 		watchResponse := res.(*elastic6.XPackWatcherGetWatchResponse)
 		watch, err = json.Marshal(watchResponse.Watch)
+		status = watchResponse.Status.State.Active
 	}
 
 	if err != nil {
@@ -121,6 +131,7 @@ func resourceElasticsearchWatchRead(d *schema.ResourceData, m interface{}) error
 	ds := &resourceDataSetter{d: d}
 	ds.set("body", string(watch))
 	ds.set("watch_id", d.Id())
+	ds.set("active", status)
 
 	return ds.err
 }
@@ -175,6 +186,7 @@ func resourceElasticsearchGetWatch(watchID string, m interface{}) (interface{}, 
 func resourceElasticsearchPutWatch(d *schema.ResourceData, m interface{}) (string, error) {
 	watchID := d.Get("watch_id").(string)
 	watchJSON := d.Get("body").(string)
+	isActive := d.Get("active").(bool)
 
 	var err error
 	esClient, err := getClient(m.(*ProviderConf))
@@ -198,5 +210,38 @@ func resourceElasticsearchPutWatch(d *schema.ResourceData, m interface{}) (strin
 		return "", err
 	}
 
+	_, err = activateWatcher(esClient, watchID, isActive)
+
+	if err != nil {
+		return "", err
+	}
+
 	return watchID, nil
+}
+
+// turn on or off the watcher
+func activateWatcher(esClient interface{}, watchID string, isActive bool) (string, error) {
+	var err error
+	switch client := esClient.(type) {
+	case *elastic7.Client:
+		if isActive {
+			_, err = client.XPackWatchActivate(watchID).Do(context.TODO())
+		} else {
+			_, err = client.XPackWatchDeactivate(watchID).Do(context.TODO())
+		}
+	case *elastic6.Client:
+		if isActive {
+			_, err = client.XPackWatchActivate(watchID).Do(context.TODO())
+		} else {
+			_, err = client.XPackWatchDeactivate(watchID).Do(context.TODO())
+		}
+	default:
+		err = errors.New("watch resource not implemented prior to Elastic v6")
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	return "", err
 }
