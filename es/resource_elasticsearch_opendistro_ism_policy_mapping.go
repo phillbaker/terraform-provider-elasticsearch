@@ -82,7 +82,8 @@ func resourceElasticsearchOpenDistroISMPolicyMappingRead(d *schema.ResourceData,
 
 	// If there is no managed indexes we can remove that resource
 	for indexName, parameters := range indices {
-		if parameters.(map[string]interface{})["index.opendistro.index_state_management.policy_id"] == policyName {
+		p, ok := parameters.(map[string]interface{})
+		if ok && p["index.opendistro.index_state_management.policy_id"] == policyName {
 			concernIndexes = append(concernIndexes, indexName)
 		}
 	}

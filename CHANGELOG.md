@@ -7,6 +7,7 @@
 
 ### Fixed
 - [opendistro ism policy] Fix perpetual diff in ism_template if not specified
+- [opendistro ism mapping] Fix provider crash when using ODFE >= 1.13.0
 
 ## [1.5.6] - 2020-05-10
 ### Changed
