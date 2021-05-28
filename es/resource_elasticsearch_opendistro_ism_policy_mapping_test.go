@@ -38,6 +38,7 @@ func TestAccElasticsearchOpenDistroISMPolicyMapping(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
+			// TODO add check for OpenDistro <= 1.13
 			if !allowed {
 				t.Skip("OpenDistroISMPolicies only supported on ES 7.")
 			}
@@ -47,6 +48,17 @@ func TestAccElasticsearchOpenDistroISMPolicyMapping(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccElasticsearchOpenDistroISMPolicyMapping,
+				Check: resource.ComposeTestCheckFunc(
+					testCheckElasticsearchOpenDistroISMPolicyMappingExists("elasticsearch_opendistro_ism_policy_mapping.test_mapping"),
+					resource.TestCheckResourceAttr(
+						"elasticsearch_opendistro_ism_policy_mapping.test_mapping",
+						"policy_id",
+						"test_policy",
+					),
+				),
+			},
+			{
+				Config: testAccElasticsearchOpenDistroISMPolicyMappingUpdate,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchOpenDistroISMPolicyMappingExists("elasticsearch_opendistro_ism_policy_mapping.test_mapping"),
 					resource.TestCheckResourceAttr(
@@ -137,16 +149,12 @@ resource "elasticsearch_opendistro_ism_policy" "test_policy" {
 	body      = <<EOF
  {
 	"policy": {
-	  "description": "ingesting logs",
+	  "description": "ingesting logs into ${elasticsearch_index.test.name}",
 	  "default_state": "ingest",
 	  "states": [
 			{
 			  "name": "ingest",
-			  "actions": [{
-				  "rollover": {
-					  "min_doc_count": 5
-				  }
-				}],
+			  "actions": [],
 			  "transitions": [{
 				  "state_name": "search"
 				}]
@@ -162,12 +170,57 @@ resource "elasticsearch_opendistro_ism_policy" "test_policy" {
  EOF
 }
 
+resource "elasticsearch_index" "test" {
+  name = "ingest-0001"
+  number_of_shards = 1
+  number_of_replicas = 1
+}
+
 resource "elasticsearch_opendistro_ism_policy_mapping" "test_mapping" {
 	policy_id = "${elasticsearch_opendistro_ism_policy.test_policy.id}"
-	indexes = "*"
-	#state = "search"
-	#include = [{
-  #    state = "ingest"
-  #}]
+	indexes = "ingest-*"
+}
+`
+
+var testAccElasticsearchOpenDistroISMPolicyMappingUpdate = `
+resource "elasticsearch_opendistro_ism_policy" "test_policy" {
+	policy_id = "test_policy"
+	body      = <<EOF
+ {
+	"policy": {
+	  "description": "ingesting logs into ${elasticsearch_index.test.name}",
+	  "default_state": "ingest",
+	  "states": [
+			{
+			  "name": "ingest",
+			  "actions": [],
+			  "transitions": [{
+				  "state_name": "search"
+				}]
+			},
+			{
+			  "name": "search",
+			  "actions": [],
+			  "transitions": []
+			}
+		]
+	}
+ }
+ EOF
+}
+
+resource "elasticsearch_index" "test" {
+  name = "ingest-0001"
+  number_of_shards = 1
+  number_of_replicas = 1
+}
+
+resource "elasticsearch_opendistro_ism_policy_mapping" "test_mapping" {
+	policy_id = "${elasticsearch_opendistro_ism_policy.test_policy.id}"
+	indexes = "ingest-*"
+	state = "search"
+	include = [{
+    state = "ingest"
+  }]
 }
 `

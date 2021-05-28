@@ -1,6 +1,8 @@
 # Changelog
 ## Unreleased
 ### Changed
+- [opendistro ISM policy mapping] Poll for updates to mapped indices.
+- [opendistro ISM policy mapping] Mark as deprecated based on ODFE marking `opendistro.index_state_management.policy_id` as deprecated starting from version 1.13.0.
 
 ### Added
 - [xpack watcher] Ability to deactivate a watcher. (#173)

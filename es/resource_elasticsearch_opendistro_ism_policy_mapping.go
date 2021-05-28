@@ -6,7 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/olivere/elastic/uritemplates"
 
@@ -59,39 +61,84 @@ func resourceElasticsearchOpenDistroISMPolicyMapping() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(5 * time.Minute),
+		},
+		DeprecationMessage: "elasticsearch_opendistro_ism_policy_mapping is deprecated in ODFE 1.13.x please use ism_template attribute in policies instead.",
 	}
 }
 
 func resourceElasticsearchOpenDistroISMPolicyMappingCreate(d *schema.ResourceData, m interface{}) error {
-	if _, err := resourceElasticsearchPostOpendistroPolicyMapping(d, m, "add"); err != nil {
-		return err
-	}
-
-	return resourceElasticsearchOpenDistroISMPolicyMappingRead(d, m)
-}
-
-func resourceElasticsearchOpenDistroISMPolicyMappingRead(d *schema.ResourceData, m interface{}) error {
-	indexPattern := d.Get("indexes").(string)
-	indices, err := resourceElasticsearchGetOpendistroPolicyMapping(indexPattern, m)
-	concernIndexes := []string{}
-	policyName := d.Get("policy_id").(string)
-
+	resp, err := resourceElasticsearchPostOpendistroPolicyMapping(d, m, "add")
+	log.Printf("[INFO] resourceElasticsearchOpenDistroISMPolicyMappingCreate %+v", resp)
 	if err != nil {
 		return err
 	}
 
-	// If there is no managed indexes we can remove that resource
+	indexPattern := d.Get("indexes").(string)
+	policyID := d.Get("policy_id").(string)
+
+	return resource.Retry(d.Timeout(schema.TimeoutCreate), resourceElasticsearchOpenDistroISMPolicyMappingRetry(indexPattern, policyID, d, m))
+}
+
+// From https://opendistro.github.io/for-elasticsearch-docs/docs/im/ism/api/#update-managed-index-policy
+// A policy change is an asynchronous background process. The changes are
+// queued and are not executed immediately by the background process. This
+// delay in execution protects the currently running managed indices from
+// being put into a broken state. If the policy you are changing to has only
+// some small configuration changes, then the change takes place immediately.
+// If the change modifies the state, actions, or the order of actions of the
+// current state the index is in, then the change happens at the end of its
+// current state before transitioning to a new state.
+func resourceElasticsearchOpenDistroISMPolicyMappingRetry(indexPattern string, policyID string, d *schema.ResourceData, m interface{}) func() *resource.RetryError {
+	return func() *resource.RetryError {
+		indices, err := resourceElasticsearchOpendistroPolicyIndices(indexPattern, policyID, m)
+
+		if err != nil {
+			return resource.NonRetryableError(err)
+		}
+
+		// This isn't a great test, index patterns with a glob could in theory
+		// match zero indices or more
+		if len(indices) == 0 {
+			return resource.RetryableError(fmt.Errorf("Expected at least one index to be mapped, but found %d", len(indices)))
+		}
+
+		return resource.NonRetryableError(resourceElasticsearchOpenDistroISMPolicyMappingRead(d, m))
+	}
+}
+
+func resourceElasticsearchOpendistroPolicyIndices(indexPattern string, policyID string, m interface{}) ([]string, error) {
+	indices, err := resourceElasticsearchGetOpendistroPolicyMapping(indexPattern, m)
+	mappedIndexes := []string{}
+
+	if err != nil {
+		return mappedIndexes, err
+	}
+
 	for indexName, parameters := range indices {
 		p, ok := parameters.(map[string]interface{})
-		if ok && p["index.opendistro.index_state_management.policy_id"] == policyName {
-			concernIndexes = append(concernIndexes, indexName)
+		if ok && p["index.opendistro.index_state_management.policy_id"] == policyID {
+			mappedIndexes = append(mappedIndexes, indexName)
 		}
 	}
 
-	log.Printf("[INFO] resourceElasticsearchOpenDistroISMPolicyMappingRead %+v %+v %+v", indexPattern, indices, concernIndexes)
+	log.Printf("[INFO] resourceElasticsearchOpenDistroISMPolicyMappingRead %+v %+v %+v", indexPattern, indices, mappedIndexes)
+	return mappedIndexes, nil
+}
+
+func resourceElasticsearchOpenDistroISMPolicyMappingRead(d *schema.ResourceData, m interface{}) error {
+	indexPattern := d.Get("indexes").(string)
+	policyID := d.Get("policy_id").(string)
+
+	indices, err := resourceElasticsearchOpendistroPolicyIndices(indexPattern, policyID, m)
+	if err != nil {
+		return err
+	}
 
 	// If there is no managed indices, remove the resource
-	if len(concernIndexes) == 0 {
+	if len(indices) == 0 {
 		log.Printf("[INFO] no managed indices, removing mapping")
 		d.SetId("")
 		return nil
@@ -100,12 +147,7 @@ func resourceElasticsearchOpenDistroISMPolicyMappingRead(d *schema.ResourceData,
 	d.SetId(d.Get("indexes").(string))
 
 	ds := &resourceDataSetter{d: d}
-	ds.set("managed_indexes", concernIndexes)
-
-	// TODO
-	// state
-	// include
-	// is_safe
+	ds.set("managed_indexes", indices)
 
 	return ds.err
 }
@@ -120,7 +162,10 @@ func resourceElasticsearchOpenDistroISMPolicyMappingUpdate(d *schema.ResourceDat
 		return err
 	}
 
-	return resourceElasticsearchOpenDistroISMPolicyMappingRead(d, m)
+	indexPattern := d.Get("indexes").(string)
+	policyID := d.Get("policy_id").(string)
+
+	return resource.Retry(d.Timeout(schema.TimeoutUpdate), resourceElasticsearchOpenDistroISMPolicyMappingRetry(indexPattern, policyID, d, m))
 }
 
 func resourceElasticsearchOpenDistroISMPolicyMappingDelete(d *schema.ResourceData, m interface{}) error {
@@ -134,7 +179,6 @@ func resourceElasticsearchOpenDistroISMPolicyMappingDelete(d *schema.ResourceDat
 }
 
 func resourceElasticsearchPostOpendistroPolicyMapping(d *schema.ResourceData, m interface{}, action string) (*PolicyMappingResponse, error) {
-
 	response := new(PolicyMappingResponse)
 	requestBody := ""
 
@@ -247,8 +291,9 @@ func resourceElasticsearchGetOpendistroPolicyMapping(indexPattern string, m inte
 }
 
 type PolicyMappingResponse struct {
-	Failures      bool          `json:"failures"`
-	FailedIndices []interface{} `json:"failed_indices"`
+	UpdatedIndices int           `json:"updated_indices"`
+	Failures       bool          `json:"failures"`
+	FailedIndices  []interface{} `json:"failed_indices"`
 }
 
 type PolicyMapping struct {
