@@ -87,7 +87,7 @@ func Provider() terraform.ResourceProvider {
 			"token": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "",
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_TOKEN", nil),
 				Description: "A bearer token or ApiKey for an Authorization header, e.g. Active Directory API key.",
 			},
 			"token_name": {
