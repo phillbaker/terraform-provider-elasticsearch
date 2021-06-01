@@ -95,6 +95,9 @@ jobs:
           ./script/wait-for-endpoint http://admin:admin@localhost:9220
           curl -s -v -X POST -H 'Content-type: application/json'  -d '{"name":"_warmup","type":"slack","slack":{"url": "http://www.example.com"}}' http://admin:admin@localhost:9220/_opendistro/_alerting/destinations
         fi
+    - name: Dump docker logs on failure
+      if: failure()
+      uses: jwalton/gh-docker-logs@v2
     - name: Run the tests
       run: |
         export ELASTICSEARCH_URL=http://localhost:9200
