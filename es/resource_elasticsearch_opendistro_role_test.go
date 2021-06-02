@@ -15,7 +15,6 @@ import (
 )
 
 func TestAccElasticsearchOpenDistroRole(t *testing.T) {
-
 	provider := Provider().(*schema.Provider)
 	err := provider.Configure(&terraform.ResourceConfig{})
 	if err != nil {
@@ -134,6 +133,51 @@ func TestAccElasticsearchOpenDistroRole(t *testing.T) {
 						"2",
 					),
 				),
+			},
+		},
+	})
+}
+
+func TestAccElasticsearchOpenDistroRole_importBasic(t *testing.T) {
+	provider := Provider().(*schema.Provider)
+	err := provider.Configure(&terraform.ResourceConfig{})
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	var allowed bool
+	switch esClient.(type) {
+	case *elastic5.Client:
+		allowed = false
+	case *elastic6.Client:
+		allowed = false
+	default:
+		allowed = true
+	}
+
+	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+			if !allowed {
+				t.Skip("Roles only supported on ES >= 7")
+			}
+		},
+		Providers:    testAccOpendistroProviders,
+		CheckDestroy: testAccCheckElasticsearchOpenDistroRoleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccOpenDistroRoleResource(randomName),
+			},
+			{
+				ResourceName:      "elasticsearch_opendistro_role.test",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

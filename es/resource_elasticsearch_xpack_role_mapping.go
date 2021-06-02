@@ -81,17 +81,17 @@ func resourceElasticsearchXpackRoleMappingRead(d *schema.ResourceData, m interfa
 	roleMapping, err := xpackGetRoleMapping(d, m, d.Id())
 	if err != nil {
 		fmt.Println("Error during read")
-		if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic7.Error); ok && elastic7.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] Role mapping %s not found. Removing from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic6.Error); ok && elastic6.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] Role mapping %s not found. Removing from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic5.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic5.Error); ok && elastic5.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] Role mapping %s not found. Removing from state\n", d.Id())
 			d.SetId("")
 			return nil
@@ -127,17 +127,17 @@ func resourceElasticsearchXpackRoleMappingDelete(d *schema.ResourceData, m inter
 	err := xpackDeleteRoleMapping(d, m, d.Id())
 	if err != nil {
 		fmt.Println("Error during destroy")
-		if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic7.Error); ok && elastic7.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] Role mapping %s not found. Resource removed from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic6.Error); ok && elastic6.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] Role mapping %s not found. Resource removed from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic5.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic5.Error); ok && elastic5.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] Role mapping %s not found. Resource removed from state\n", d.Id())
 			d.SetId("")
 			return nil
@@ -172,16 +172,16 @@ func xpackPutRoleMapping(d *schema.ResourceData, m interface{}, name string, bod
 	if err != nil {
 		return err
 	}
-	if client, ok := esClient.(*elastic7.Client); ok {
+	switch client := esClient.(type) {
+	case *elastic7.Client:
 		return elastic7PutRoleMapping(client, name, body)
-	}
-	if client, ok := esClient.(*elastic6.Client); ok {
+	case *elastic6.Client:
 		return elastic6PutRoleMapping(client, name, body)
-	}
-	if client, ok := esClient.(*elastic5.Client); ok {
+	case *elastic5.Client:
 		return elastic5PutRoleMapping(client, name, body)
+	default:
+		return errors.New("unhandled client type")
 	}
-	return errors.New("unhandled client type")
 }
 
 func xpackGetRoleMapping(d *schema.ResourceData, m interface{}, name string) (XPackSecurityRoleMapping, error) {
@@ -189,16 +189,16 @@ func xpackGetRoleMapping(d *schema.ResourceData, m interface{}, name string) (XP
 	if err != nil {
 		return XPackSecurityRoleMapping{}, err
 	}
-	if client, ok := esClient.(*elastic7.Client); ok {
+	switch client := esClient.(type) {
+	case *elastic7.Client:
 		return elastic7GetRoleMapping(client, name)
-	}
-	if client, ok := esClient.(*elastic6.Client); ok {
+	case *elastic6.Client:
 		return elastic6GetRoleMapping(client, name)
-	}
-	if client, ok := esClient.(*elastic5.Client); ok {
+	case *elastic5.Client:
 		return elastic5GetRoleMapping(client, name)
+	default:
+		return XPackSecurityRoleMapping{}, errors.New("unhandled client type")
 	}
-	return XPackSecurityRoleMapping{}, errors.New("unhandled client type")
 }
 
 func xpackDeleteRoleMapping(d *schema.ResourceData, m interface{}, name string) error {
@@ -206,16 +206,16 @@ func xpackDeleteRoleMapping(d *schema.ResourceData, m interface{}, name string) 
 	if err != nil {
 		return err
 	}
-	if client, ok := esClient.(*elastic7.Client); ok {
+	switch client := esClient.(type) {
+	case *elastic7.Client:
 		return elastic7DeleteRoleMapping(client, name)
-	}
-	if client, ok := esClient.(*elastic6.Client); ok {
+	case *elastic6.Client:
 		return elastic6DeleteRoleMapping(client, name)
-	}
-	if client, ok := esClient.(*elastic5.Client); ok {
+	case *elastic5.Client:
 		return elastic5DeleteRoleMapping(client, name)
+	default:
+		return errors.New("unhandled client type")
 	}
-	return errors.New("unhandled client type")
 }
 
 func elastic5PutRoleMapping(client *elastic5.Client, name string, body string) error {

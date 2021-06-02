@@ -108,7 +108,7 @@ func testCheckElasticsearchOpenDistroDestinationExists(name string) resource.Tes
 		meta := testAccOpendistroProvider.Meta()
 
 		var err error
-		_, err = resourceElasticsearchOpenDistroGetDestination(rs.Primary.ID, meta.(*ProviderConf))
+		_, err = resourceElasticsearchOpenDistroQueryOrGetDestination(rs.Primary.ID, meta.(*ProviderConf))
 
 		if err != nil {
 			return err
@@ -133,9 +133,9 @@ func testCheckElasticsearchOpenDistroDestinationDestroy(s *terraform.State) erro
 		}
 		switch esClient.(type) {
 		case *elastic7.Client:
-			_, err = resourceElasticsearchOpenDistroGetDestination(rs.Primary.ID, meta.(*ProviderConf))
+			_, err = resourceElasticsearchOpenDistroQueryOrGetDestination(rs.Primary.ID, meta.(*ProviderConf))
 		case *elastic6.Client:
-			_, err = resourceElasticsearchOpenDistroGetDestination(rs.Primary.ID, meta.(*ProviderConf))
+			_, err = resourceElasticsearchOpenDistroQueryOrGetDestination(rs.Primary.ID, meta.(*ProviderConf))
 		default:
 		}
 

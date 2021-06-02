@@ -47,10 +47,56 @@ func TestAccElasticsearchWatch(t *testing.T) {
 				Config: testAccElasticsearchWatch,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchWatchExists("elasticsearch_xpack_watch.test_watch"),
+					testCheckElasticsearchWatchDeactivated("elasticsearch_xpack_watch.test_watch"),
 				),
 			},
 		},
 	})
+}
+
+func testCheckElasticsearchWatchDeactivated(name string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("Not found: %s", name)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No watch ID is set")
+		}
+
+		meta := testAccXPackProvider.Meta()
+
+		var err error
+		esClient, err := getClient(meta.(*ProviderConf))
+		if err != nil {
+			return err
+		}
+		switch client := esClient.(type) {
+		case *elastic7.Client:
+			watcher, err := client.XPackWatchGet("my_watch").Do(context.TODO())
+			if err != nil {
+				return err
+			}
+			if watcher.Status.State.Active {
+				return fmt.Errorf("Watcher should be in deactivate state")
+			}
+		case *elastic6.Client:
+			watcher, err := client.XPackWatchGet("my_watch").Do(context.TODO())
+			if err != nil {
+				return err
+			}
+			if watcher.Status.State.Active {
+				return fmt.Errorf("Watcher should be in deactivate state")
+			}
+		default:
+		}
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
 }
 
 func testCheckElasticsearchWatchExists(name string) resource.TestCheckFunc {
@@ -120,6 +166,7 @@ func testCheckElasticsearchWatchDestroy(s *terraform.State) error {
 var testAccElasticsearchWatch = `
 resource "elasticsearch_xpack_watch" "test_watch" {
   watch_id = "my_watch"
+  active = false
   body = <<EOF
 {
   "input": {

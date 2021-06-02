@@ -53,6 +53,7 @@ func TestAccElasticsearchOpenDistroUser(t *testing.T) {
 				Config: testAccOpenDistroUserResource(randomName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticSearchOpenDistroUserExists("elasticsearch_opendistro_user.test"),
+					testCheckElasticSearchOpenDistroUserConnects("elasticsearch_opendistro_user.test"),
 					resource.TestCheckResourceAttr(
 						"elasticsearch_opendistro_user.test",
 						"id",
@@ -256,7 +257,7 @@ func testAccOpenDistroUserResourceUpdated(resourceName string) string {
 	}
 
 	resource "elasticsearch_opendistro_roles_mapping" "security_role" {
-		role_name = "monitor_role"
+		role_name = "${elasticsearch_opendistro_role.security_role.id}"
 		backend_roles = ["monitor_role"]
 	}
 	`, resourceName)

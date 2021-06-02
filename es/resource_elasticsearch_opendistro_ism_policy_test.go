@@ -127,50 +127,56 @@ resource "elasticsearch_opendistro_ism_policy" "test_policy" {
 	policy_id = "test_policy"
 	body      = <<EOF
   {
-	"policy": {
-	  "description": "ingesting logs",
-	  "schema_version": 1,
-	  "default_state": "ingest",
-	  "states": [
-		{
-		  "name": "ingest",
-		  "actions": [
-			{
-			  "rollover": {
-				"min_doc_count": 5
-			  }
-			}
-		  ],
-		  "transitions": [
-			{
-			  "state_name": "search"
-			}
-		  ]
-		},
-		{
-		  "name": "search",
-		  "actions": [],
-		  "transitions": [
-			{
-			  "state_name": "delete",
-			  "conditions": {
-				"min_index_age": "5m"
-			  }
-			}
-		  ]
-		},
-		{
-		  "name": "delete",
-		  "actions": [
-			{
-			  "delete": {}
-			}
-		  ],
-		  "transitions": []
+		"policy": {
+		  "description": "ingesting logs",
+		  "default_state": "ingest",
+      "ism_template": {
+        "index_patterns": ["foo-*"],
+        "priority": 0
+			},
+		  "error_notification": {
+        "destination": {
+          "slack": {
+            "url": "https://webhook.slack.example.com"
+          }
+        },
+        "message_template": {
+          "lang": "mustache",
+          "source": "The index *{{ctx.index}}* failed to rollover."
+        }
+      },
+		  "states": [
+				{
+				  "name": "ingest",
+				  "actions": [{
+					  "rollover": {
+						"min_doc_count": 5
+					  }
+					}],
+				  "transitions": [{
+					  "state_name": "search"
+					}]
+				},
+				{
+				  "name": "search",
+				  "actions": [],
+				  "transitions": [{
+					  "state_name": "delete",
+					  "conditions": {
+						"min_index_age": "5m"
+					  }
+					}]
+				},
+				{
+				  "name": "delete",
+				  "actions": [{
+					  "delete": {}
+					}],
+				  "transitions": []
+				}
+			]
 		}
-	  ]
 	}
-  }
   EOF
 }
 `

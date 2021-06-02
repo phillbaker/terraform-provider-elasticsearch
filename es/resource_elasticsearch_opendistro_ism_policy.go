@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"net/url"
 	"strconv"
 
@@ -233,10 +234,11 @@ func resourceElasticsearchPutOpenDistroISMPolicy(d *schema.ResourceData, m inter
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
-			Method: "PUT",
-			Path:   path,
-			Params: params,
-			Body:   string(policyJSON),
+			Method:           "PUT",
+			Path:             path,
+			Params:           params,
+			Body:             string(policyJSON),
+			RetryStatusCodes: []int{http.StatusConflict},
 		})
 		if err != nil {
 			return response, fmt.Errorf("error putting policy: %+v : %+v : %+v", path, policyJSON, err)

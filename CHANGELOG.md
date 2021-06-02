@@ -1,11 +1,47 @@
 # Changelog
 ## Unreleased
 ### Changed
+- [opendistro ISM policy mapping] Poll for updates to mapped indices.
+- [opendistro ISM policy mapping] Mark as deprecated based on ODFE marking `opendistro.index_state_management.policy_id` as deprecated starting from version 1.13.0.
 
 ### Added
+- [xpack watcher] Ability to deactivate a watcher. (#173)
 
 ### Fixed
+- [opendistro ism policy] Fix perpetual diff in ism_template if not specified
+- [opendistro ism mapping] Fix provider crash when using ODFE >= 1.13.0
+
+## [1.5.6] - 2020-05-10
+### Changed
+- [opendistro destination] Use API to get in odfe>=1.11.0 (#158)
+
+### Added
+- [aws auth] Set pass profile on assume role
+
+### Fixed
+- [opendistro ism policy] Fix perpetual diff in error_notification, only delete the attribute if it's null. (#165)
+- [opendistro monitor] Normalize IDs
+
+
+## [1.5.5] - 2020-04-06
+### Changed
+- Updated AWS client to v1.37.0 for AWS SSO auth using `aws_provider_profile` (#162)
+
+### Added
+- Support for specifying Authorization header (Bearer or ApiKey) to authenticate to elasticsearch.
+
+### Fixed
+- [opendistro ism] Retry on 409.
+
+
+## [1.5.4] - 2020-03-17
+### Fixed
+- [opendistro destination] normalize destination for nested "id" key in newer versions of ES (#148)
 - [index] Handle not found on resource read
+- [opendistro role] Fix crash on import (#150)
+- [opendistro/xpack user] Fix user update leading to the password being set to the hashed value
+#157
+
 
 ## [1.5.3] - 2020-02-18
 ### Changed
@@ -41,7 +77,6 @@
 
 ### Added
 - Composable Index Template resource, available in ESv7.8+
-
 
 ## [1.5.0] - 2020-10-26
 ### Changed

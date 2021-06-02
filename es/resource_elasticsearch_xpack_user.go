@@ -105,17 +105,17 @@ func resourceElasticsearchXpackUserRead(d *schema.ResourceData, m interface{}) e
 	user, err := xpackGetUser(d, m, d.Id())
 	if err != nil {
 		fmt.Println("Error during read")
-		if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic7.Error); ok && elastic7.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] User %s not found. Removing from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic6.Error); ok && elastic6.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] User %s not found. Removing from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic5.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic5.Error); ok && elastic5.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] User %s not found. Removing from state\n", d.Id())
 			d.SetId("")
 			return nil
@@ -152,17 +152,17 @@ func resourceElasticsearchXpackUserDelete(d *schema.ResourceData, m interface{})
 	err := xpackDeleteUser(d, m, d.Id())
 	if err != nil {
 		fmt.Println("Error during destroy")
-		if elasticErr, ok := err.(*elastic7.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic7.Error); ok && elastic7.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] User %s not found. Resource removed from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic6.Error); ok && elastic6.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] User %s not found. Resource removed from state\n", d.Id())
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic5.Error); ok && elasticErr.Status == 404 {
+		if elasticErr, ok := err.(*elastic5.Error); ok && elastic5.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] User %s not found. Resource removed from state\n", d.Id())
 			d.SetId("")
 			return nil
@@ -186,11 +186,11 @@ func buildPutUserBody(d *schema.ResourceData, m interface{}) (string, error) {
 		Username: username,
 		Roles:    roles,
 		Fullname: fullname,
-		Password: password,
 		Email:    email,
 		Enabled:  enabled,
 		Metadata: optionalInterfaceJson(metadata),
 	}
+
 	if d.HasChange("password") {
 		user.Password = password
 	}
@@ -203,7 +203,7 @@ func buildPutUserBody(d *schema.ResourceData, m interface{}) (string, error) {
 		fmt.Printf("Body : %s", body)
 		err = fmt.Errorf("Body Error : %s", body)
 	}
-	log.Printf("[INFO] put body: %+v", body)
+	log.Printf("[INFO] put body: %+v", user)
 	return string(body[:]), err
 }
 
@@ -212,16 +212,16 @@ func xpackPutUser(d *schema.ResourceData, m interface{}, name string, body strin
 	if err != nil {
 		return err
 	}
-	if client, ok := esClient.(*elastic7.Client); ok {
+	switch client := esClient.(type) {
+	case *elastic7.Client:
 		return elastic7PutUser(client, name, body)
-	}
-	if client, ok := esClient.(*elastic6.Client); ok {
+	case *elastic6.Client:
 		return elastic6PutUser(client, name, body)
-	}
-	if client, ok := esClient.(*elastic5.Client); ok {
+	case *elastic5.Client:
 		return elastic5PutUser(client, name, body)
+	default:
+		return errors.New("unhandled client type")
 	}
-	return errors.New("unhandled client type")
 }
 
 func xpackGetUser(d *schema.ResourceData, m interface{}, name string) (XPackSecurityUser, error) {
@@ -229,16 +229,16 @@ func xpackGetUser(d *schema.ResourceData, m interface{}, name string) (XPackSecu
 	if err != nil {
 		return XPackSecurityUser{}, err
 	}
-	if client, ok := esClient.(*elastic7.Client); ok {
+	switch client := esClient.(type) {
+	case *elastic7.Client:
 		return elastic7GetUser(client, name)
-	}
-	if client, ok := esClient.(*elastic6.Client); ok {
+	case *elastic6.Client:
 		return elastic6GetUser(client, name)
-	}
-	if client, ok := esClient.(*elastic5.Client); ok {
+	case *elastic5.Client:
 		return elastic5GetUser(client, name)
+	default:
+		return XPackSecurityUser{}, errors.New("unhandled client type")
 	}
-	return XPackSecurityUser{}, errors.New("unhandled client type")
 }
 
 func xpackDeleteUser(d *schema.ResourceData, m interface{}, name string) error {
@@ -246,16 +246,16 @@ func xpackDeleteUser(d *schema.ResourceData, m interface{}, name string) error {
 	if err != nil {
 		return err
 	}
-	if client, ok := esClient.(*elastic7.Client); ok {
+	switch client := esClient.(type) {
+	case *elastic7.Client:
 		return elastic7DeleteUser(client, name)
-	}
-	if client, ok := esClient.(*elastic6.Client); ok {
+	case *elastic6.Client:
 		return elastic6DeleteUser(client, name)
-	}
-	if client, ok := esClient.(*elastic5.Client); ok {
+	case *elastic5.Client:
 		return elastic5DeleteUser(client, name)
+	default:
+		return errors.New("unhandled client type")
 	}
-	return errors.New("unhandled client type")
 }
 
 func elastic5PutUser(client *elastic5.Client, name string, body string) error {

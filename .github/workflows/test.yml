@@ -23,7 +23,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.14.x]
+        go-version: [1.16.x]
         os: [ubuntu-latest]
         es-major-version:
           - "5"
@@ -38,7 +38,7 @@ jobs:
           ES_OPENDISTRO_IMAGE: "ghcr.io/phillbaker/opendistro-for-elasticsearch:0.10.0"
         - es-major-version: "7"
           es-version: 7.9.3
-          ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:1.6.0"
+          ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:1.13.2"
     needs: [lint]
     name: Test against ES ${{ matrix.es-major-version }} on ${{ matrix.go-version }}/${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -95,6 +95,9 @@ jobs:
           ./script/wait-for-endpoint http://admin:admin@localhost:9220
           curl -s -v -X POST -H 'Content-type: application/json'  -d '{"name":"_warmup","type":"slack","slack":{"url": "http://www.example.com"}}' http://admin:admin@localhost:9220/_opendistro/_alerting/destinations
         fi
+    - name: Dump docker logs on failure
+      if: failure()
+      uses: jwalton/gh-docker-logs@v2
     - name: Run the tests
       run: |
         export ELASTICSEARCH_URL=http://localhost:9200
@@ -116,7 +119,7 @@ jobs:
     - name: Setup Go
       uses: actions/setup-go@v1
       with:
-        go-version: 1.14.x
+        go-version: 1.16.x
     - name: Import GPG key
       id: import_gpg
       uses: crazy-max/ghaction-import-gpg@v2

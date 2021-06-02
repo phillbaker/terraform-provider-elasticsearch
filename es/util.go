@@ -79,15 +79,62 @@ func normalizeDestination(tpl map[string]interface{}) {
 }
 
 func normalizeMonitor(tpl map[string]interface{}) {
+	if triggers, ok := tpl["triggers"].([]interface{}); ok {
+		normalizeMonitorTriggers(triggers)
+	}
+
+	delete(tpl, "id")
 	delete(tpl, "last_update_time")
 	delete(tpl, "enabled_time")
 	delete(tpl, "schema_version")
+	delete(tpl, "user")
+}
+
+func normalizeMonitorTriggers(triggers []interface{}) {
+	for _, t := range triggers {
+		if trigger, ok := t.(map[string]interface{}); ok {
+			delete(trigger, "id")
+
+			if actions, ok := trigger["actions"].([]interface{}); ok {
+				normalizeMonitorTriggerActions(actions)
+			}
+		}
+	}
+}
+
+func normalizeMonitorTriggerActions(actions []interface{}) {
+	for _, a := range actions {
+		action := a.(map[string]interface{})
+		delete(action, "id")
+	}
 }
 
 func normalizePolicy(tpl map[string]interface{}) {
 	delete(tpl, "last_updated_time")
-	delete(tpl, "error_notification")
 	delete(tpl, "policy_id")
+	delete(tpl, "schema_version")
+	if ism_template, ok := tpl["ism_template"]; ok {
+		if ism_template == nil {
+			delete(tpl, "ism_template")
+		}
+
+		switch templates := ism_template.(type) {
+		case map[string]interface{}:
+			delete(templates, "last_updated_time")
+		case []map[string]interface{}:
+			for _, t := range templates {
+				delete(t, "last_updated_time")
+			}
+		default:
+			// unknown type
+		}
+	}
+	// ignore if set to null in response (ie not specified)
+	if error_notification, ok := tpl["error_notification"]; ok {
+		if error_notification == nil {
+			delete(tpl, "error_notification")
+		}
+	}
 }
 
 func normalizeIndexTemplate(tpl map[string]interface{}) {
@@ -346,9 +393,12 @@ func flattenIndexPermissions(permissions []IndexPermissions, d *schema.ResourceD
 			p["document_level_security"] = permission.DocumentLevelSecurity
 		}
 
-		indexPermissionSchema := indexPermission[idx].(map[string]interface{})
-		fls := indexPermissionSchema["fls"].(*schema.Set).List()
-		useDeprecatedFls := len(fls) > 0
+		useDeprecatedFls := false
+		if len(indexPermission) > 0 {
+			indexPermissionSchema := indexPermission[idx].(map[string]interface{})
+			fls := indexPermissionSchema["fls"].(*schema.Set).List()
+			useDeprecatedFls = len(fls) > 0
+		}
 		if useDeprecatedFls && len(permission.FieldLevelSecurity) > 0 {
 			p["fls"] = flattenStringSet(permission.FieldLevelSecurity)
 		}

@@ -1,13 +1,13 @@
 ---
 page_title: "elasticsearch_opendistro_ism_policy_mapping Resource - terraform-provider-elasticsearch"
-subcategory: ""
+subcategory: "Elasticsearch Open Distro"
 description: |-
-  Provides an Elasticsearch Open Distro ISM policy. Please refer to the Open Distro [ISM documentation][https://opendistro.github.io/for-elasticsearch-docs/docs/ism/] for details.
+  Provides an Elasticsearch Open Distro ISM policy. Please refer to the Open Distro [ISM documentation](https://opendistro.github.io/for-elasticsearch-docs/docs/ism/) for details.
 ---
 
 # Resource `elasticsearch_opendistro_ism_policy_mapping`
 
-Provides an Elasticsearch Open Distro ISM policy. Please refer to the Open Distro [ISM documentation][https://opendistro.github.io/for-elasticsearch-docs/docs/ism/] for details.
+Provides an Elasticsearch Open Distro ISM policy. Please refer to the Open Distro [ISM documentation](https://opendistro.github.io/for-elasticsearch-docs/docs/ism/) for details.
 
 ## Example Usage
 
