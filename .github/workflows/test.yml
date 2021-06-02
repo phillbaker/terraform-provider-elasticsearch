@@ -35,7 +35,7 @@ jobs:
           ES_COMMAND: "elasticsearch -Epath.repo=/tmp"
         - es-major-version: "6"
           es-version: 6.8.9
-          ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:0.10.0"
+          ES_OPENDISTRO_IMAGE: "ghcr.io/phillbaker/opendistro-for-elasticsearch:0.10.0"
         - es-major-version: "7"
           es-version: 7.9.3
           ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:1.6.0"
