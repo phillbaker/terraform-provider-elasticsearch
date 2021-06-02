@@ -26,11 +26,16 @@ func TestAccElasticsearchOpenDistroISMPolicy(t *testing.T) {
 	}
 	var allowed bool
 
+	var config string
 	switch esClient.(type) {
+	case *elastic6.Client:
+		allowed = true
+		config = testAccElasticsearchOpenDistroISMPolicyV6
 	case *elastic5.Client:
 		allowed = false
 	default:
 		allowed = true
+		config = testAccElasticsearchOpenDistroISMPolicyV7
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -44,7 +49,7 @@ func TestAccElasticsearchOpenDistroISMPolicy(t *testing.T) {
 		CheckDestroy: testCheckElasticsearchOpenDistroISMPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccElasticsearchOpenDistroISMPolicy,
+				Config: config,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchOpenDistroISMPolicyExists("elasticsearch_opendistro_ism_policy.test_policy"),
 					resource.TestCheckResourceAttr(
@@ -122,7 +127,62 @@ func testCheckElasticsearchOpenDistroISMPolicyDestroy(s *terraform.State) error 
 	return nil
 }
 
-var testAccElasticsearchOpenDistroISMPolicy = `
+var testAccElasticsearchOpenDistroISMPolicyV6 = `
+resource "elasticsearch_opendistro_ism_policy" "test_policy" {
+	policy_id = "test_policy"
+	body      = <<EOF
+  {
+		"policy": {
+		  "description": "ingesting logs",
+		  "default_state": "ingest",
+		  "error_notification": {
+        "destination": {
+          "slack": {
+            "url": "https://webhook.slack.example.com"
+          }
+        },
+        "message_template": {
+          "lang": "mustache",
+          "source": "The index *{{ctx.index}}* failed to rollover."
+        }
+      },
+		  "states": [
+				{
+				  "name": "ingest",
+				  "actions": [{
+					  "rollover": {
+						"min_doc_count": 5
+					  }
+					}],
+				  "transitions": [{
+					  "state_name": "search"
+					}]
+				},
+				{
+				  "name": "search",
+				  "actions": [],
+				  "transitions": [{
+					  "state_name": "delete",
+					  "conditions": {
+						"min_index_age": "5m"
+					  }
+					}]
+				},
+				{
+				  "name": "delete",
+				  "actions": [{
+					  "delete": {}
+					}],
+				  "transitions": []
+				}
+			]
+		}
+	}
+  EOF
+}
+`
+
+var testAccElasticsearchOpenDistroISMPolicyV7 = `
 resource "elasticsearch_opendistro_ism_policy" "test_policy" {
 	policy_id = "test_policy"
 	body      = <<EOF
