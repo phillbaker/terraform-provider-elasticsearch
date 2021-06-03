@@ -8,7 +8,7 @@ description: |-
 
 # elasticsearch_xpack_index_lifecycle_policy
 
-Provides an Elasticsearch xpack index lifecycle policy resource. Please see [docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/snapshot-lifecycle-management-api.html) for more details on usage.
+Provides an Elasticsearch xpack index lifecycle policy resource. Please see [docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/index-lifecycle-management-api.html) for more details on usage.
 
 ## Example Usage
 
