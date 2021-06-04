@@ -332,6 +332,20 @@ var (
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsJSON,
 		},
+		"analysis_analyzer": {
+			Type:         schema.TypeString,
+			Description:  "A JSON string describing the analyzers applied to the index.",
+			Optional:     true,
+			ForceNew:     true, // To add an analyzer, the index must be closed, updated, and then reopened; we can't handle that here.
+			ValidateFunc: validation.StringIsJSON,
+		},
+		"analysis_tokenizer": {
+			Type:         schema.TypeString,
+			Description:  "A JSON string describing the tokenizers applied to the index.",
+			Optional:     true,
+			ForceNew:     true, // To add a tokenizer, the index must be closed, updated, and then reopened; we can't handle that here.
+			ValidateFunc: validation.StringIsJSON,
+		},
 		// Computed attributes
 		"rollover_alias": {
 			Type:     schema.TypeString,
@@ -375,6 +389,28 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 			return fmt.Errorf("fail to unmarshal: %v", err)
 		}
 		body["aliases"] = aliases
+	}
+
+	analysis := map[string]interface{}{}
+	settings["analysis"] = analysis
+
+	if analyzerJSON, ok := d.GetOk("analysis_analyzer"); ok {
+		var analyzer map[string]interface{}
+		bytes := []byte(analyzerJSON.(string))
+		err = json.Unmarshal(bytes, &analyzer)
+		if err != nil {
+			return fmt.Errorf("fail to unmarshal: %v", err)
+		}
+		analysis["analyzer"] = analyzer
+	}
+	if tokenizerJSON, ok := d.GetOk("analysis_tokenizer"); ok {
+		var tokenizer map[string]interface{}
+		bytes := []byte(tokenizerJSON.(string))
+		err = json.Unmarshal(bytes, &tokenizer)
+		if err != nil {
+			return fmt.Errorf("fail to unmarshal: %v", err)
+		}
+		analysis["tokenizer"] = tokenizer
 	}
 
 	if mappingsJSON, ok := d.GetOk("mappings"); ok {

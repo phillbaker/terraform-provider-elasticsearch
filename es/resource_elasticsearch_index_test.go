@@ -44,6 +44,36 @@ resource "elasticsearch_index" "test" {
 	indexing_slowlog_level = "warn"
 }
 `
+	testAccElasticsearchIndexAnalysis = `
+resource "elasticsearch_index" "test" {
+  name = "terraform-test"
+  number_of_shards = 1
+  number_of_replicas = 1
+  analysis_analyzer = jsonencode({
+    default = {
+        filter    = [
+            "lowercase",
+            "asciifolding",
+          ]
+        tokenizer = "standard"
+      }
+    full_text_search = {
+        filter    = [
+            "lowercase",
+            "asciifolding",
+          ]
+        tokenizer = "custom_ngram_tokenizer"
+      }
+  })
+	analysis_tokenizer = jsonencode({
+    custom_ngram_tokenizer = {
+        max_gram = "4"
+        min_gram = "3"
+        type     = "ngram"
+      }
+  })
+}
+`
 	testAccElasticsearchIndexInvalid = `
 resource "elasticsearch_index" "test" {
   name = "terraform-test"
@@ -214,6 +244,22 @@ func TestAccElasticsearchIndex(t *testing.T) {
 				Config: testAccElasticsearchIndexUpdateForceDestroy,
 				Check: resource.ComposeTestCheckFunc(
 					checkElasticsearchIndexUpdated("elasticsearch_index.test"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccElasticsearchIndexAnalysis(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: checkElasticsearchIndexDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccElasticsearchIndexAnalysis,
+				Check: resource.ComposeTestCheckFunc(
+					checkElasticsearchIndexExists("elasticsearch_index.test"),
 				),
 			},
 		},

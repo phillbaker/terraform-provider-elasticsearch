@@ -4,6 +4,7 @@
 
 ### Added
 - [component template] Resource to manage component templates.
+- [index] Add attributes for analysis settings.
 
 ### Fixed
 

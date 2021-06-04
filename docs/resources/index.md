@@ -45,15 +45,55 @@ EOF
 ### Optional
 
 - **aliases** (String) A JSON string describing a set of aliases. The index aliases API allows aliasing an index with a name, with all APIs automatically converting the alias name to the actual index name. An alias can also be mapped to more than one index, and when specifying it, the alias will automatically expand to the aliased indices.
-- **auto_expand_replicas** (String) Set the number of replicas to the node count in the cluster
+- **analysis_analyzer** (String) A JSON string describing the analyzers applied to the index.
+- **analysis_tokenizer** (String) A JSON string describing the tokenizers applied to the index.
+- **analyze_max_token_count** (String) The maximum number of tokens that can be produced using _analyze API. A stringified number.
+- **auto_expand_replicas** (String) Set the number of replicas to the node count in the cluster. Set to a dash delimited lower and upper bound (e.g. 0-5) or use all for the upper bound (e.g. 0-all)
+- **blocks_metadata** (Boolean) Set to `true` to disable index metadata reads and writes.
+- **blocks_read** (Boolean) Set to `true` to disable read operations against the index.
+- **blocks_read_only** (Boolean) Set to `true` to make the index and index metadata read only, `false` to allow writes and metadata changes.
+- **blocks_read_only_allow_delete** (Boolean) Identical to `index.blocks.read_only` but allows deleting the index to free up resources.
+- **blocks_write** (Boolean) Set to `true` to disable data write operations against the index. This setting does not affect metadata.
 - **codec** (String) The `default` value compresses stored data with LZ4 compression, but this can be set to `best_compression` which uses DEFLATE for a higher compression ratio. This can be set only on creation.
+- **default_pipeline** (String) The default ingest node pipeline for this index. Index requests will fail if the default pipeline is set and the pipeline does not exist.
 - **force_destroy** (Boolean) A boolean that indicates that the index should be deleted even if it contains documents.
+- **gc_deletes** (String) The length of time that a deleted document's version number remains available for further versioned operations.
+- **highlight_max_analyzed_offset** (String) The maximum number of characters that will be analyzed for a highlight request. A stringified number.
 - **id** (String) The ID of this resource.
+- **indexing_slowlog_level** (String) Set which logging level to use for the search slow log, can be: `warn`, `info`, `debug`, `trace`
+- **indexing_slowlog_source** (String) Set the number of characters of the `_source` to include in the slowlog lines, `false` or `0` will skip logging the source entirely and setting it to `true` will log the entire source regardless of size. The original `_source` is reformatted by default to make sure that it fits on a single log line.
+- **indexing_slowlog_threshold_index_debug** (String) Set the cutoff for shard level slow search logging of slow searches for indexing queries, in time units, e.g. `2s`
+- **indexing_slowlog_threshold_index_info** (String) Set the cutoff for shard level slow search logging of slow searches for indexing queries, in time units, e.g. `5s`
+- **indexing_slowlog_threshold_index_trace** (String) Set the cutoff for shard level slow search logging of slow searches for indexing queries, in time units, e.g. `500ms`
+- **indexing_slowlog_threshold_index_warn** (String) Set the cutoff for shard level slow search logging of slow searches for indexing queries, in time units, e.g. `10s`
 - **load_fixed_bitset_filters_eagerly** (Boolean) Indicates whether cached filters are pre-loaded for nested queries. This can be set only on creation.
 - **mappings** (String) A JSON string defining how documents in the index, and the fields they contain, are stored and indexed. To avoid the complexities of field mapping updates, updates of this field are not allowed via this provider. See the upstream [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/indices-put-mapping.html#updating-field-mappings) for more details.
-- **number_of_replicas** (String) Number of shard replicas
+- **max_docvalue_fields_search** (String) The maximum number of `docvalue_fields` that are allowed in a query. A stringified number.
+- **max_inner_result_window** (String) The maximum value of `from + size` for inner hits definition and top hits aggregations to this index. A stringified number.
+- **max_ngram_diff** (String) The maximum allowed difference between min_gram and max_gram for NGramTokenizer and NGramTokenFilter. A stringified number.
+- **max_refresh_listeners** (String) Maximum number of refresh listeners available on each shard of the index. A stringified number.
+- **max_regex_length** (String) The maximum length of regex that can be used in Regexp Query. A stringified number.
+- **max_rescore_window** (String) The maximum value of `window_size` for `rescore` requests in searches of this index. A stringified number.
+- **max_result_window** (String) The maximum value of `from + size` for searches to this index. A stringified number.
+- **max_script_fields** (String) The maximum number of `script_fields` that are allowed in a query. A stringified number.
+- **max_shingle_diff** (String) The maximum allowed difference between max_shingle_size and min_shingle_size for ShingleTokenFilter. A stringified number.
+- **max_terms_count** (String) The maximum number of terms that can be used in Terms Query. A stringified number.
+- **number_of_replicas** (String) Number of shard replicas. A stringified number.
 - **number_of_shards** (String) Number of shards for the index. This can be set only on creation.
 - **refresh_interval** (String) How often to perform a refresh operation, which makes recent changes to the index visible to search. Can be set to `-1` to disable refresh.
-- **routing_partition_size** (Number) The number of shards a custom routing value can go to. This can be set only on creation.
+- **routing_allocation_enable** (String) Controls shard allocation for this index. It can be set to: `all` , `primaries` , `new_primaries` , `none`.
+- **routing_partition_size** (String) The number of shards a custom routing value can go to. A stringified number. This can be set only on creation.
+- **routing_rebalance_enable** (String) Enables shard rebalancing for this index. It can be set to: `all`, `primaries` , `replicas` , `none`.
+- **search_idle_after** (String) How long a shard can not receive a search or get request until it’s considered search idle.
+- **search_slowlog_level** (String) Set which logging level to use for the search slow log, can be: `warn`, `info`, `debug`, `trace`
+- **search_slowlog_threshold_fetch_debug** (String) Set the cutoff for shard level slow search logging of slow searches in the fetch phase, in time units, e.g. `2s`
+- **search_slowlog_threshold_fetch_info** (String) Set the cutoff for shard level slow search logging of slow searches in the fetch phase, in time units, e.g. `5s`
+- **search_slowlog_threshold_fetch_trace** (String) Set the cutoff for shard level slow search logging of slow searches in the fetch phase, in time units, e.g. `500ms`
+- **search_slowlog_threshold_fetch_warn** (String) Set the cutoff for shard level slow search logging of slow searches in the fetch phase, in time units, e.g. `10s`
+- **search_slowlog_threshold_query_debug** (String) Set the cutoff for shard level slow search logging of slow searches in the query phase, in time units, e.g. `2s`
+- **search_slowlog_threshold_query_info** (String) Set the cutoff for shard level slow search logging of slow searches in the query phase, in time units, e.g. `5s`
+- **search_slowlog_threshold_query_trace** (String) Set the cutoff for shard level slow search logging of slow searches in the query phase, in time units, e.g. `500ms`
+- **search_slowlog_threshold_query_warn** (String) Set the cutoff for shard level slow search logging of slow searches in the query phase, in time units, e.g. `10s`
+- **shard_check_on_startup** (String) Whether or not shards should be checked for corruption before opening. When corruption is detected, it will prevent the shard from being opened. Accepts `false`, `true`, `checksum`.
 
 
