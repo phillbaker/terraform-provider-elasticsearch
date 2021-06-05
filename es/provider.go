@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	awscredentials "github.com/aws/aws-sdk-go/aws/credentials"
@@ -368,7 +369,18 @@ func assumeRoleCredentials(region, roleARN, profile string) *awscredentials.Cred
 	sess := awssession.Must(awssession.NewSessionWithOptions(awssession.Options{
 		Profile: profile,
 		Config: aws.Config{
-			Region: aws.String(region),
+			Region:   aws.String(region),
+			LogLevel: aws.LogLevel(aws.LogDebugWithHTTPBody),
+			Logger: aws.LoggerFunc(func(args ...interface{}) {
+				log.Print(append([]interface{}{"[DEBUG] "}, args...))
+			}),
+			CredentialsChainVerboseErrors: aws.Bool(true),
+			MaxRetries:                    aws.Int(1),
+			// HTTP client is required to fetch EC2 metadata values
+			// having zero timeout on the default HTTP client sometimes makes
+			// it fail with Credential error
+			// https://github.com/aws/aws-sdk-go/issues/2914
+			HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		},
 	}))
 	stsClient := awssts.New(sess)
@@ -379,6 +391,8 @@ func assumeRoleCredentials(region, roleARN, profile string) *awscredentials.Cred
 
 	return awscredentials.NewChainCredentials([]awscredentials.Provider{assumeRoleProvider})
 }
+
+var roleCredentials = map[string]*awscredentials.Credentials{}
 
 func awsSession(region string, conf *ProviderConf) *awssession.Session {
 	sessOpts := awssession.Options{
@@ -395,7 +409,14 @@ func awsSession(region string, conf *ProviderConf) *awssession.Session {
 	if conf.awsAccessKeyId != "" {
 		sessOpts.Config.Credentials = awscredentials.NewStaticCredentials(conf.awsAccessKeyId, conf.awsSecretAccessKey, conf.awsSessionToken)
 	} else if conf.awsAssumeRoleArn != "" {
-		sessOpts.Config.Credentials = assumeRoleCredentials(region, conf.awsAssumeRoleArn, conf.awsProfile)
+		key := region + conf.awsAssumeRoleArn + conf.awsProfile
+		credentials, ok := roleCredentials[key]
+		if !ok {
+			credentials = assumeRoleCredentials(region, conf.awsAssumeRoleArn, conf.awsProfile)
+			roleCredentials[key] = credentials
+		}
+
+		sessOpts.Config.Credentials = credentials
 	} else if conf.awsProfile != "" {
 		sessOpts.Profile = conf.awsProfile
 	}
