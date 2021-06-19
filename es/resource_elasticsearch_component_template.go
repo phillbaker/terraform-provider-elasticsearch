@@ -22,20 +22,23 @@ func resourceElasticsearchComponentTemplate() *schema.Resource {
 		Delete: resourceElasticsearchComponentTemplateDelete,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Required: true,
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Required:    true,
+				Description: "Name of the component template to create.",
 			},
 			"body": {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: diffSuppressComponentTemplate,
 				ValidateFunc:     validation.StringIsJSON,
+				Description:      "The JSON body of the template.",
 			},
 		},
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
+		Description: "Component templates are building blocks for constructing index templates that specify index mappings, settings, and aliases. You cannot directly apply a component template to a data stream or index. To be applied, a component template must be included in an index template’s `composed_of` list.",
 	}
 }
 

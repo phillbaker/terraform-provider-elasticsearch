@@ -3,6 +3,7 @@
 ### Changed
 
 ### Added
+- [component template] Resource to manage component templates.
 
 ### Fixed
 
