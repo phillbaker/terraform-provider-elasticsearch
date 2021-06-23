@@ -393,8 +393,6 @@ func assumeRoleCredentials(region, roleARN, profile string) *awscredentials.Cred
 	return awscredentials.NewChainCredentials([]awscredentials.Provider{assumeRoleProvider})
 }
 
-var roleCredentials = map[string]*awscredentials.Credentials{}
-
 func awsSession(region string, conf *ProviderConf) *awssession.Session {
 	sessOpts := awssession.Options{
 		Config: aws.Config{
@@ -410,14 +408,7 @@ func awsSession(region string, conf *ProviderConf) *awssession.Session {
 	if conf.awsAccessKeyId != "" {
 		sessOpts.Config.Credentials = awscredentials.NewStaticCredentials(conf.awsAccessKeyId, conf.awsSecretAccessKey, conf.awsSessionToken)
 	} else if conf.awsAssumeRoleArn != "" {
-		key := region + conf.awsAssumeRoleArn + conf.awsProfile
-		credentials, ok := roleCredentials[key]
-		if !ok {
-			credentials = assumeRoleCredentials(region, conf.awsAssumeRoleArn, conf.awsProfile)
-			roleCredentials[key] = credentials
-		}
-
-		sessOpts.Config.Credentials = credentials
+		sessOpts.Config.Credentials = assumeRoleCredentials(region, conf.awsAssumeRoleArn, conf.awsProfile)
 	} else if conf.awsProfile != "" {
 		sessOpts.Profile = conf.awsProfile
 	}

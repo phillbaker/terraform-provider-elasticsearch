@@ -7,6 +7,7 @@
 - [index] Add attributes for analysis settings.
 
 ### Fixed
+- [aws] Fix concurrent map writes crash when using AWS assume role.
 
 
 ## [1.5.7] - 2020-06-06
