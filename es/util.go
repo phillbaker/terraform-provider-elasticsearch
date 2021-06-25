@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"log"
 	"reflect"
 	"sort"
 	"strings"
@@ -121,12 +122,14 @@ func normalizePolicy(tpl map[string]interface{}) {
 		switch templates := ism_template.(type) {
 		case map[string]interface{}:
 			delete(templates, "last_updated_time")
-		case []map[string]interface{}:
+		case []interface{}:
 			for _, t := range templates {
-				delete(t, "last_updated_time")
+				if template, ok := t.(map[string]interface{}); ok {
+					delete(template, "last_updated_time")
+				}
 			}
 		default:
-			// unknown type
+			log.Printf("[INFO] normalizePolicy unknown type: %T", ism_template)
 		}
 	}
 	// ignore if set to null in response (ie not specified)
