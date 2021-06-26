@@ -20,6 +20,10 @@ jobs:
         # version.
         version: v1.28
         args: --new-from-rev=bf51aaa --verbose --timeout=10m
+    - name: Check examples terraform fmt
+      uses: dflook/terraform-fmt-check@v1
+      with:
+        path: examples
   test:
     strategy:
       matrix:

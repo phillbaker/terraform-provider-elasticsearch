@@ -5,7 +5,7 @@ resource "elasticsearch_xpack_role_mapping" "test" {
     "user",
   ]
   enabled = true
-  rules = <<-EOF
+  rules   = <<-EOF
   {
     "any": [
       {
