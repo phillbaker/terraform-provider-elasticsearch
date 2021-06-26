@@ -3,6 +3,14 @@
 ### Changed
 
 ### Added
+
+### Fixed
+
+
+## [1.5.8] - 2020-06-25
+### Changed
+
+### Added
 - [component template] Resource to manage component templates.
 - [index] Add attributes for analysis settings.
 
