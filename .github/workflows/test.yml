@@ -106,6 +106,11 @@ jobs:
         TF_ACC=1 go test ./... -v -cover -run XpackLicense
         # check goreleaser config for deprecations
         curl -sfL https://git.io/goreleaser | sh -s -- check
+    - name: Dump kibana logs on failure
+      if: failure()
+      uses: jwalton/gh-docker-logs@v2
+      with:
+        images: 'kibana,docker.elastic.co/kibana/kibana,kibana/kibana,elasticsearch-kibana'
   release:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     needs: [test]
