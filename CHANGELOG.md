@@ -5,6 +5,7 @@
 ### Added
 - [opendistro user,role,ism policy] Retry handling for conflicts
 - [kibana alert] Add kibana alert resource
+- [opendistro tenant] Add computed attribute for index
 
 ### Fixed
 

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/olivere/elastic/uritemplates"
@@ -28,6 +29,10 @@ func resourceElasticsearchOpenDistroKibanaTenant() *schema.Resource {
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"index": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -66,7 +71,33 @@ func resourceElasticsearchOpenDistroKibanaTenantRead(d *schema.ResourceData, m i
 		return fmt.Errorf("error setting description: %s", err)
 	}
 
+	index, err := resourceElasticsearchOpenDistroKibanaComputeIndex(d.Id())
+	if err != nil {
+		return err
+	}
+	if err := d.Set("index", index); err != nil {
+		return fmt.Errorf("error setting index: %s", err)
+	}
+
 	return nil
+}
+
+func resourceElasticsearchOpenDistroKibanaComputeIndex(tenant string) (string, error) {
+	// Calc Hash
+	hashSum := int32(0)
+	for _, char := range tenant {
+		shift := (hashSum << 5)
+		hashSum = (shift - hashSum) + int32(char-0)
+	}
+	// remove all chars that are not alphanumeric
+	alphanumeric, err := regexp.Compile("[^a-zA-Z0-9]+")
+	if err != nil {
+		return "", err
+	}
+	cleanedTenant := alphanumeric.ReplaceAllString(tenant, "")
+
+	// originalKibanaIndex+"_"+tenant.hashCode()+"_"+tenant.toLowerCase().replaceAll("[^a-z0-9]+", "")
+	return fmt.Sprintf(".kibana_%v_%v", hashSum, cleanedTenant), nil
 }
 
 func resourceElasticsearchOpenDistroKibanaTenantUpdate(d *schema.ResourceData, m interface{}) error {
