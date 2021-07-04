@@ -1,6 +1,7 @@
 # Changelog
 ## Unreleased
 ### Changed
+- [aws] Always enable AWS shared configuration file support
 
 ### Added
 - [opendistro user,role,ism policy] Retry handling for conflicts

@@ -444,6 +444,7 @@ func assumeRoleCredentials(region, roleARN, profile string) *awscredentials.Cred
 			// https://github.com/aws/aws-sdk-go/issues/2914
 			HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		},
+		SharedConfigState: awssession.SharedConfigEnable,
 	}))
 	stsClient := awssts.New(sess)
 	assumeRoleProvider := &awsstscreds.AssumeRoleProvider{
