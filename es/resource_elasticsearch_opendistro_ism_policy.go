@@ -127,8 +127,8 @@ func resourceElasticsearchOpenDistroISMPolicyDelete(d *schema.ResourceData, m in
 	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
-			Method: "DELETE",
-			Path:   path,
+			Method:           "DELETE",
+			Path:             path,
 			RetryStatusCodes: []int{http.StatusConflict},
 			Retrier: elastic7.NewBackoffRetrier(
 				elastic7.NewExponentialBackoff(100*time.Millisecond, 30*time.Second),
