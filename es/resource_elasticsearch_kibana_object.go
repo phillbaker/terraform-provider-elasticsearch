@@ -204,7 +204,7 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 	objectType := objectTypeOrDefault(body)
 	index := d.Get("index").(string)
 
-	var result *json.RawMessage
+	var body *json.RawMessage
 	var err error
 	esClient, err := getClient(meta.(*ProviderConf))
 	if err != nil {
@@ -212,12 +212,18 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 	}
 	switch client := esClient.(type) {
 	case *elastic7.Client:
+		var result *elastic7.GetResult
 		result, err = elastic7GetObject(client, index, id)
+		body = &result.Source
 	case *elastic6.Client:
+		var result *elastic6.GetResult
 		result, err = elastic6GetObject(client, objectType, index, id)
+		body = result.Source
 	default:
+		var result *elastic5.GetResult
 		elastic5Client := client.(*elastic5.Client)
 		result, err = elastic5GetObject(elastic5Client, objectType, index, id)
+		body = result.Source
 	}
 
 	if err != nil {

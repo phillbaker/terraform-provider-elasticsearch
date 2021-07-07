@@ -25,7 +25,7 @@ var (
 	errObjNotFound = fmt.Errorf("object not found")
 )
 
-func elastic7GetObject(client *elastic7.Client, index string, id string) (*json.RawMessage, error) {
+func elastic7GetObject(client *elastic7.Client, index string, id string) (*elastic7.GetResult, error) {
 	result, err := client.Get().
 		Index(index).
 		Id(id).
@@ -38,10 +38,10 @@ func elastic7GetObject(client *elastic7.Client, index string, id string) (*json.
 		return nil, errObjNotFound
 	}
 
-	return &result.Source, nil
+	return result, nil
 }
 
-func elastic6GetObject(client *elastic6.Client, objectType string, index string, id string) (*json.RawMessage, error) {
+func elastic6GetObject(client *elastic6.Client, objectType string, index string, id string) (*elastic6.GetResult, error) {
 	result, err := client.Get().
 		Index(index).
 		Type(objectType).
@@ -55,10 +55,10 @@ func elastic6GetObject(client *elastic6.Client, objectType string, index string,
 		return nil, errObjNotFound
 	}
 
-	return result.Source, nil
+	return result, nil
 }
 
-func elastic5GetObject(client *elastic5.Client, objectType string, index string, id string) (*json.RawMessage, error) {
+func elastic5GetObject(client *elastic5.Client, objectType string, index string, id string) (*elastic5.GetResult, error) {
 	result, err := client.Get().
 		Index(index).
 		Type(objectType).
@@ -72,7 +72,7 @@ func elastic5GetObject(client *elastic5.Client, objectType string, index string,
 		return nil, errObjNotFound
 	}
 
-	return result.Source, nil
+	return result, nil
 }
 
 func normalizeDestination(tpl map[string]interface{}) {

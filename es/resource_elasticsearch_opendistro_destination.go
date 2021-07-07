@@ -193,23 +193,23 @@ func resourceElasticsearchOpenDistroQueryOrGetDestination(destinationID string, 
 		if err == nil {
 			return destination, err
 		} else {
-			body, err := elastic7GetObject(client, DESTINATION_INDEX, destinationID)
+			result, err := elastic7GetObject(client, DESTINATION_INDEX, destinationID)
 
 			if err != nil {
 				return Destination{}, err
 			}
-			if err := json.Unmarshal(*body, &dr); err != nil {
-				return Destination{}, fmt.Errorf("error unmarshalling destination body: %+v: %+v", err, body)
+			if err := json.Unmarshal(result.Source, &dr); err != nil {
+				return Destination{}, fmt.Errorf("error unmarshalling destination body: %+v: %+v", err, result.Source)
 			}
 			return dr.Destination, nil
 		}
 	case *elastic6.Client:
-		body, err := elastic6GetObject(client, DESTINATION_TYPE, DESTINATION_INDEX, destinationID)
+		result, err := elastic6GetObject(client, DESTINATION_TYPE, DESTINATION_INDEX, destinationID)
 		if err != nil {
 			return Destination{}, err
 		}
-		if err := json.Unmarshal(*body, &dr); err != nil {
-			return Destination{}, fmt.Errorf("error unmarshalling destination body: %+v: %+v", err, body)
+		if err := json.Unmarshal(*result.Source, &dr); err != nil {
+			return Destination{}, fmt.Errorf("error unmarshalling destination body: %+v: %+v", err, result.Source)
 		}
 		return dr.Destination, nil
 	default:
