@@ -59,6 +59,11 @@ func resourceElasticsearchKibanaObject() *schema.Resource {
 
 					return warnings, errors
 				},
+				// DiffSuppressFunc: diffSuppressKibanaObject,
+				StateFunc: func(v interface{}) string {
+					json, _ := structure.NormalizeJsonString(v)
+					return json
+				},
 			},
 			"index": {
 				Type:     schema.TypeString,
@@ -98,7 +103,7 @@ func resourceElasticsearchKibanaObjectCreate(d *schema.ResourceData, meta interf
 	}
 
 	if err != nil {
-		log.Printf("[INFO] Failed to creating new kibana index: %+v", err)
+		log.Printf("[INFO] Failed to create new kibana index: %+v", err)
 		return err
 	}
 
@@ -195,16 +200,20 @@ func elastic5CreateIndexIfNotExists(client *elastic5.Client, index string, mappi
 
 func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interface{}) error {
 	bodyString := d.Get("body").(string)
-	var body map[string]interface{}
+	var body []interface{}
 	if err := json.Unmarshal([]byte(bodyString), &body); err != nil {
 		log.Printf("[WARN] Failed to unmarshal on read: %+v", bodyString)
 		return err
 	}
-	id := body["_id"].(string)
-	objectType := objectTypeOrDefault(body)
+	kibanaObject, ok := body[0].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("expected %v to be an object", body[0])
+	}
+	id := kibanaObject["_id"].(string)
+	objectType := objectTypeOrDefault(kibanaObject)
 	index := d.Get("index").(string)
 
-	var body *json.RawMessage
+	var resultJSON []byte
 	var err error
 	esClient, err := getClient(meta.(*ProviderConf))
 	if err != nil {
@@ -214,16 +223,22 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 	case *elastic7.Client:
 		var result *elastic7.GetResult
 		result, err = elastic7GetObject(client, index, id)
-		body = &result.Source
+		if err == nil {
+			resultJSON, err = json.Marshal(result)
+		}
 	case *elastic6.Client:
 		var result *elastic6.GetResult
 		result, err = elastic6GetObject(client, objectType, index, id)
-		body = result.Source
+		if err == nil {
+			resultJSON, err = json.Marshal(result)
+		}
 	default:
 		var result *elastic5.GetResult
 		elastic5Client := client.(*elastic5.Client)
 		result, err = elastic5GetObject(elastic5Client, objectType, index, id)
-		body = result.Source
+		if err == nil {
+			resultJSON, err = json.Marshal(result)
+		}
 	}
 
 	if err != nil {
@@ -238,7 +253,32 @@ func resourceElasticsearchKibanaObjectRead(d *schema.ResourceData, meta interfac
 
 	ds := &resourceDataSetter{d: d}
 	ds.set("index", index)
-	ds.set("body", string(*result))
+
+	// The Kibana object interface was originally built with the notion that
+	// multiple kibana objects would be specified in the same resource, however,
+	// that's not practical given that the Elasticsearch API is for a single
+	// object. We account for that here: use the _source attribute and build a
+	// single entry array
+	var originalKeys []string
+	for k := range kibanaObject {
+		originalKeys = append(originalKeys, k)
+	}
+
+	result := make(map[string]interface{})
+	if err := json.Unmarshal(resultJSON, &result); err != nil {
+		log.Printf("[WARN] Failed to unmarshal: %+v", resultJSON)
+		return err
+	}
+
+	stateObject := []map[string]interface{}{make(map[string]interface{})}
+	for _, k := range originalKeys {
+		stateObject[0][k] = result[k]
+	}
+	state, err := json.Marshal(stateObject)
+	if err != nil {
+		return fmt.Errorf("error marshalling resource data: %+v", err)
+	}
+	ds.set("body", string(state))
 
 	return ds.err
 }
@@ -255,7 +295,6 @@ func resourceElasticsearchKibanaObjectDelete(d *schema.ResourceData, meta interf
 		log.Printf("[WARN] Failed to unmarshal: %+v", bodyString)
 		return err
 	}
-	// TODO handle multiple objects in json
 	object, ok := body[0].(map[string]interface{})
 	if !ok {
 		return fmt.Errorf("expected %v to be an object", body[0])
@@ -325,7 +364,6 @@ func resourceElasticsearchPutKibanaObject(d *schema.ResourceData, meta interface
 		log.Printf("[WARN] Failed to unmarshal on put: %+v", bodyString)
 		return "", err
 	}
-	// TODO handle multiple objects in json
 	object, ok := body[0].(map[string]interface{})
 	if !ok {
 		return "", fmt.Errorf("expected %v to be an object", body[0])

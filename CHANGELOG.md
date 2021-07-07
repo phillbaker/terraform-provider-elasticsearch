@@ -1,6 +1,7 @@
 # Changelog
 ## Unreleased
 ### Changed
+- [kibana object] Diffs will now be detected and the stringified version of kibana objects saved to terraform state (#182).
 
 ### Added
 - [index] Add normalizer and filter attributes

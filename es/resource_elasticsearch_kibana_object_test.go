@@ -311,7 +311,7 @@ resource "elasticsearch_kibana_object" "test_pattern" {
 [
   {
 		"_id": "index-pattern:cloudwatch",
-		"_type": "doc",
+		"_type": "_doc",
 		"_source": {
 			"type": "index-pattern",
 			"index-pattern": {
