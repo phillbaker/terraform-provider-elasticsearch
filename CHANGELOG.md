@@ -4,16 +4,18 @@
 - [aws] Always enable AWS shared configuration file support
 
 ### Added
-- [opendistro user,role,ism policy] Retry handling for conflicts
-- [kibana alert] Add kibana alert resource
-- [opendistro tenant] Add computed attribute for index
 
 ### Fixed
 
 
-## [1.5.8] - 2020-06-25
-### Changed
+## [1.6.0] - 2020-07-03
+### Added
+- [opendistro user,role,ism policy] Retry handling for conflicts
+- [kibana alert] Add kibana alert resource
+- [opendistro tenant] Add computed attribute for index
 
+
+## [1.5.8] - 2020-06-25
 ### Added
 - [component template] Resource to manage component templates.
 - [index] Add attributes for analysis settings.
