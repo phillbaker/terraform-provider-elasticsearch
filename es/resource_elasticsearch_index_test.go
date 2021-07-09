@@ -51,27 +51,41 @@ resource "elasticsearch_index" "test" {
   number_of_replicas = 1
   analysis_analyzer = jsonencode({
     default = {
-        filter    = [
-            "lowercase",
-            "asciifolding",
-          ]
-        tokenizer = "standard"
-      }
+      filter = [
+          "lowercase",
+          "asciifolding",
+        ]
+      tokenizer = "standard"
+    }
     full_text_search = {
-        filter    = [
-            "lowercase",
-            "asciifolding",
-          ]
-        tokenizer = "custom_ngram_tokenizer"
-      }
+      filter = [
+          "lowercase",
+          "asciifolding",
+        ]
+      tokenizer = "custom_ngram_tokenizer"
+    }
   })
 	analysis_tokenizer = jsonencode({
     custom_ngram_tokenizer = {
-        max_gram = "4"
-        min_gram = "3"
-        type     = "ngram"
-      }
+      max_gram = "4"
+      min_gram = "3"
+      type     = "ngram"
+    }
   })
+	analysis_filter = jsonencode({
+		my_filter_shingle = {
+      type = "shingle"
+      max_shingle_size = 2
+      min_shingle_size = 2
+      output_unigrams =  false
+    }
+	})
+	analysis_normalizer = jsonencode({
+		my_normalizer = {
+      type = "custom"
+      filter = ["lowercase", "asciifolding"]
+    }
+	})
 }
 `
 	testAccElasticsearchIndexInvalid = `

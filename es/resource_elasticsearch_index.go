@@ -346,6 +346,20 @@ var (
 			ForceNew:     true, // To add a tokenizer, the index must be closed, updated, and then reopened; we can't handle that here.
 			ValidateFunc: validation.StringIsJSON,
 		},
+		"analysis_filter": {
+			Type:         schema.TypeString,
+			Description:  "A JSON string describing the filters applied to the index.",
+			Optional:     true,
+			ForceNew:     true, // To add a filter, the index must be closed, updated, and then reopened; we can't handle that here.
+			ValidateFunc: validation.StringIsJSON,
+		},
+		"analysis_normalizer": {
+			Type:         schema.TypeString,
+			Description:  "A JSON string describing the normalizers applied to the index.",
+			Optional:     true,
+			ForceNew:     true, // To add a normalizer, the index must be closed, updated, and then reopened; we can't handle that here.
+			ValidateFunc: validation.StringIsJSON,
+		},
 		// Computed attributes
 		"rollover_alias": {
 			Type:     schema.TypeString,
@@ -411,6 +425,24 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 			return fmt.Errorf("fail to unmarshal: %v", err)
 		}
 		analysis["tokenizer"] = tokenizer
+	}
+	if filterJSON, ok := d.GetOk("analysis_filter"); ok {
+		var filter map[string]interface{}
+		bytes := []byte(filterJSON.(string))
+		err = json.Unmarshal(bytes, &filter)
+		if err != nil {
+			return fmt.Errorf("fail to unmarshal: %v", err)
+		}
+		analysis["filter"] = filter
+	}
+	if normalizerJSON, ok := d.GetOk("analysis_normalizer"); ok {
+		var normalizer map[string]interface{}
+		bytes := []byte(normalizerJSON.(string))
+		err = json.Unmarshal(bytes, &normalizer)
+		if err != nil {
+			return fmt.Errorf("fail to unmarshal: %v", err)
+		}
+		analysis["normalizer"] = normalizer
 	}
 
 	if mappingsJSON, ok := d.GetOk("mappings"); ok {

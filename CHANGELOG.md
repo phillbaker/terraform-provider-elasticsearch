@@ -1,14 +1,17 @@
 # Changelog
 ## Unreleased
 ### Changed
-- [aws] Always enable AWS shared configuration file support
 
 ### Added
+- [index]  Add normalizer and filter attributes
 
 ### Fixed
 
 
 ## [1.6.0] - 2020-07-03
+### Changed
+- [aws] Always enable AWS shared configuration file support
+
 ### Added
 - [opendistro user,role,ism policy] Retry handling for conflicts
 - [kibana alert] Add kibana alert resource
