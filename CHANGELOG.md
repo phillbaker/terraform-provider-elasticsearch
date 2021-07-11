@@ -3,9 +3,10 @@
 ### Changed
 
 ### Added
-- [index]  Add normalizer and filter attributes
+- [index] Add normalizer and filter attributes
 
 ### Fixed
+- [host] Fix url attribute being empty
 
 
 ## [1.6.0] - 2020-07-03

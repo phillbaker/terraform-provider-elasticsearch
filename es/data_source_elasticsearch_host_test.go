@@ -17,6 +17,7 @@ func TestAccElasticsearchDataSourceHost_basic(t *testing.T) {
 				Config: testAccElasticsearchDataSourceHost,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.elasticsearch_host.test", "id"),
+					resource.TestCheckResourceAttrSet("data.elasticsearch_host.test", "url"),
 				),
 			},
 		},

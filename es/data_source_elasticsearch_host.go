@@ -40,25 +40,29 @@ func dataSourceElasticsearchHostRead(d *schema.ResourceData, m interface{}) erro
 	if err != nil {
 		return err
 	}
+
+	var url string
 	switch client := esClient.(type) {
 	case *elastic7.Client:
 		urls := reflect.ValueOf(client).Elem().FieldByName("urls")
 		if urls.Len() > 0 {
-			d.SetId(urls.Index(0).String())
+			url = urls.Index(0).String()
 		}
 	case *elastic6.Client:
 		urls := reflect.ValueOf(client).Elem().FieldByName("urls")
 		if urls.Len() > 0 {
-			d.SetId(urls.Index(0).String())
+			url = urls.Index(0).String()
 		}
 	default:
 		client = esClient.(*elastic5.Client)
 
 		urls := reflect.ValueOf(client).Elem().FieldByName("urls")
 		if urls.Len() > 0 {
-			d.SetId(urls.Index(0).String())
+			url = urls.Index(0).String()
 		}
 	}
+	d.SetId(url)
+	err = d.Set("url", url)
 
 	return err
 }
