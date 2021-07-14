@@ -606,8 +606,9 @@ func allowIndexDestroy(indexName string, d *schema.ResourceData, meta interface{
 func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) error {
 	settings := make(map[string]interface{})
 	for _, key := range settingsKeys {
-		if d.HasChange(key) {
-			settings[key] = d.Get(key)
+		schemaName := strings.Replace(key, ".", "_", -1)
+		if d.HasChange(schemaName) {
+			settings[key] = d.Get(schemaName)
 		}
 	}
 
