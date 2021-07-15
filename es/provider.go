@@ -51,6 +51,7 @@ type ProviderConf struct {
 	certPemPath        string
 	keyPemPath         string
 	kibanaUrl          string
+	hostOverride       string
 }
 
 func Provider() terraform.ResourceProvider {
@@ -178,6 +179,12 @@ func Provider() terraform.ResourceProvider {
 				Default:     "",
 				Description: "ElasticSearch Version",
 			},
+			"host_override": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "If provided, sets the 'Host' header of requests and the 'ServerName' for certificate validation to this value. See the documentation on connecting to Elasticsearch via an SSH tunnel.",
+			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -250,6 +257,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		awsProfile:         d.Get("aws_profile").(string),
 		certPemPath:        d.Get("client_cert_path").(string),
 		keyPemPath:         d.Get("client_key_path").(string),
+		hostOverride:       d.Get("host_override").(string),
 	}, nil
 }
 
@@ -278,7 +286,9 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 	} else if conf.insecure || conf.cacertFile != "" {
 		opts = append(opts, elastic7.SetHttpClient(tlsHttpClient(conf, map[string]string{})), elastic7.SetSniff(false))
 	} else if conf.token != "" {
-		opts = append(opts, elastic7.SetHttpClient(tokenHttpClient(conf.token, conf.tokenName, conf.insecure, map[string]string{})), elastic7.SetSniff(false))
+		opts = append(opts, elastic7.SetHttpClient(tokenHttpClient(conf, map[string]string{})), elastic7.SetSniff(false))
+	} else {
+		opts = append(opts, elastic7.SetHttpClient(defaultHttpClient(conf, map[string]string{})))
 	}
 
 	var relevantClient interface{}
@@ -324,7 +334,9 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 		} else if conf.insecure || conf.cacertFile != "" {
 			opts = append(opts, elastic6.SetHttpClient(tlsHttpClient(conf, map[string]string{})), elastic6.SetSniff(false))
 		} else if conf.token != "" {
-			opts = append(opts, elastic6.SetHttpClient(tokenHttpClient(conf.token, conf.tokenName, conf.insecure, map[string]string{})), elastic6.SetSniff(false))
+			opts = append(opts, elastic6.SetHttpClient(tokenHttpClient(conf, map[string]string{})), elastic6.SetSniff(false))
+		} else {
+			opts = append(opts, elastic6.SetHttpClient(defaultHttpClient(conf, map[string]string{})))
 		}
 
 		relevantClient, err = elastic6.NewClient(opts...)
@@ -356,7 +368,9 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 		} else if conf.insecure || conf.cacertFile != "" {
 			opts = append(opts, elastic5.SetHttpClient(tlsHttpClient(conf, map[string]string{})), elastic5.SetSniff(false))
 		} else if conf.token != "" {
-			opts = append(opts, elastic5.SetHttpClient(tokenHttpClient(conf.token, conf.tokenName, conf.insecure, map[string]string{})), elastic5.SetSniff(false))
+			opts = append(opts, elastic5.SetHttpClient(tokenHttpClient(conf, map[string]string{})), elastic5.SetSniff(false))
+		} else {
+			opts = append(opts, elastic5.SetHttpClient(defaultHttpClient(conf, map[string]string{})))
 		}
 
 		relevantClient, err = elastic5.NewClient(opts...)
@@ -408,15 +422,9 @@ func getKibanaClient(conf *ProviderConf) (interface{}, error) {
 		} else if conf.insecure || conf.cacertFile != "" {
 			opts = append(opts, elastic7.SetHttpClient(tlsHttpClient(conf, headers)))
 		} else if conf.token != "" {
-			opts = append(opts, elastic7.SetHttpClient(tokenHttpClient(conf.token, conf.tokenName, conf.insecure, headers)), elastic7.SetSniff(false))
+			opts = append(opts, elastic7.SetHttpClient(tokenHttpClient(conf, headers)), elastic7.SetSniff(false))
 		} else {
-			client := http.DefaultClient
-			rt := WithHeader(client.Transport)
-			for k, v := range headers {
-				rt.Set(k, v)
-			}
-			client.Transport = rt
-			opts = append(opts, elastic7.SetHttpClient(client))
+			opts = append(opts, elastic7.SetHttpClient(defaultHttpClient(conf, headers)))
 		}
 
 		return elastic7.NewClient(opts...)
@@ -482,19 +490,27 @@ func awsSession(region string, conf *ProviderConf) *awssession.Session {
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}}
 		sessOpts.Config.HTTPClient = client
+	} else if conf.hostOverride != "" {
+		// Only use `host_override` to set `ServerName` if we're using a secure connection
+		client := &http.Client{Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{ServerName: conf.hostOverride},
+		}}
+		sessOpts.Config.HTTPClient = client
 	}
 
 	return awssession.Must(awssession.NewSessionWithOptions(sessOpts))
 }
 
 func awsHttpClient(region string, conf *ProviderConf, headers map[string]string) *http.Client {
-	signer := awssigv4.NewSigner(awsSession(region, conf).Config.Credentials)
-	client, err := aws_signing_client.New(signer, nil, "es", region)
+	session := awsSession(region, conf)
+	signer := awssigv4.NewSigner(session.Config.Credentials)
+	client, err := aws_signing_client.New(signer, session.Config.HTTPClient, "es", region)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	rt := WithHeader(client.Transport)
+	rt.hostOverride = conf.hostOverride
 	for k, v := range headers {
 		rt.Set(k, v)
 	}
@@ -503,18 +519,21 @@ func awsHttpClient(region string, conf *ProviderConf, headers map[string]string)
 	return client
 }
 
-func tokenHttpClient(token string, tokenName string, insecure bool, headers map[string]string) *http.Client {
+func tokenHttpClient(conf *ProviderConf, headers map[string]string) *http.Client {
 	client := http.DefaultClient
 
 	rt := WithHeader(client.Transport)
-	rt.Set("Authorization", fmt.Sprintf("%s %s", tokenName, token))
+	rt.hostOverride = conf.hostOverride
+	rt.Set("Authorization", fmt.Sprintf("%s %s", conf.tokenName, conf.token))
 	for k, v := range headers {
 		rt.Set(k, v)
 	}
 	client.Transport = rt
 
-	if insecure {
+	if conf.insecure {
 		client.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify = true
+	} else if conf.hostOverride != "" {
+		client.Transport.(*http.Transport).TLSClientConfig.ServerName = conf.hostOverride
 	}
 
 	return client
@@ -551,16 +570,37 @@ func tlsHttpClient(conf *ProviderConf, headers map[string]string) *http.Client {
 	// If configured as insecure, turn off SSL verification
 	if conf.insecure {
 		tlsConfig.InsecureSkipVerify = true
+	} else if conf.hostOverride != "" {
+		tlsConfig.ServerName = conf.hostOverride
 	}
 
 	transport := &http.Transport{TLSClientConfig: tlsConfig}
 
 	rt := WithHeader(transport)
+	rt.hostOverride = conf.hostOverride
 	for k, v := range headers {
 		rt.Set(k, v)
 	}
 
 	client := &http.Client{Transport: rt}
 
+	return client
+}
+
+func defaultHttpClient(conf *ProviderConf, headers map[string]string) *http.Client {
+	// Gets the default HTTP client
+	client := http.DefaultClient
+	rt := WithHeader(client.Transport)
+	for k, v := range headers {
+		rt.Set(k, v)
+	}
+	rt.hostOverride = conf.hostOverride
+	client.Transport = rt
+
+	if conf.insecure {
+		client.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify = true
+	} else if conf.hostOverride != "" {
+		client.Transport.(*http.Transport).TLSClientConfig.ServerName = conf.hostOverride
+	}
 	return client
 }
