@@ -473,6 +473,7 @@ func awsSession(region string, conf *ProviderConf) *awssession.Session {
 		sessOpts.Config.Credentials = assumeRoleCredentials(region, conf.awsAssumeRoleArn, conf.awsProfile)
 	} else if conf.awsProfile != "" {
 		sessOpts.Profile = conf.awsProfile
+		sessOpts.SharedConfigState = awssession.SharedConfigEnable
 	}
 
 	// If configured as insecure, turn off SSL verification
