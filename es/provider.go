@@ -488,8 +488,9 @@ func awsSession(region string, conf *ProviderConf) *awssession.Session {
 }
 
 func awsHttpClient(region string, conf *ProviderConf, headers map[string]string) *http.Client {
-	signer := awssigv4.NewSigner(awsSession(region, conf).Config.Credentials)
-	client, err := aws_signing_client.New(signer, nil, "es", region)
+	session := awsSession(region, conf)
+	signer := awssigv4.NewSigner(session.Config.Credentials)
+	client, err := aws_signing_client.New(signer, session.Config.HTTPClient, "es", region)
 	if err != nil {
 		log.Fatal(err)
 	}
