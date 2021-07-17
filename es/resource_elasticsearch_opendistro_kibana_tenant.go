@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/olivere/elastic/uritemplates"
@@ -97,7 +98,7 @@ func resourceElasticsearchOpenDistroKibanaComputeIndex(tenant string) (string, e
 	cleanedTenant := alphanumeric.ReplaceAllString(tenant, "")
 
 	// originalKibanaIndex+"_"+tenant.hashCode()+"_"+tenant.toLowerCase().replaceAll("[^a-z0-9]+", "")
-	return fmt.Sprintf(".kibana_%v_%v", hashSum, cleanedTenant), nil
+	return fmt.Sprintf(".kibana_%v_%v", hashSum, strings.ToLower(cleanedTenant)), nil
 }
 
 func resourceElasticsearchOpenDistroKibanaTenantUpdate(d *schema.ResourceData, m interface{}) error {
