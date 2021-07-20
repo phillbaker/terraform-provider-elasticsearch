@@ -1,13 +1,26 @@
 # Changelog
 ## Unreleased
 ### Changed
+
+### Added
+
+### Fixed
+
+
+## [1.6.1] - 2020-07-20
+### Changed
 - [kibana object] Diffs will now be detected and the stringified version of kibana objects saved to terraform state (#182).
 
 ### Added
 - [index] Add normalizer and filter attributes
+- [provider] Add host_override parameter to allow connections via SSH tunnel when using sign_aws_requests = true. Add default http client and set ServerName for other clients (#203)
+- [aws] Correctly pass through insecure setting in awsHttpClient (#200)
+- [aws] Also load shared config for a profile (#196)
 
 ### Fixed
 - [host] Fix url attribute being empty
+- [opendistro tenant] Fix casing of opendistro tenant
+- [index] Fix updates on index settings with '.' in name (#198)
 
 
 ## [1.6.0] - 2020-07-03
