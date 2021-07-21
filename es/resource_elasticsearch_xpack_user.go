@@ -263,7 +263,9 @@ func elastic5PutUser(client *elastic5.Client, name string, body string) error {
 }
 
 func elastic6PutUser(client *elastic6.Client, name string, body string) error {
-	return errors.New("unsupported in elasticv6 client")
+	_, err := client.XPackSecurityPutUser(name).Body(body).Do(context.Background())
+	log.Printf("[INFO] put error: %+v", err)
+	return err
 }
 
 func elastic7PutUser(client *elastic7.Client, name string, body string) error {
@@ -309,7 +311,7 @@ func elastic5DeleteUser(client *elastic5.Client, name string) error {
 
 func elastic6DeleteUser(client *elastic6.Client, name string) error {
 	err := errors.New("unsupported in elasticv5 client")
-	return err
+	:return err
 }
 
 func elastic7DeleteUser(client *elastic7.Client, name string) error {
