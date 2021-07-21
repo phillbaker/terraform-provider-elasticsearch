@@ -311,7 +311,7 @@ func elastic5DeleteUser(client *elastic5.Client, name string) error {
 
 func elastic6DeleteUser(client *elastic6.Client, name string) error {
 	err := errors.New("unsupported in elasticv5 client")
-	:return err
+	return err
 }
 
 func elastic7DeleteUser(client *elastic7.Client, name string) error {
