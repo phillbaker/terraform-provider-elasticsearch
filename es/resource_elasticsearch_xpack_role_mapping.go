@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
@@ -91,11 +90,6 @@ func resourceElasticsearchXpackRoleMappingRead(d *schema.ResourceData, m interfa
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic5.Error); ok && elastic5.IsNotFound(elasticErr) {
-			fmt.Printf("[WARN] Role mapping %s not found. Removing from state\n", d.Id())
-			d.SetId("")
-			return nil
-		}
 		return err
 	}
 
@@ -137,11 +131,6 @@ func resourceElasticsearchXpackRoleMappingDelete(d *schema.ResourceData, m inter
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic5.Error); ok && elastic5.IsNotFound(elasticErr) {
-			fmt.Printf("[WARN] Role mapping %s not found. Resource removed from state\n", d.Id())
-			d.SetId("")
-			return nil
-		}
 	}
 	d.SetId("")
 	return nil
@@ -177,8 +166,6 @@ func xpackPutRoleMapping(d *schema.ResourceData, m interface{}, name string, bod
 		return elastic7PutRoleMapping(client, name, body)
 	case *elastic6.Client:
 		return elastic6PutRoleMapping(client, name, body)
-	case *elastic5.Client:
-		return elastic5PutRoleMapping(client, name, body)
 	default:
 		return errors.New("unhandled client type")
 	}
@@ -194,8 +181,6 @@ func xpackGetRoleMapping(d *schema.ResourceData, m interface{}, name string) (XP
 		return elastic7GetRoleMapping(client, name)
 	case *elastic6.Client:
 		return elastic6GetRoleMapping(client, name)
-	case *elastic5.Client:
-		return elastic5GetRoleMapping(client, name)
 	default:
 		return XPackSecurityRoleMapping{}, errors.New("unhandled client type")
 	}
@@ -211,15 +196,9 @@ func xpackDeleteRoleMapping(d *schema.ResourceData, m interface{}, name string) 
 		return elastic7DeleteRoleMapping(client, name)
 	case *elastic6.Client:
 		return elastic6DeleteRoleMapping(client, name)
-	case *elastic5.Client:
-		return elastic5DeleteRoleMapping(client, name)
 	default:
 		return errors.New("unhandled client type")
 	}
-}
-
-func elastic5PutRoleMapping(client *elastic5.Client, name string, body string) error {
-	return errors.New("unsupported in elasticv5 client")
 }
 
 func elastic6PutRoleMapping(client *elastic6.Client, name string, body string) error {
@@ -232,11 +211,6 @@ func elastic7PutRoleMapping(client *elastic7.Client, name string, body string) e
 	resp, err := client.XPackSecurityPutRoleMapping(name).Body(body).Do(context.Background())
 	log.Printf("[INFO] put error: %+v, %+v", resp, err)
 	return err
-}
-
-func elastic5GetRoleMapping(client *elastic5.Client, name string) (XPackSecurityRoleMapping, error) {
-	err := errors.New("unsupported in elasticv5 client")
-	return XPackSecurityRoleMapping{}, err
 }
 
 func elastic6GetRoleMapping(client *elastic6.Client, name string) (XPackSecurityRoleMapping, error) {
@@ -285,11 +259,6 @@ func elastic7GetRoleMapping(client *elastic7.Client, name string) (XPackSecurity
 	}
 
 	return roleMapping, err
-}
-
-func elastic5DeleteRoleMapping(client *elastic5.Client, name string) error {
-	err := errors.New("unsupported in elasticv5 client")
-	return err
 }
 
 func elastic6DeleteRoleMapping(client *elastic6.Client, name string) error {

@@ -2,13 +2,13 @@ package es
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"regexp"
 	"testing"
 
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -141,8 +141,7 @@ func testCheckElasticsearchKibanaObjectExists(name string, objectType string, id
 		case *elastic6.Client:
 			_, err = client.Get().Index(".kibana").Type(deprecatedDocType).Id(id).Do(context.TODO())
 		default:
-			elastic5Client := client.(*elastic5.Client)
-			_, err = elastic5Client.Get().Index(".kibana").Type(objectType).Id(id).Do(context.TODO())
+			return errors.New("Elasticsearch version not supported")
 		}
 
 		if err != nil {
@@ -173,12 +172,11 @@ func testCheckElasticsearchKibanaObjectDestroy(s *terraform.State) error {
 		case *elastic6.Client:
 			_, err = client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
 		default:
-			elastic5Client := client.(*elastic5.Client)
-			_, err = elastic5Client.Get().Index(".kibana").Type("visualization").Id("response-time-percentile").Do(context.TODO())
+			return errors.New("Elasticsearch version not supported")
 		}
 
 		if err != nil {
-			if elastic7.IsNotFound(err) || elastic6.IsNotFound(err) || elastic5.IsNotFound(err) {
+			if elastic7.IsNotFound(err) || elastic6.IsNotFound(err) {
 				return nil // should be not found error
 			}
 

@@ -3,11 +3,11 @@ package es
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
@@ -61,8 +61,7 @@ func resourceElasticsearchIngestPipelineRead(d *schema.ResourceData, meta interf
 	case *elastic6.Client:
 		result, err = elastic6IngestGetPipeline(client, id)
 	default:
-		elastic5Client := client.(*elastic5.Client)
-		result, err = elastic5IngestGetPipeline(elastic5Client, id)
+		return errors.New("Elasticsearch version not supported")
 	}
 	if err != nil {
 		return err
@@ -105,21 +104,6 @@ func elastic6IngestGetPipeline(client *elastic6.Client, id string) (string, erro
 	return string(tj), nil
 }
 
-func elastic5IngestGetPipeline(client *elastic5.Client, id string) (string, error) {
-	res, err := client.IngestGetPipeline(id).Do(context.TODO())
-	if err != nil {
-		return "", err
-	}
-
-	t := res[id]
-	tj, err := json.Marshal(t)
-	if err != nil {
-		return "", err
-	}
-
-	return string(tj), nil
-}
-
 func resourceElasticsearchIngestPipelineUpdate(d *schema.ResourceData, meta interface{}) error {
 	return resourceElasticsearchPutIngestPipeline(d, meta)
 }
@@ -138,8 +122,7 @@ func resourceElasticsearchIngestPipelineDelete(d *schema.ResourceData, meta inte
 	case *elastic6.Client:
 		_, err = client.IngestDeletePipeline(id).Do(context.TODO())
 	default:
-		elastic5Client := client.(*elastic5.Client)
-		_, err = elastic5Client.IngestDeletePipeline(id).Do(context.TODO())
+		return errors.New("Elasticsearch version not supported")
 	}
 
 	if err != nil {
@@ -164,8 +147,7 @@ func resourceElasticsearchPutIngestPipeline(d *schema.ResourceData, meta interfa
 	case *elastic6.Client:
 		_, err = client.IngestPutPipeline(name).BodyString(body).Do(context.TODO())
 	default:
-		elastic5Client := client.(*elastic5.Client)
-		_, err = elastic5Client.IngestPutPipeline(name).BodyString(body).Do(context.TODO())
+		return errors.New("Elasticsearch version not supported")
 	}
 
 	return err

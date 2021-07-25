@@ -2,11 +2,11 @@ package es
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -70,8 +70,7 @@ func testCheckElasticsearchSnapshotRepositoryExists(name string) resource.TestCh
 		case *elastic6.Client:
 			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := client.(*elastic5.Client)
-			_, err = elastic5Client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
+			return errors.New("Elasticsearch version not supported")
 		}
 
 		if err != nil {
@@ -101,8 +100,7 @@ func testCheckElasticsearchSnapshotRepositoryDestroy(s *terraform.State) error {
 		case *elastic6.Client:
 			_, err = client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := client.(*elastic5.Client)
-			_, err = elastic5Client.SnapshotGetRepository(rs.Primary.ID).Do(context.TODO())
+			return errors.New("Elasticsearch version not supported")
 		}
 
 		if err != nil {

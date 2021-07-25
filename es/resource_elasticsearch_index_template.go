@@ -3,12 +3,12 @@ package es
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
@@ -61,11 +61,10 @@ func resourceElasticsearchIndexTemplateRead(d *schema.ResourceData, meta interfa
 	case *elastic6.Client:
 		result, err = elastic6IndexGetTemplate(client, id)
 	default:
-		elastic5Client := esClient.(*elastic5.Client)
-		result, err = elastic5IndexGetTemplate(elastic5Client, id)
+		return errors.New("Elasticsearch version not supported")
 	}
 	if err != nil {
-		if elastic7.IsNotFound(err) || elastic6.IsNotFound(err) || elastic5.IsNotFound(err) {
+		if elastic7.IsNotFound(err) || elastic6.IsNotFound(err) {
 			log.Printf("[WARN] Index template (%s) not found, removing from state", id)
 			d.SetId("")
 			return nil
@@ -108,21 +107,6 @@ func elastic6IndexGetTemplate(client *elastic6.Client, id string) (string, error
 	return string(tj), nil
 }
 
-func elastic5IndexGetTemplate(client *elastic5.Client, id string) (string, error) {
-	res, err := client.IndexGetTemplate(id).Do(context.TODO())
-	if err != nil {
-		return "", err
-	}
-
-	t := res[id]
-	tj, err := json.Marshal(t)
-	if err != nil {
-		return "", err
-	}
-
-	return string(tj), nil
-}
-
 func resourceElasticsearchIndexTemplateUpdate(d *schema.ResourceData, meta interface{}) error {
 	return resourceElasticsearchPutIndexTemplate(d, meta, false)
 }
@@ -141,8 +125,7 @@ func resourceElasticsearchIndexTemplateDelete(d *schema.ResourceData, meta inter
 	case *elastic6.Client:
 		err = elastic6IndexDeleteTemplate(client, id)
 	default:
-		elastic5Client := client.(*elastic5.Client)
-		err = elastic5IndexDeleteTemplate(elastic5Client, id)
+		return errors.New("Elasticsearch version not supported")
 	}
 
 	if err != nil {
@@ -162,11 +145,6 @@ func elastic6IndexDeleteTemplate(client *elastic6.Client, id string) error {
 	return err
 }
 
-func elastic5IndexDeleteTemplate(client *elastic5.Client, id string) error {
-	_, err := client.IndexDeleteTemplate(id).Do(context.TODO())
-	return err
-}
-
 func resourceElasticsearchPutIndexTemplate(d *schema.ResourceData, meta interface{}, create bool) error {
 	name := d.Get("name").(string)
 	body := d.Get("body").(string)
@@ -182,8 +160,7 @@ func resourceElasticsearchPutIndexTemplate(d *schema.ResourceData, meta interfac
 	case *elastic6.Client:
 		err = elastic6IndexPutTemplate(client, name, body, create)
 	default:
-		elastic5Client := client.(*elastic5.Client)
-		err = elastic5IndexPutTemplate(elastic5Client, name, body, create)
+		return errors.New("Elasticsearch version not supported")
 	}
 
 	return err
@@ -195,11 +172,6 @@ func elastic7IndexPutTemplate(client *elastic7.Client, name string, body string,
 }
 
 func elastic6IndexPutTemplate(client *elastic6.Client, name string, body string, create bool) error {
-	_, err := client.IndexPutTemplate(name).BodyString(body).Create(create).Do(context.TODO())
-	return err
-}
-
-func elastic5IndexPutTemplate(client *elastic5.Client, name string, body string, create bool) error {
 	_, err := client.IndexPutTemplate(name).BodyString(body).Create(create).Do(context.TODO())
 	return err
 }

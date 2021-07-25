@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
@@ -164,11 +163,6 @@ func resourceElasticsearchXpackRoleRead(d *schema.ResourceData, m interface{}) e
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic5.Error); ok && elastic5.IsNotFound(elasticErr) {
-			log.Printf("[WARN] Role %s not found. Removing from state\n", d.Id())
-			d.SetId("")
-			return nil
-		}
 		return err
 	}
 
@@ -239,11 +233,6 @@ func resourceElasticsearchXpackRoleDelete(d *schema.ResourceData, m interface{})
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic5.Error); ok && elastic5.IsNotFound(elasticErr) {
-			log.Printf("[WARN] Role %s not found. Resource removed from state\n", d.Id())
-			d.SetId("")
-			return nil
-		}
 	}
 	d.SetId("")
 	return nil
@@ -310,8 +299,6 @@ func xpackPutRole(d *schema.ResourceData, m interface{}, name string, body strin
 		return elastic7PutRole(client, name, body)
 	case *elastic6.Client:
 		return elastic6PutRole(client, name, body)
-	case *elastic5.Client:
-		return elastic5PutRole(client, name, body)
 	default:
 		return errors.New("unhandled client type")
 	}
@@ -327,8 +314,6 @@ func xpackGetRole(d *schema.ResourceData, m interface{}, name string) (XPackSecu
 		return elastic7GetRole(client, name)
 	case *elastic6.Client:
 		return elastic6GetRole(client, name)
-	case *elastic5.Client:
-		return elastic5GetRole(client, name)
 	default:
 		return XPackSecurityRole{}, errors.New("unhandled client type")
 	}
@@ -344,15 +329,9 @@ func xpackDeleteRole(d *schema.ResourceData, m interface{}, name string) error {
 		return elastic7DeleteRole(client, name)
 	case *elastic6.Client:
 		return elastic6DeleteRole(client, name)
-	case *elastic5.Client:
-		return elastic5DeleteRole(client, name)
 	default:
 		return errors.New("unhandled client type")
 	}
-}
-
-func elastic5PutRole(client *elastic5.Client, name string, body string) error {
-	return errors.New("unsupported in elasticv5 client")
 }
 
 func elastic6PutRole(client *elastic6.Client, name string, body string) error {
@@ -365,11 +344,6 @@ func elastic7PutRole(client *elastic7.Client, name string, body string) error {
 	_, err := client.XPackSecurityPutRole(name).Body(body).Do(context.Background())
 	log.Printf("[INFO] put error: %+v", err)
 	return err
-}
-
-func elastic5GetRole(client *elastic5.Client, name string) (XPackSecurityRole, error) {
-	err := errors.New("unsupported in elasticv5 client")
-	return XPackSecurityRole{}, err
 }
 
 func elastic6GetRole(client *elastic6.Client, name string) (XPackSecurityRole, error) {
@@ -459,11 +433,6 @@ func elastic7GetRole(client *elastic7.Client, name string) (XPackSecurityRole, e
 		role.Metadata = string(metadata)
 	}
 	return role, err
-}
-
-func elastic5DeleteRole(client *elastic5.Client, name string) error {
-	err := errors.New("unsupported in elasticv5 client")
-	return err
 }
 
 func elastic6DeleteRole(client *elastic6.Client, name string) error {

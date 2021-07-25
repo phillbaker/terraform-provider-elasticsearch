@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -28,8 +27,6 @@ func TestAccElasticsearchOpenDistroISMPolicyMapping(t *testing.T) {
 
 	switch esClient.(type) {
 	case *elastic6.Client:
-		allowed = false
-	case *elastic5.Client:
 		allowed = false
 	default:
 		allowed = true

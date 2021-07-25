@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -14,30 +13,9 @@ import (
 )
 
 func TestAccElasticsearchWatch(t *testing.T) {
-	provider := Provider()
-	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
-	if diags.HasError() {
-		t.Skipf("err: %#v", diags)
-	}
-	meta := provider.Meta()
-	esClient, err := getClient(meta.(*ProviderConf))
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-	var allowed bool
-	switch esClient.(type) {
-	case *elastic5.Client:
-		allowed = false
-	default:
-		allowed = true
-	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
-			if !allowed {
-				t.Skip("Watches only supported on ES >= 6")
-			}
 		},
 		Providers:    testAccXPackProviders,
 		CheckDestroy: testCheckElasticsearchWatchDestroy,

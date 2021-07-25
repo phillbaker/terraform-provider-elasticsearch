@@ -2,7 +2,7 @@
 
 ![Test](https://github.com/phillbaker/terraform-provider-elasticsearch/workflows/Test/badge.svg?branch=master)
 
-This is a terraform provider that lets you provision elasticsearch resources, compatible with v5, v6 and v7 of elasticsearch. Based off of an [original PR to Terraform](https://github.com/hashicorp/terraform/pull/13238).
+This is a terraform provider that lets you provision elasticsearch resources, compatible with v6 and v7 of elasticsearch. Based off of an [original PR to Terraform](https://github.com/hashicorp/terraform/pull/13238).
 
 ## Using the Provider
 

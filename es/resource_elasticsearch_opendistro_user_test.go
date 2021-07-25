@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -28,8 +27,6 @@ func TestAccElasticsearchOpenDistroUser(t *testing.T) {
 	}
 	var allowed bool
 	switch esClient.(type) {
-	case *elastic5.Client:
-		allowed = false
 	case *elastic6.Client:
 		allowed = false
 	default:
@@ -126,8 +123,6 @@ func TestAccElasticsearchOpenDistroUserMultiple(t *testing.T) {
 	}
 	var allowed bool
 	switch esClient.(type) {
-	case *elastic5.Client:
-		allowed = false
 	case *elastic6.Client:
 		allowed = false
 	default:

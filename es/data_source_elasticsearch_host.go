@@ -1,12 +1,12 @@
 package es
 
 import (
+	"errors"
 	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
@@ -54,12 +54,7 @@ func dataSourceElasticsearchHostRead(d *schema.ResourceData, m interface{}) erro
 			url = urls.Index(0).String()
 		}
 	default:
-		client = esClient.(*elastic5.Client)
-
-		urls := reflect.ValueOf(client).Elem().FieldByName("urls")
-		if urls.Len() > 0 {
-			url = urls.Index(0).String()
-		}
+		return errors.New("this version of Elasticsearch is not supported")
 	}
 	d.SetId(url)
 	err = d.Set("url", url)

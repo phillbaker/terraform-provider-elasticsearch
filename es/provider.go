@@ -23,7 +23,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
@@ -338,42 +337,8 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-	} else if conf.esVersion < "6.0.0" && conf.esVersion >= "5.0.0" {
-		log.Printf("[INFO] Using ES 5")
-		opts := []elastic5.ClientOptionFunc{
-			elastic5.SetURL(conf.rawUrl),
-			elastic5.SetScheme(conf.parsedUrl.Scheme),
-			elastic5.SetSniff(conf.sniffing),
-			elastic5.SetHealthcheck(conf.healthchecking),
-		}
-
-		if conf.parsedUrl.User.Username() != "" {
-			p, _ := conf.parsedUrl.User.Password()
-			opts = append(opts, elastic5.SetBasicAuth(conf.parsedUrl.User.Username(), p))
-		}
-		if conf.username != "" && conf.password != "" {
-			opts = append(opts, elastic5.SetBasicAuth(conf.username, conf.password))
-		}
-
-		if m := awsUrlRegexp.FindStringSubmatch(conf.parsedUrl.Hostname()); m != nil && conf.signAWSRequests {
-			opts = append(opts, elastic5.SetHttpClient(awsHttpClient(m[1], conf, map[string]string{})), elastic5.SetSniff(false))
-		} else if awsRegion := conf.awsRegion; conf.awsRegion != "" && conf.signAWSRequests {
-			log.Printf("[INFO] Using AWS: %+v", conf.awsRegion)
-			opts = append(opts, elastic5.SetHttpClient(awsHttpClient(awsRegion, conf, map[string]string{})), elastic5.SetSniff(false))
-		} else if conf.insecure || conf.cacertFile != "" {
-			opts = append(opts, elastic5.SetHttpClient(tlsHttpClient(conf, map[string]string{})), elastic5.SetSniff(false))
-		} else if conf.token != "" {
-			opts = append(opts, elastic5.SetHttpClient(tokenHttpClient(conf, map[string]string{})), elastic5.SetSniff(false))
-		} else {
-			opts = append(opts, elastic5.SetHttpClient(defaultHttpClient(conf, map[string]string{})))
-		}
-
-		relevantClient, err = elastic5.NewClient(opts...)
-		if err != nil {
-			return nil, err
-		}
-	} else if conf.esVersion < "5.0.0" {
-		return nil, errors.New("ElasticSearch is older than 5.0.0!")
+	} else if conf.esVersion < "6.0.0" {
+		return nil, errors.New("ElasticSearch older than 6.0.0 is not supported.")
 	}
 
 	return relevantClient, nil

@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
@@ -281,30 +280,9 @@ func TestAccElasticsearchIndexAnalysis(t *testing.T) {
 }
 
 func TestAccElasticsearchIndex_handleInvalid(t *testing.T) {
-	provider := Provider()
-	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
-	if diags.HasError() {
-		t.Skipf("err: %#v", diags)
-	}
-	meta := provider.Meta()
-	esClient, err := getClient(meta.(*ProviderConf))
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-	var allowed bool
-	switch esClient.(type) {
-	case *elastic5.Client:
-		allowed = false
-	default:
-		allowed = true
-	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
-			if !allowed {
-				t.Skip("Only tested on ES >= 6")
-			}
 		},
 		Providers:    testAccProviders,
 		CheckDestroy: checkElasticsearchIndexDestroy,
@@ -356,31 +334,9 @@ func TestAccElasticsearchIndex_dateMath(t *testing.T) {
 }
 
 func TestAccElasticsearchIndex_rolloverAliasXpack(t *testing.T) {
-	provider := Provider()
-	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
-	if diags.HasError() {
-		t.Skipf("err: %#v", diags)
-	}
-	meta := provider.Meta()
-	esClient, err := getClient(meta.(*ProviderConf))
-	if err != nil {
-		t.Skipf("err: %s", err)
-	}
-	var allowed bool
-
-	switch esClient.(type) {
-	case *elastic5.Client:
-		allowed = false
-	default:
-		allowed = true
-	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
-			if !allowed {
-				t.Skip("Index lifecycles only supported on ES >= 6")
-			}
 		},
 		Providers:    testAccXPackProviders,
 		CheckDestroy: checkElasticsearchIndexRolloverAliasDestroy(testAccXPackProvider, "terraform-test"),
@@ -420,8 +376,6 @@ func TestAccElasticsearchIndex_rolloverAliasOpendistro(t *testing.T) {
 
 	switch esClient.(type) {
 	case *elastic6.Client:
-		allowed = false
-	case *elastic5.Client:
 		allowed = false
 	default:
 		allowed = true
@@ -480,8 +434,7 @@ func checkElasticsearchIndexExists(name string) resource.TestCheckFunc {
 		case *elastic6.Client:
 			_, err = client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := client.(*elastic5.Client)
-			_, err = elastic5Client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
+			return errors.New("Elasticsearch version not supported")
 		}
 
 		return err
@@ -522,13 +475,7 @@ func checkElasticsearchIndexUpdated(name string) resource.TestCheckFunc {
 			settings = resp[rs.Primary.ID].Settings["index"].(map[string]interface{})
 
 		default:
-			elastic5Client := client.(*elastic5.Client)
-			resp, err := elastic5Client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
-			if err != nil {
-				return err
-			}
-			settings = resp[rs.Primary.ID].Settings["index"].(map[string]interface{})
-
+			return errors.New("Elasticsearch version not supported")
 		}
 
 		r, ok := settings["number_of_replicas"]
@@ -562,8 +509,7 @@ func checkElasticsearchIndexDestroy(s *terraform.State) error {
 		case *elastic6.Client:
 			_, err = client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
 		default:
-			elastic5Client := client.(*elastic5.Client)
-			_, err = elastic5Client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
+			return errors.New("Elasticsearch version not supported")
 		}
 
 		if err != nil {
@@ -599,12 +545,7 @@ func checkElasticsearchIndexRolloverAliasExists(provider *schema.Provider, alias
 			}
 			count = len(r)
 		default:
-			elastic5Client := client.(*elastic5.Client)
-			r, err := elastic5Client.CatAliases().Alias(alias).Do(context.TODO())
-			if err != nil {
-				return err
-			}
-			count = len(r)
+			return errors.New("Elasticsearch version not supported")
 		}
 
 		if count == 0 {
@@ -652,12 +593,7 @@ func checkElasticsearchIndexRolloverAliasDestroy(provider *schema.Provider, alia
 			}
 			count = len(r)
 		default:
-			elastic5Client := client.(*elastic5.Client)
-			r, err := elastic5Client.CatAliases().Alias(alias).Do(context.TODO())
-			if err != nil {
-				return err
-			}
-			count = len(r)
+			return errors.New("Elasticsearch version not supported")
 		}
 
 		if count > 0 {

@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
@@ -115,11 +114,6 @@ func resourceElasticsearchXpackUserRead(d *schema.ResourceData, m interface{}) e
 			d.SetId("")
 			return nil
 		}
-		if elasticErr, ok := err.(*elastic5.Error); ok && elastic5.IsNotFound(elasticErr) {
-			fmt.Printf("[WARN] User %s not found. Removing from state\n", d.Id())
-			d.SetId("")
-			return nil
-		}
 		return err
 	}
 
@@ -158,11 +152,6 @@ func resourceElasticsearchXpackUserDelete(d *schema.ResourceData, m interface{})
 			return nil
 		}
 		if elasticErr, ok := err.(*elastic6.Error); ok && elastic6.IsNotFound(elasticErr) {
-			fmt.Printf("[WARN] User %s not found. Resource removed from state\n", d.Id())
-			d.SetId("")
-			return nil
-		}
-		if elasticErr, ok := err.(*elastic5.Error); ok && elastic5.IsNotFound(elasticErr) {
 			fmt.Printf("[WARN] User %s not found. Resource removed from state\n", d.Id())
 			d.SetId("")
 			return nil
@@ -217,8 +206,6 @@ func xpackPutUser(d *schema.ResourceData, m interface{}, name string, body strin
 		return elastic7PutUser(client, name, body)
 	case *elastic6.Client:
 		return elastic6PutUser(client, name, body)
-	case *elastic5.Client:
-		return elastic5PutUser(client, name, body)
 	default:
 		return errors.New("unhandled client type")
 	}
@@ -234,8 +221,6 @@ func xpackGetUser(d *schema.ResourceData, m interface{}, name string) (XPackSecu
 		return elastic7GetUser(client, name)
 	case *elastic6.Client:
 		return elastic6GetUser(client, name)
-	case *elastic5.Client:
-		return elastic5GetUser(client, name)
 	default:
 		return XPackSecurityUser{}, errors.New("unhandled client type")
 	}
@@ -251,15 +236,9 @@ func xpackDeleteUser(d *schema.ResourceData, m interface{}, name string) error {
 		return elastic7DeleteUser(client, name)
 	case *elastic6.Client:
 		return elastic6DeleteUser(client, name)
-	case *elastic5.Client:
-		return elastic5DeleteUser(client, name)
 	default:
 		return errors.New("unhandled client type")
 	}
-}
-
-func elastic5PutUser(client *elastic5.Client, name string, body string) error {
-	return errors.New("unsupported in elasticv5 client")
 }
 
 func elastic6PutUser(client *elastic6.Client, name string, body string) error {
@@ -272,11 +251,6 @@ func elastic7PutUser(client *elastic7.Client, name string, body string) error {
 	_, err := client.XPackSecurityPutUser(name).Body(body).Do(context.Background())
 	log.Printf("[INFO] put error: %+v", err)
 	return err
-}
-
-func elastic5GetUser(client *elastic5.Client, name string) (XPackSecurityUser, error) {
-	err := errors.New("unsupported in elasticv5 client")
-	return XPackSecurityUser{}, err
 }
 
 func elastic6GetUser(client *elastic6.Client, name string) (XPackSecurityUser, error) {
@@ -317,11 +291,6 @@ func elastic7GetUser(client *elastic7.Client, name string) (XPackSecurityUser, e
 		user.Metadata = string(metadata)
 	}
 	return user, err
-}
-
-func elastic5DeleteUser(client *elastic5.Client, name string) error {
-	err := errors.New("unsupported in elasticv5 client")
-	return err
 }
 
 func elastic6DeleteUser(client *elastic6.Client, name string) error {

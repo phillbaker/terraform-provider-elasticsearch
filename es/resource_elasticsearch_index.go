@@ -3,6 +3,7 @@ package es
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -11,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
@@ -481,13 +481,7 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 		}
 
 	default:
-		elastic5Client := client.(*elastic5.Client)
-		resp, requestErr := elastic5Client.CreateIndex(name).BodyJson(body).Do(ctx)
-		err = requestErr
-		if err == nil {
-			resolvedName = resp.Index
-		}
-
+		return errors.New("Elasticsearch version not supported")
 	}
 
 	if err == nil {
@@ -561,8 +555,7 @@ func resourceElasticsearchIndexDelete(d *schema.ResourceData, meta interface{}) 
 		_, err = client.DeleteIndex(name).Do(ctx)
 
 	default:
-		elastic5Client := client.(*elastic5.Client)
-		_, err = elastic5Client.DeleteIndex(name).Do(ctx)
+		err = errors.New("Elasticsearch version not supported")
 	}
 
 	return err
@@ -588,8 +581,7 @@ func allowIndexDestroy(indexName string, d *schema.ResourceData, meta interface{
 		count, err = client.Count(indexName).Do(ctx)
 
 	default:
-		elastic5Client := client.(*elastic5.Client)
-		count, err = elastic5Client.Count(indexName).Do(ctx)
+		err = errors.New("Elasticsearch version not supported")
 	}
 
 	if err != nil {
@@ -645,8 +637,7 @@ func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) 
 		_, err = client.IndexPutSettings(name).BodyJson(body).Do(ctx)
 
 	default:
-		elastic5Client := client.(*elastic5.Client)
-		_, err = elastic5Client.IndexPutSettings(name).BodyJson(body).Do(ctx)
+		return errors.New("Elasticsearch version not supported")
 	}
 
 	if err == nil {
@@ -693,17 +684,7 @@ func getWriteIndexByAlias(alias string, d *schema.ResourceData, meta interface{}
 		}
 
 	default:
-		elastic5Client := client.(*elastic5.Client)
-		r, err := elastic5Client.CatAliases().Alias(alias).Columns(columns...).Do(ctx)
-		if err != nil {
-			log.Printf("[INFO] getWriteIndexByAlias: %+v", err)
-			return index
-		}
-		for _, column := range r {
-			if column.IsWriteIndex == "true" {
-				return column.Index
-			}
-		}
+		log.Printf("[INFO] Elasticsearch version not supported")
 	}
 
 	return index
@@ -756,20 +737,7 @@ func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) er
 			settings = resp.Settings
 		}
 	default:
-		elastic5Client := client.(*elastic5.Client)
-		r, err := elastic5Client.IndexGetSettings(index).FlatSettings(true).Do(ctx)
-		if err != nil {
-			if elastic5.IsNotFound(err) {
-				log.Printf("[WARN] Index (%s) not found, removing from state", index)
-				d.SetId("")
-				return nil
-			}
-			return err
-		}
-
-		if resp, ok := r[index]; ok {
-			settings = resp.Settings
-		}
+		return errors.New("Elasticsearch version not supported")
 	}
 
 	// Don't override name otherwise it will force a replacement

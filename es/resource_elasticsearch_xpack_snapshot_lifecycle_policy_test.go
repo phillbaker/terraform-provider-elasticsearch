@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	elastic7 "github.com/olivere/elastic/v7"
-	elastic5 "gopkg.in/olivere/elastic.v5"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -28,7 +27,7 @@ func TestAccElasticsearchXpackSnapshotLifecyclePolicy(t *testing.T) {
 	}
 	var allowed bool
 	switch esClient.(type) {
-	case *elastic5.Client, *elastic6.Client:
+	case *elastic6.Client:
 		allowed = false
 	default:
 		allowed = true
@@ -70,7 +69,7 @@ func TestAccElasticsearchXpackSnapshotLifecyclePolicy_importBasic(t *testing.T) 
 		t.Skipf("err: %s", err)
 	}
 	switch esClient.(type) {
-	case *elastic5.Client, *elastic6.Client:
+	case *elastic6.Client:
 		allowed = false
 	default:
 		allowed = true
@@ -168,18 +167,18 @@ resource "elasticsearch_xpack_snapshot_lifecycle_policy" "terraform-test" {
   name = "terraformtest"
   body = <<EOF
 {
-  "schedule": "0 30 1 * * ?", 
-  "name": "<daily-snap-{now/d}>", 
+  "schedule": "0 30 1 * * ?",
+  "name": "<daily-snap-{now/d}>",
   "repository": "terraform-test",
-  "config": { 
-    "indices": ["data-*", "important"], 
+  "config": {
+    "indices": ["data-*", "important"],
     "ignore_unavailable": false,
     "include_global_state": false
   },
-  "retention": { 
-    "expire_after": "30d", 
-    "min_count": 5, 
-    "max_count": 50 
+  "retention": {
+    "expire_after": "30d",
+    "min_count": 5,
+    "max_count": 50
   }
 }
 EOF
