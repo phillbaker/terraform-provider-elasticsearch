@@ -188,18 +188,14 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"elasticsearch_destination":                     resourceElasticsearchDeprecatedDestination(),
 			"elasticsearch_index":                           resourceElasticsearchIndex(),
-			"elasticsearch_index_lifecycle_policy":          resourceElasticsearchDeprecatedIndexLifecyclePolicy(),
 			"elasticsearch_index_template":                  resourceElasticsearchIndexTemplate(),
 			"elasticsearch_composable_index_template":       resourceElasticsearchComposableIndexTemplate(),
 			"elasticsearch_component_template":              resourceElasticsearchComponentTemplate(),
 			"elasticsearch_ingest_pipeline":                 resourceElasticsearchIngestPipeline(),
 			"elasticsearch_kibana_alert":                    resourceElasticsearchKibanaAlert(),
 			"elasticsearch_kibana_object":                   resourceElasticsearchKibanaObject(),
-			"elasticsearch_monitor":                         resourceElasticsearchDeprecatedMonitor(),
 			"elasticsearch_snapshot_repository":             resourceElasticsearchSnapshotRepository(),
-			"elasticsearch_watch":                           resourceElasticsearchDeprecatedWatch(),
 			"elasticsearch_opendistro_destination":          resourceElasticsearchOpenDistroDestination(),
 			"elasticsearch_opendistro_ism_policy":           resourceElasticsearchOpenDistroISMPolicy(),
 			"elasticsearch_opendistro_ism_policy_mapping":   resourceElasticsearchOpenDistroISMPolicyMapping(),
@@ -218,7 +214,6 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"elasticsearch_destination":            dataSourceElasticsearchDeprecatedDestination(),
 			"elasticsearch_host":                   dataSourceElasticsearchHost(),
 			"elasticsearch_opendistro_destination": dataSourceElasticsearchOpenDistroDestination(),
 		},

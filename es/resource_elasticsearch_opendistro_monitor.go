@@ -29,20 +29,6 @@ var openDistroMonitorSchema = map[string]*schema.Schema{
 	},
 }
 
-func resourceElasticsearchDeprecatedMonitor() *schema.Resource {
-	return &schema.Resource{
-		Create: resourceElasticsearchOpenDistroMonitorCreate,
-		Read:   resourceElasticsearchOpenDistroMonitorRead,
-		Update: resourceElasticsearchOpenDistroMonitorUpdate,
-		Delete: resourceElasticsearchOpenDistroMonitorDelete,
-		Schema: openDistroMonitorSchema,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		DeprecationMessage: "elasticsearch_monitor is deprecated, please use elasticsearch_opendistro_monitor resource instead.",
-	}
-}
-
 func resourceElasticsearchOpenDistroMonitor() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceElasticsearchOpenDistroMonitorCreate,

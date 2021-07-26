@@ -126,7 +126,7 @@ resource "elasticsearch_index" "test_date_math" {
 }
 `
 	testAccElasticsearchIndexRolloverAliasXpack = `
-resource "elasticsearch_index_lifecycle_policy" "test" {
+resource "elasticsearch_xpack_index_lifecycle_policy" "test" {
   name = "terraform-test"
   body = <<EOF
 {
@@ -154,7 +154,7 @@ resource "elasticsearch_index_template" "test" {
   "settings": {
     "index": {
       "lifecycle": {
-        "name": "${elasticsearch_index_lifecycle_policy.test.name}",
+        "name": "${elasticsearch_xpack_index_lifecycle_policy.test.name}",
         "rollover_alias": "terraform-test"
       }
     }

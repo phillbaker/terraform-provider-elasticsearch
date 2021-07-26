@@ -29,14 +29,6 @@ var datasourceOpenDistroDestinationSchema = map[string]*schema.Schema{
 	},
 }
 
-func dataSourceElasticsearchDeprecatedDestination() *schema.Resource {
-	return &schema.Resource{
-		Read:               dataSourceElasticsearchOpenDistroDestinationRead,
-		Schema:             datasourceOpenDistroDestinationSchema,
-		DeprecationMessage: "elasticsearch_destination is deprecated, please use elasticsearch_opendistro_destination data source instead.",
-	}
-}
-
 func dataSourceElasticsearchOpenDistroDestination() *schema.Resource {
 	return &schema.Resource{
 		Description: "`elasticsearch_opendistro_destination` can be used to retrieve the destination object by name.",

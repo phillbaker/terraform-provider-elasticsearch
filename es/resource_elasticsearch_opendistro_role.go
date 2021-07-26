@@ -49,15 +49,6 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"fls": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Set:        schema.HashString,
-							Deprecated: "`fls` has been deprecated, please use `field_level_security`",
-						},
 						"field_level_security": {
 							Type:     schema.TypeSet,
 							Optional: true,

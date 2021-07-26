@@ -414,10 +414,8 @@ func (ds *resourceDataSetter) set(key string, value interface{}) {
 }
 
 func flattenIndexPermissions(permissions []IndexPermissions, d *schema.ResourceData) []map[string]interface{} {
-	indexPermission := d.Get("index_permissions").(*schema.Set).List()
-
 	result := make([]map[string]interface{}, 0, len(permissions))
-	for idx, permission := range permissions {
+	for _, permission := range permissions {
 		p := make(map[string]interface{})
 
 		if len(permission.IndexPatterns) > 0 {
@@ -427,16 +425,7 @@ func flattenIndexPermissions(permissions []IndexPermissions, d *schema.ResourceD
 			p["document_level_security"] = permission.DocumentLevelSecurity
 		}
 
-		useDeprecatedFls := false
-		if len(indexPermission) > 0 {
-			indexPermissionSchema := indexPermission[idx].(map[string]interface{})
-			fls := indexPermissionSchema["fls"].(*schema.Set).List()
-			useDeprecatedFls = len(fls) > 0
-		}
-		if useDeprecatedFls && len(permission.FieldLevelSecurity) > 0 {
-			p["fls"] = flattenStringSet(permission.FieldLevelSecurity)
-		}
-		if !useDeprecatedFls && len(permission.FieldLevelSecurity) > 0 {
+		if len(permission.FieldLevelSecurity) > 0 {
 			p["field_level_security"] = flattenStringSet(permission.FieldLevelSecurity)
 		}
 
@@ -461,10 +450,7 @@ func expandIndexPermissionsSet(resourcesArray []interface{}) ([]IndexPermissions
 			return vperm, fmt.Errorf("Error asserting data as type []byte : %v", item)
 		}
 
-		fls := data["fls"]
-		if len(fls.(*schema.Set).List()) == 0 {
-			fls = data["field_level_security"]
-		}
+		fls := data["field_level_security"]
 		flsList := fls.(*schema.Set).List()
 
 		obj := IndexPermissions{

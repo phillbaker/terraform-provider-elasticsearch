@@ -40,20 +40,6 @@ var xPackWatchSchema = map[string]*schema.Schema{
 	},
 }
 
-func resourceElasticsearchDeprecatedWatch() *schema.Resource {
-	return &schema.Resource{
-		Create: resourceElasticsearchWatchCreate,
-		Read:   resourceElasticsearchWatchRead,
-		Update: resourceElasticsearchWatchUpdate,
-		Delete: resourceElasticsearchWatchDelete,
-		Schema: xPackWatchSchema,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		DeprecationMessage: "elasticsearch_watch is deprecated, please use elasticsearch_xpack_watch resource instead.",
-	}
-}
-
 func resourceElasticsearchXpackWatch() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceElasticsearchWatchCreate,

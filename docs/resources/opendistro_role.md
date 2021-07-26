@@ -71,8 +71,6 @@ The `index_permissions` object supports the following:
     (Optional) A list of glob patterns for the index names.
 * `document_level_security` -
     (Optional) A selector for [document-level security][2] (json formatted using jsonencode).
-* `fls` -
-    (Optional) Deprecated, use `field_level_security` instead. A list of selectors for [field-level security][3].
 * `field_level_security` -
     (Optional) A list of selectors for [field-level security][3].
 * `masked_fields` -

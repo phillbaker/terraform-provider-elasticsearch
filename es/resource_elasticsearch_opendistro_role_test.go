@@ -118,24 +118,6 @@ func TestAccElasticsearchOpenDistroRole(t *testing.T) {
 					),
 				),
 			},
-			{
-				Config: testAccOpenDistroRoleResourceDeprecatedFls(randomName),
-				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticSearchOpenDistroRoleExists("elasticsearch_opendistro_role.test"),
-					resource.TestCheckResourceAttr(
-						"elasticsearch_opendistro_role.test",
-						"index_permissions.#",
-						"1",
-					),
-					resource.TestCheckTypeSetElemNestedAttrs(
-						"elasticsearch_opendistro_role.test",
-						"index_permissions.*",
-						map[string]string{
-							"fls.#": "2",
-						},
-					),
-				),
-			},
 		},
 	})
 }
@@ -345,23 +327,6 @@ func testAccOpenDistroRoleResourceWithoutTenantPermissions(resourceName string) 
 				"indices_all",
 			]
 		}
-		cluster_permissions = ["*"]
-	}
-	`, resourceName)
-}
-
-func testAccOpenDistroRoleResourceDeprecatedFls(resourceName string) string {
-	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_role" "test" {
-		role_name = "%s"
-		description = "test"
-
-	  index_permissions {
-	    index_patterns  = ["pub*"]
-	    allowed_actions = ["read"]
-	    fls = ["field1", "field2"]
-	  }
-
 		cluster_permissions = ["*"]
 	}
 	`, resourceName)

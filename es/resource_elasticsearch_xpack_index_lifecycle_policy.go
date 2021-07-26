@@ -25,20 +25,6 @@ var xPackIndexLifecyclePolicySchema = map[string]*schema.Schema{
 	},
 }
 
-func resourceElasticsearchDeprecatedIndexLifecyclePolicy() *schema.Resource {
-	return &schema.Resource{
-		Create: resourceElasticsearchXpackIndexLifecyclePolicyCreate,
-		Read:   resourceElasticsearchXpackIndexLifecyclePolicyRead,
-		Update: resourceElasticsearchXpackIndexLifecyclePolicyUpdate,
-		Delete: resourceElasticsearchXpackIndexLifecyclePolicyDelete,
-		Schema: xPackIndexLifecyclePolicySchema,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		DeprecationMessage: "elasticsearch_index_lifecycle_policy is deprecated, please use elasticsearch_xpack_index_lifecycle_policy resource instead.",
-	}
-}
-
 func resourceElasticsearchXpackIndexLifecyclePolicy() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceElasticsearchXpackIndexLifecyclePolicyCreate,

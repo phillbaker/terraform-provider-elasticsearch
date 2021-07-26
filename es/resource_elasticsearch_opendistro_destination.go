@@ -33,20 +33,6 @@ var openDistroDestinationSchema = map[string]*schema.Schema{
 	},
 }
 
-func resourceElasticsearchDeprecatedDestination() *schema.Resource {
-	return &schema.Resource{
-		Create: resourceElasticsearchOpenDistroDestinationCreate,
-		Read:   resourceElasticsearchOpenDistroDestinationRead,
-		Update: resourceElasticsearchOpenDistroDestinationUpdate,
-		Delete: resourceElasticsearchOpenDistroDestinationDelete,
-		Schema: openDistroDestinationSchema,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-		DeprecationMessage: "elasticsearch_destination is deprecated, please use elasticsearch_opendistro_destination resource instead.",
-	}
-}
-
 func resourceElasticsearchOpenDistroDestination() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides an Elasticsearch OpenDistro destination, a reusable communication channel for an action, such as email, Slack, or a webhook URL. Please refer to the OpenDistro [destination documentation](https://opendistro.github.io/for-elasticsearch-docs/docs/alerting/monitors/#create-destinations) for details.",
