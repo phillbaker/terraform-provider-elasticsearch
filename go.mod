@@ -11,5 +11,5 @@ require (
 	github.com/olivere/elastic/v7 v7.0.25
 	google.golang.org/api v0.29.0 // indirect
 	gopkg.in/olivere/elastic.v5 v5.0.85
-	gopkg.in/olivere/elastic.v6 v6.2.35
+	gopkg.in/olivere/elastic.v6 v6.2.37
 )
