@@ -280,8 +280,23 @@ func elastic5GetUser(client *elastic5.Client, name string) (XPackSecurityUser, e
 }
 
 func elastic6GetUser(client *elastic6.Client, name string) (XPackSecurityUser, error) {
-	err := errors.New("unsupported in elasticv6 client")
-	return XPackSecurityUser{}, err
+		res, err := client.XPackSecurityGetUser(name).Do(context.Background())
+	if err != nil {
+		return XPackSecurityUser{}, err
+	}
+	obj := (*res)[name]
+	user := XPackSecurityUser{}
+	user.Username = name
+	user.Roles = obj.Roles
+	user.Fullname = obj.Fullname
+	user.Email = obj.Email
+	user.Enabled = obj.Enabled
+	if metadata, err := json.Marshal(obj.Metadata); err != nil {
+		return user, err
+	} else {
+		user.Metadata = string(metadata)
+	}
+	return user, err
 }
 
 func elastic7GetUser(client *elastic7.Client, name string) (XPackSecurityUser, error) {
@@ -310,7 +325,7 @@ func elastic5DeleteUser(client *elastic5.Client, name string) error {
 }
 
 func elastic6DeleteUser(client *elastic6.Client, name string) error {
-	err := errors.New("unsupported in elasticv5 client")
+	_, err := client.XPackSecurityDeleteUser(name).Do(context.Background())
 	return err
 }
 
