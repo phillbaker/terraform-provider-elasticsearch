@@ -280,7 +280,7 @@ func elastic5GetUser(client *elastic5.Client, name string) (XPackSecurityUser, e
 }
 
 func elastic6GetUser(client *elastic6.Client, name string) (XPackSecurityUser, error) {
-		res, err := client.XPackSecurityGetUser(name).Do(context.Background())
+	res, err := client.XPackSecurityGetUser(name).Do(context.Background())
 	if err != nil {
 		return XPackSecurityUser{}, err
 	}

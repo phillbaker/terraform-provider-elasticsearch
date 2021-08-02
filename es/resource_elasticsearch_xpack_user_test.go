@@ -30,8 +30,6 @@ func TestAccElasticsearchXpackUser(t *testing.T) {
 	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
-	case *elastic6.Client:
-		allowed = false
 	default:
 		allowed = true
 	}
