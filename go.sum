@@ -493,8 +493,8 @@ gopkg.in/cheggaaa/pb.v1 v1.0.27/go.mod h1:V/YB90LKu/1FcN3WVnfiiE5oMCibMjukxqG/qS
 gopkg.in/errgo.v2 v2.1.0/go.mod h1:hNsd1EY+bozCKY1Ytp96fpM3vjJbqLJn88ws8XvfDNI=
 gopkg.in/olivere/elastic.v5 v5.0.85 h1:GwBqEsvRIHVfCQVXDHYi9LHec2yEkc3GNKh9WB8G/es=
 gopkg.in/olivere/elastic.v5 v5.0.85/go.mod h1:M3WNlsF+WhYn7api4D87NIflwTV/c0iVs8cqfWhK+68=
-gopkg.in/olivere/elastic.v6 v6.2.35 h1:/5dJ0UzM231DGl9eDYOdDgv8yCFzAHQVPMo69rnylks=
-gopkg.in/olivere/elastic.v6 v6.2.35/go.mod h1:2cTT8Z+/LcArSWpCgvZqBgt3VOqXiy7v00w12Lz8bd4=
+gopkg.in/olivere/elastic.v6 v6.2.37 h1:y1SqAL8MJvKckEOo3aZ+Ie0TDIYjrItZ9WBN3VzhoRM=
+gopkg.in/olivere/elastic.v6 v6.2.37/go.mod h1:2cTT8Z+/LcArSWpCgvZqBgt3VOqXiy7v00w12Lz8bd4=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 gopkg.in/yaml.v2 v2.2.8 h1:obN1ZagJSUGI0Ek/LBmuj4SNLPfIny3KsKFopxRdj10=
 gopkg.in/yaml.v2 v2.2.8/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=

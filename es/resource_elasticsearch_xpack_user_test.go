@@ -30,8 +30,6 @@ func TestAccElasticsearchXpackUser(t *testing.T) {
 	switch esClient.(type) {
 	case *elastic5.Client:
 		allowed = false
-	case *elastic6.Client:
-		allowed = false
 	default:
 		allowed = true
 	}
@@ -119,6 +117,17 @@ func testAccCheckUserDestroy(s *terraform.State) error {
 				return err
 			}
 
+		} else if client, ok := esClient.(*elastic6.Client); ok {
+			if _, err := client.XPackSecurityGetUser(rs.Primary.ID).Do(context.TODO()); err != nil {
+				if elasticErr, ok := err.(*elastic6.Error); ok && elasticErr.Status == 404 {
+					return nil
+				} else {
+					return fmt.Errorf("User %q still exists", rs.Primary.ID)
+				}
+			} else {
+				return err
+			}
+
 		} else {
 			return fmt.Errorf("Unsupported client type : %v", meta)
 		}
@@ -146,6 +155,9 @@ func testCheckUserExists(name string) resource.TestCheckFunc {
 		if client, ok := esClient.(*elastic7.Client); ok {
 			_, err = client.XPackSecurityGetUser(rs.Primary.ID).Do(context.TODO())
 		}
+		if client, ok := esClient.(*elastic6.Client); ok {
+			_, err = client.XPackSecurityGetUser(rs.Primary.ID).Do(context.TODO())
+		}
 		if err != nil {
 			return err
 		}
@@ -170,16 +182,30 @@ func testCheckUserCanLogIn(name string) resource.TestCheckFunc {
 			return err
 		}
 
+		url := config.parsedUrl.Scheme + "://" + config.parsedUrl.Host
+
 		switch esClient.(type) {
 		case *elastic7.Client:
 			var client *elastic7.Client
-			url := config.parsedUrl.Scheme + "://" + config.parsedUrl.Host
 			client, err = elastic7.NewClient(
 				elastic7.SetURL(url),
 				elastic7.SetScheme(config.parsedUrl.Scheme),
 				elastic7.SetSniff(false),
 				elastic7.SetBasicAuth(rs.Primary.ID, "secret"),
 				elastic7.SetHealthcheck(false),
+			)
+			if err != nil {
+				return err
+			}
+			_, err = client.XPackSecurityGetUser(rs.Primary.ID).Do(context.TODO())
+		case *elastic6.Client:
+			var client *elastic6.Client
+			client, err = elastic6.NewClient(
+				elastic6.SetURL(url),
+				elastic6.SetScheme(config.parsedUrl.Scheme),
+				elastic6.SetSniff(false),
+				elastic6.SetBasicAuth(rs.Primary.ID, "secret"),
+				elastic6.SetHealthcheck(false),
 			)
 			if err != nil {
 				return err
