@@ -6,8 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/olivere/elastic/uritemplates"
@@ -124,8 +126,12 @@ func resourceElasticsearchOpenDistroKibanaTenantDelete(d *schema.ResourceData, m
 	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
-			Method: "DELETE",
-			Path:   path,
+			Method:           "DELETE",
+			Path:             path,
+			RetryStatusCodes: []int{http.StatusConflict, http.StatusInternalServerError},
+			Retrier: elastic7.NewBackoffRetrier(
+				elastic7.NewExponentialBackoff(100*time.Millisecond, 30*time.Second),
+			),
 		})
 	default:
 		err = errors.New("Creating tenants requires elastic v7 client")
@@ -205,9 +211,13 @@ func resourceElasticsearchPutOpenDistroKibanaTenant(d *schema.ResourceData, m in
 	case *elastic7.Client:
 		var res *elastic7.Response
 		res, err = client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
-			Method: "PUT",
-			Path:   path,
-			Body:   string(tenantJSON),
+			Method:           "PUT",
+			Path:             path,
+			Body:             string(tenantJSON),
+			RetryStatusCodes: []int{http.StatusConflict, http.StatusInternalServerError},
+			Retrier: elastic7.NewBackoffRetrier(
+				elastic7.NewExponentialBackoff(100*time.Millisecond, 30*time.Second),
+			),
 		})
 		body = res.Body
 	default:
