@@ -6,6 +6,12 @@
 
 ### Fixed
 
+## [2.0.0.beta] - 2020-08-30
+### Changed
+- Upgraded to Terraform plugin SDK v2. This removes support for Terraform 0.11 and earlier.
+- Remove deprecated resources and attributes.
+- Drop elasticsearch v5 support.
+
 
 ## [1.6.3] - 2020-08-29
 ### Added
