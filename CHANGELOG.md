@@ -6,6 +6,10 @@
 
 ### Fixed
 
+## [1.6.2] - 2020-08-08
+### Added
+- [xpack user] Add support for elasticsearch v6 (#205)
+
 
 ## [1.6.1] - 2020-07-20
 ### Changed
