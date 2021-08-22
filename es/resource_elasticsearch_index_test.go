@@ -108,6 +108,40 @@ resource "elasticsearch_index" "test" {
 EOF
 }
 `
+	testAccElasticsearchMappingWithDocType = `
+resource "elasticsearch_index" "test_doctype" {
+  name = "terraform-test"
+  number_of_replicas = "1"
+  include_type_name = true
+  mappings = <<EOF
+{
+  "_doc": {
+    "properties": {
+      "name": {
+        "type": "text"
+      }
+    }
+  }
+}
+EOF
+}
+`
+	testAccElasticsearchMappingWithoutDocType = `
+resource "elasticsearch_index" "test_doctype" {
+  name = "terraform-test"
+  number_of_replicas = "1"
+	include_type_name = false
+  mappings = <<EOF
+{
+  "properties": {
+    "name": {
+      "type": "text"
+    }
+  }
+}
+EOF
+}
+`
 	testAccElasticsearchIndexUpdateForceDestroy = `
 resource "elasticsearch_index" "test" {
   name = "terraform-test"
@@ -327,6 +361,43 @@ func TestAccElasticsearchIndex_dateMath(t *testing.T) {
 				Config: testAccElasticsearchIndexDateMath,
 				Check: resource.ComposeTestCheckFunc(
 					checkElasticsearchIndexExists("elasticsearch_index.test_date_math"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccElasticsearchIndex_doctype(t *testing.T) {
+	provider := Provider()
+	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
+	if diags.HasError() {
+		t.Skipf("err: %#v", diags)
+	}
+	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	var config string
+
+	switch esClient.(type) {
+	case *elastic7.Client:
+		config = testAccElasticsearchMappingWithDocType
+	case *elastic6.Client:
+		config = testAccElasticsearchMappingWithoutDocType
+	default:
+		t.Skipf("doctypes removed after v6/v7")
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: checkElasticsearchIndexDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					checkElasticsearchIndexExists("elasticsearch_index.test_doctype"),
 				),
 			},
 		},

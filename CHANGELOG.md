@@ -3,10 +3,12 @@
 ### Changed
 
 ### Added
+- [index] Add include_type_name for compatibility between ESv6/7
 
 ### Fixed
 
-## [2.0.0.beta] - 2021-08-30
+
+## [2.0.0-beta.1] - 2021-08-30
 ### Changed
 - Upgraded to Terraform plugin SDK v2. This removes support for Terraform 0.11 and earlier.
 - Remove deprecated resources and attributes.

@@ -82,6 +82,12 @@ var (
 			Default:     false,
 			Optional:    true,
 		},
+		"include_type_name": {
+			Type:        schema.TypeString,
+			Description: "A string that indicates if and what we should pass to include_type_name parameter. Set to `\"false\"` when trying to create an index on a v6 cluster without a doc type or set to `\"true\"` when trying to create an index on a v7 cluster with a doc type. Since mapping updates are not currently supported, this applies only on index create.",
+			Default:     "",
+			Optional:    true,
+		},
 		// Static settings that can only be set on creation
 		"number_of_shards": {
 			Type:        schema.TypeString,
@@ -467,14 +473,26 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 	}
 	switch client := esClient.(type) {
 	case *elastic7.Client:
-		resp, requestErr := client.CreateIndex(name).BodyJson(body).Do(ctx)
+		put := client.CreateIndex(name)
+		if d.Get("include_type_name").(string) == "true" {
+			put = put.IncludeTypeName(true)
+		} else if d.Get("include_type_name").(string) == "false" {
+			put = put.IncludeTypeName(false)
+		}
+		resp, requestErr := put.BodyJson(body).Do(ctx)
 		err = requestErr
 		if err == nil {
 			resolvedName = resp.Index
 		}
 
 	case *elastic6.Client:
-		resp, requestErr := client.CreateIndex(name).BodyJson(body).Do(ctx)
+		put := client.CreateIndex(name)
+		if d.Get("include_type_name").(string) == "true" {
+			put = put.IncludeTypeName(true)
+		} else if d.Get("include_type_name").(string) == "false" {
+			put = put.IncludeTypeName(false)
+		}
+		resp, requestErr := put.BodyJson(body).Do(ctx)
 		err = requestErr
 		if err == nil {
 			resolvedName = resp.Index
@@ -632,10 +650,8 @@ func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) 
 	switch client := esClient.(type) {
 	case *elastic7.Client:
 		_, err = client.IndexPutSettings(name).BodyJson(body).Do(ctx)
-
 	case *elastic6.Client:
 		_, err = client.IndexPutSettings(name).BodyJson(body).Do(ctx)
-
 	default:
 		return errors.New("Elasticsearch version not supported")
 	}
