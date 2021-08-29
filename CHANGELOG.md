@@ -6,6 +6,12 @@
 
 ### Fixed
 
+
+## [1.6.3] - 2020-08-29
+### Added
+- [opendistro tenant] Retry to avoid conflicts
+
+
 ## [1.6.2] - 2020-08-08
 ### Added
 - [xpack user] Add support for elasticsearch v6 (#205)
