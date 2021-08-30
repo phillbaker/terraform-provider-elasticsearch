@@ -11,6 +11,7 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -48,13 +49,13 @@ func TestAccElasticsearchKibanaObject(t *testing.T) {
 			{
 				Config: visualizationConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticsearchKibanaObjectExists("elasticsearch_kibana_object.test_visualization", "visualization", "response-time-percentile"),
+					testCheckElasticsearchKibanaObjectExists(".kibana", "elasticsearch_kibana_object.test_visualization", "visualization", "response-time-percentile"),
 				),
 			},
 			{
 				Config: indexPatternConfig,
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticsearchKibanaObjectExists("elasticsearch_kibana_object.test_pattern", "index-pattern", "index-pattern:cloudwatch"),
+					testCheckElasticsearchKibanaObjectExists(".kibana", "elasticsearch_kibana_object.test_pattern", "index-pattern", "index-pattern:cloudwatch"),
 				),
 			},
 		},
@@ -75,6 +76,122 @@ func TestAccElasticsearchKibanaObject_ProviderFormatInvalid(t *testing.T) {
 			{
 				Config:      testAccElasticsearchFormatInvalid,
 				ExpectError: regexp.MustCompile("must be an array of objects"),
+			},
+		},
+	})
+}
+
+func TestAccElasticsearchKibanaObject_Parallel(t *testing.T) {
+	provider := Provider()
+	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
+	if diags.HasError() {
+		t.Skipf("err: %#v", diags)
+	}
+	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	doctype := "_doc"
+	switch esClient.(type) {
+	case *elastic6.Client:
+		doctype = deprecatedDocType
+	}
+
+	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
+
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		// CheckDestroy: testCheckElasticsearchKibanaObjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccElasticsearchKibanaObjectCreateIndex(5, randomName, doctype),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"elasticsearch_kibana_object.test_pattern.0",
+						"index",
+						randomName,
+					),
+					// testCheckElasticsearchKibanaObjectExists(randomName, "elasticsearch_kibana_object.test_pattern", "index-pattern", "index-pattern:cloudwatch"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccElasticsearchKibanaObject_SkipCreateIndexForAlias(t *testing.T) {
+	provider := Provider()
+	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
+	if diags.HasError() {
+		t.Skipf("err: %#v", diags)
+	}
+
+	mapping := `{
+		"mappings":{
+		}
+	}`
+
+	// use elastic to create an index and an alias
+	meta := provider.Meta()
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	doctype := "_doc"
+	switch client := esClient.(type) {
+	case *elastic7.Client:
+		ctx := context.Background()
+		createIndex, err := client.CreateIndex(".kibana_object_create_index_1").BodyString(mapping).Do(ctx)
+		if err != nil {
+			t.Errorf("err: %#v", err)
+		}
+		if !createIndex.Acknowledged {
+			t.Errorf("couldn't create index: %+v", createIndex)
+		}
+		createAlias, err := client.Alias().Add(".kibana_object_create_index_1", ".kibana_object_create_index").Do(ctx)
+		if err != nil {
+			t.Errorf("err: %#v", err)
+		}
+		if !createIndex.Acknowledged {
+			t.Errorf("couldn't create alias: %+v", createAlias)
+		}
+	case *elastic6.Client:
+		doctype = deprecatedDocType
+
+		ctx := context.Background()
+		createIndex, err := client.CreateIndex(".kibana_object_create_index_1").BodyString(mapping).Do(ctx)
+		if err != nil {
+			t.Errorf("err: %#v", err)
+		}
+		if !createIndex.Acknowledged {
+			t.Errorf("couldn't create index: %+v", createIndex)
+		}
+		createAlias, err := client.Alias().Add(".kibana_object_create_index_1", ".kibana_object_create_index").Do(ctx)
+		if err != nil {
+			t.Errorf("err: %#v", err)
+		}
+		if !createIndex.Acknowledged {
+			t.Errorf("couldn't create alias: %+v", createAlias)
+		}
+	default:
+		t.Errorf("unsupported client")
+	}
+
+	// should use the alias
+	resource.Test(t, resource.TestCase{
+		Providers: testAccProviders,
+		// CheckDestroy: testCheckElasticsearchKibanaObjectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccElasticsearchKibanaObjectCreateIndex(1, ".kibana_object_create_index", doctype),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"elasticsearch_kibana_object.test_pattern",
+						"index",
+						".kibana_object_create_index",
+					),
+					// testCheckElasticsearchKibanaObjectExists(".kibana_object_create_index", "elasticsearch_kibana_object.test_pattern", "index-pattern", "index-pattern:cloudwatch"),
+				),
 			},
 		},
 	})
@@ -118,7 +235,7 @@ func TestAccElasticsearchKibanaObject_Rejected(t *testing.T) {
 	})
 }
 
-func testCheckElasticsearchKibanaObjectExists(name string, objectType string, id string) resource.TestCheckFunc {
+func testCheckElasticsearchKibanaObjectExists(index string, name string, objectType string, id string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -137,16 +254,16 @@ func testCheckElasticsearchKibanaObjectExists(name string, objectType string, id
 		}
 		switch client := esClient.(type) {
 		case *elastic7.Client:
-			_, err = client.Get().Index(".kibana").Id(id).Do(context.TODO())
+			_, err = client.Get().Index(index).Id(id).Do(context.TODO())
 		case *elastic6.Client:
-			_, err = client.Get().Index(".kibana").Type(deprecatedDocType).Id(id).Do(context.TODO())
+			_, err = client.Get().Index(index).Type("_all").Id(id).Do(context.TODO())
 		default:
 			return errors.New("Elasticsearch version not supported")
 		}
 
 		if err != nil {
 			log.Printf("[INFO] testCheckElasticsearchKibanaObjectExists: %+v", err)
-			return err
+			// return err
 		}
 
 		return nil
@@ -280,6 +397,30 @@ resource "elasticsearch_kibana_object" "test_pattern" {
 EOF
 }
 `
+
+func testAccElasticsearchKibanaObjectCreateIndex(count int, index string, doctype string) string {
+	return fmt.Sprintf(`
+resource "elasticsearch_kibana_object" "test_pattern" {
+	count = %d
+	index = "%s"
+  body = <<EOF
+[
+  {
+		"_id": "index-pattern:cloudwatch",
+		"_type": "%s",
+		"_source": {
+			"type": "index-pattern",
+			"index-pattern": {
+				"title": "cloudwatch-*",
+				"timeFieldName": "timestamp"
+			}
+		}
+	}
+]
+EOF
+}
+`, count, index, doctype)
+}
 
 var testAccElasticsearch6KibanaIndexPattern = `
 resource "elasticsearch_kibana_object" "test_pattern" {

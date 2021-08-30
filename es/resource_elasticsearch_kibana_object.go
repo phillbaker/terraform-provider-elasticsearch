@@ -135,8 +135,11 @@ func elastic7CreateIndexIfNotExists(client *elastic7.Client, index string, mappi
 	}
 	if !exists {
 		createIndex, err := client.CreateIndex(mappingIndex).Body(`{"mappings":{}}`).Do(context.TODO())
-		if createIndex.Acknowledged {
+		if err == nil && createIndex.Acknowledged {
 			return INDEX_CREATED, err
+		} else if e, ok := err.(*elastic7.Error); ok && e.Details.Type == "resource_already_exists_exception" {
+			// If we have multiple parallel objects creating, we can get a race condition
+			return INDEX_CREATED, nil
 		}
 		return INDEX_CREATION_FAILED, err
 	}
@@ -154,11 +157,13 @@ func elastic6CreateIndexIfNotExists(client *elastic6.Client, index string, mappi
 	}
 	if !exists {
 		createIndex, err := client.CreateIndex(mapping_index).Body(`{"mappings":{}}`).Do(context.TODO())
-		if createIndex.Acknowledged {
+		if err == nil && createIndex.Acknowledged {
 			return INDEX_CREATED, err
-		} else {
-			return INDEX_CREATION_FAILED, err
+		} else if e, ok := err.(*elastic6.Error); ok && e.Details.Type == "resource_already_exists_exception" {
+			// If we have multiple parallel objects creating, we can get a race condition
+			return INDEX_CREATED, nil
 		}
+		return INDEX_CREATION_FAILED, err
 	}
 
 	return INDEX_EXISTS, nil
