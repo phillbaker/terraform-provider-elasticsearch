@@ -6,24 +6,24 @@
 
 ### Fixed
 
-## [2.0.0.beta] - 2020-08-30
+## [2.0.0.beta] - 2021-08-30
 ### Changed
 - Upgraded to Terraform plugin SDK v2. This removes support for Terraform 0.11 and earlier.
 - Remove deprecated resources and attributes.
 - Drop elasticsearch v5 support.
 
 
-## [1.6.3] - 2020-08-29
+## [1.6.3] - 2021-08-29
 ### Added
 - [opendistro tenant] Retry to avoid conflicts
 
 
-## [1.6.2] - 2020-08-08
+## [1.6.2] - 2021-08-08
 ### Added
 - [xpack user] Add support for elasticsearch v6 (#205)
 
 
-## [1.6.1] - 2020-07-20
+## [1.6.1] - 2021-07-20
 ### Changed
 - [kibana object] Diffs will now be detected and the stringified version of kibana objects saved to terraform state (#182).
 
@@ -39,7 +39,7 @@
 - [index] Fix updates on index settings with '.' in name (#198)
 
 
-## [1.6.0] - 2020-07-03
+## [1.6.0] - 2021-07-03
 ### Changed
 - [aws] Always enable AWS shared configuration file support
 
@@ -49,7 +49,7 @@
 - [opendistro tenant] Add computed attribute for index
 
 
-## [1.5.8] - 2020-06-25
+## [1.5.8] - 2021-06-25
 ### Added
 - [component template] Resource to manage component templates.
 - [index] Add attributes for analysis settings.
@@ -58,7 +58,7 @@
 - [aws] Fix concurrent map writes crash when using AWS assume role.
 
 
-## [1.5.7] - 2020-06-06
+## [1.5.7] - 2021-06-06
 ### Changed
 - [index] Refactor to use flattened settings, prepare for adding more settings.
 - [opendistro ISM policy mapping] Poll for updates to mapped indices.
@@ -77,7 +77,7 @@
 - [aws] Fix regression in 1.5.1 that broke the use of `aws_assume_role_arn` (#124)
 
 
-## [1.5.6] - 2020-05-10
+## [1.5.6] - 2021-05-10
 ### Changed
 - [opendistro destination] Use API to get in odfe>=1.11.0 (#158)
 
@@ -89,7 +89,7 @@
 - [opendistro monitor] Normalize IDs
 
 
-## [1.5.5] - 2020-04-06
+## [1.5.5] - 2021-04-06
 ### Changed
 - Updated AWS client to v1.37.0 for AWS SSO auth using `aws_provider_profile` (#162)
 
@@ -100,7 +100,7 @@
 - [opendistro ism] Retry on 409.
 
 
-## [1.5.4] - 2020-03-17
+## [1.5.4] - 2021-03-17
 ### Fixed
 - [opendistro destination] normalize destination for nested "id" key in newer versions of ES (#148)
 - [index] Handle not found on resource read
@@ -109,7 +109,7 @@
 #157
 
 
-## [1.5.3] - 2020-02-18
+## [1.5.3] - 2021-02-18
 ### Changed
 - [xpack_user,opendistro_user] Hash user passwords in state to detect change (#132)
 
@@ -117,7 +117,7 @@
 -  Open Distro Kibana tenant resource (#144)
 
 
-## [1.5.2] - 2020-02-05
+## [1.5.2] - 2021-02-05
 ### Changed
 - [open distro role] Rename fls in favor of field_level_security, deprecate fls.
 - [aws auth] Revert bump aws client to v1.35.33, downgrade to v1.35.20
