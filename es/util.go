@@ -321,10 +321,10 @@ func flattenStringList(list []string) []interface{} {
 }
 
 func flattenStringSet(list []string) *schema.Set {
-	return flattenInterfaceSet(flattenStringList(list))
+	return flattenStringAsInterfaceSet(flattenStringList(list))
 }
 
-func flattenInterfaceSet(list []interface{}) *schema.Set {
+func flattenStringAsInterfaceSet(list []interface{}) *schema.Set {
 	return schema.NewSet(schema.HashString, list)
 }
 
