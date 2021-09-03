@@ -73,7 +73,7 @@ The following arguments are supported:
 * `insecure` (Optional) - Disable SSL verification of API calls (defaults to `false`)
 * `client_cert_path` (Optional) - A X509 certificate to connect to elasticsearch. Defaults to `ES_CLIENT_CERTIFICATE_PATH` from the environment
 * `client_key_path` (Optional) - A X509 key to connect to elasticsearch. Defaults to `ES_CLIENT_KEY_PATH`
-* `sign_aws_requests` (Optional) - Enable signing of AWS elasticsearch requests (defauls to `true`). The `url` must refer to AWS ES domain (`*.<region>.es.amazonaws.com`), or `aws_region` must be specified explicitly.
+* `sign_aws_requests` (Optional) - Enable signing of AWS elasticsearch requests (defaults to `true`). The `url` must refer to AWS ES domain (`*.<region>.es.amazonaws.com`), or `aws_region` must be specified explicitly.
 * `elasticsearch_version` (Optional) - ElasticSearch Version, if set, skips the version detection at provider start.
 * `host_override` (Optional) - If provided, sets the 'Host' header of requests and the 'ServerName' for certificate validation to this value. See the documentation on connecting to Elasticsearch via an SSH tunnel.
 
@@ -103,7 +103,7 @@ provider "elasticsearch" {
 }
 ```
 
-#### Assume role configuration
+#### Assume role configuration
 
 You can instruct the provider to assume a role in AWS before interacting with Elasticsearch by setting the `aws_assume_role_arn` variable.
 
@@ -149,11 +149,11 @@ Please refer to the official [userguide](https://docs.aws.amazon.com/cli/latest/
 
 If you need to connect to an Elasticsearch cluster via an SSH tunnel (for example, to an AWS VPC Cluster), set the following configuration options in your provider:
 
-```
+```tf
 provider "elasticsearch" {
   url   = "https://localhost:9999" # Replace 9999 with the port your SSH tunnel is running on
   host_override = "vpc-<******>.us-east-1.es.amazonaws.com"
 }
 ```
 
-The `host_override` flag will set the `Host` header of requests to Elasticsearch and the `ServerName` used for certificate validation. It is recommended to set this flag instead of `insecure = true`, which causes certificate validation to be skipped. Note that if both `host_override` and `insecure = true` are set, certificate validation will be skipped and the `Host` header will be overriden.
+The `host_override` flag will set the `Host` header of requests to Elasticsearch and the `ServerName` used for certificate validation. It is recommended to set this flag instead of `insecure = true`, which causes certificate validation to be skipped. Note that if both `host_override` and `insecure = true` are set, certificate validation will be skipped and the `Host` header will be overridden.
