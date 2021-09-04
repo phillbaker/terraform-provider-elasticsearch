@@ -223,123 +223,123 @@ func testCheckElasticSearchOpenDistroRoleExists(name string) resource.TestCheckF
 
 func testAccOpenDistroRoleResource(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_role" "test" {
-		role_name = "%s"
-		description = "test"
-		index_permissions {
-			index_patterns = [
-				"*",
-			]
+resource "elasticsearch_opendistro_role" "test" {
+  role_name   = "%s"
+  description = "test"
+  index_permissions {
+    index_patterns = [
+      "*",
+    ]
 
-			allowed_actions = [
-				"*",
-			]
-		}
+    allowed_actions = [
+      "*",
+    ]
+  }
 
-		tenant_permissions {
-			tenant_patterns = [
-				"*",
-			]
+  tenant_permissions {
+    tenant_patterns = [
+      "*",
+    ]
 
-			allowed_actions = [
-				"kibana_all_write",
-			]
-		}
+    allowed_actions = [
+      "kibana_all_write",
+    ]
+  }
 
-		cluster_permissions = ["*"]
-	}
+  cluster_permissions = ["*"]
+}
 	`, resourceName)
 }
 
 func testAccOpenDistroRoleResourceUpdated(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_role" "test" {
-		role_name = "%s"
-		description = "test"
-		index_permissions {
-			index_patterns = [
-				"test*",
-			]
+resource "elasticsearch_opendistro_role" "test" {
+  role_name   = "%s"
+  description = "test"
+  index_permissions {
+    index_patterns = [
+      "test*",
+    ]
 
-			allowed_actions = [
-				"read",
-			]
-		}
+    allowed_actions = [
+      "read",
+    ]
+  }
 
-		index_permissions {
-			index_patterns = [
-				"?kibana",
-			]
+  index_permissions {
+    index_patterns = [
+      "?kibana",
+    ]
 
-			allowed_actions = [
-				"indices_all",
-			]
-		}
+    allowed_actions = [
+      "indices_all",
+    ]
+  }
 
-		tenant_permissions {
-			tenant_patterns = [
-				"*",
-			]
+  tenant_permissions {
+    tenant_patterns = [
+      "*",
+    ]
 
-			allowed_actions = [
-				"kibana_all_write",
-			]
-		}
+    allowed_actions = [
+      "kibana_all_write",
+    ]
+  }
 
-		tenant_permissions {
-			tenant_patterns = [
-				"test*",
-			]
+  tenant_permissions {
+    tenant_patterns = [
+      "test*",
+    ]
 
-			allowed_actions = [
-				"kibana_all_write",
-			]
-		}
+    allowed_actions = [
+      "kibana_all_write",
+    ]
+  }
 
-		cluster_permissions = ["*"]
-	}
+  cluster_permissions = ["*"]
+}
 	`, resourceName)
 }
 
 func testAccOpenDistroRoleResourceWithoutTenantPermissions(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_role" "test" {
-		role_name = "%s"
-		description = "test"
-		index_permissions {
-			index_patterns = [
-				"test*",
-			]
-			allowed_actions = [
-				"read",
-			]
-		}
-		index_permissions {
-			index_patterns = [
-				"?kibana",
-			]
-			allowed_actions = [
-				"indices_all",
-			]
-		}
-		cluster_permissions = ["*"]
-	}
+resource "elasticsearch_opendistro_role" "test" {
+  role_name   = "%s"
+  description = "test"
+  index_permissions {
+    index_patterns = [
+      "test*",
+    ]
+    allowed_actions = [
+      "read",
+    ]
+  }
+  index_permissions {
+    index_patterns = [
+      "?kibana",
+    ]
+    allowed_actions = [
+      "indices_all",
+    ]
+  }
+  cluster_permissions = ["*"]
+}
 	`, resourceName)
 }
 
 func testAccOpenDistroRoleResourceFieldLevelSecurity(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_role" "test" {
-		role_name = "%s"
-		description = "test"
+resource "elasticsearch_opendistro_role" "test" {
+  role_name   = "%s"
+  description = "test"
 
-	  index_permissions {
-	    index_patterns  = ["pub*"]
-	    allowed_actions = ["read"]
-	    field_level_security = ["fielda", "myfieldb"]
-	  }
+  index_permissions {
+    index_patterns       = ["pub*"]
+    allowed_actions      = ["read"]
+    field_level_security = ["fielda", "myfieldb"]
+  }
 
-		cluster_permissions = ["*"]
-	}
+  cluster_permissions = ["*"]
+}
 	`, resourceName)
 }

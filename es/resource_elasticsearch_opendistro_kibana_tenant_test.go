@@ -136,18 +136,18 @@ func testCheckElasticSearchOpenDistroKibanaTenantExists(name string) resource.Te
 
 func testAccOpenDistroKibanaTenantResource(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_kibana_tenant" "test" {
-		tenant_name = "%s"
-		description = "test"
-	}
+resource "elasticsearch_opendistro_kibana_tenant" "test" {
+  tenant_name = "%s"
+  description = "test"
+}
 	`, resourceName)
 }
 
 func testAccOpenDistroKibanaTenantResourceUpdated(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_kibana_tenant" "test" {
-		tenant_name = "%s"
-		description = "test2"
-	}
+resource "elasticsearch_opendistro_kibana_tenant" "test" {
+  tenant_name = "%s"
+  description = "test2"
+}
 	`, resourceName)
 }

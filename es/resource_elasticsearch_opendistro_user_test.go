@@ -253,81 +253,81 @@ func testCheckElasticSearchOpenDistroUserConnects(name string) resource.TestChec
 
 func testAccOpenDistroUserResource(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_user" "test" {
-		username      = "%s"
-		password      = "passw0rd"
-		description   = "test"
-		backend_roles = ["some_role"]
+resource "elasticsearch_opendistro_user" "test" {
+  username      = "%s"
+  password      = "passw0rd"
+  description   = "test"
+  backend_roles = ["some_role"]
 
-		attributes = {
-			some_attribute = "alpha"
-		}
-	}
+  attributes = {
+    some_attribute = "alpha"
+  }
+}
 	`, resourceName)
 }
 
 func testAccOpenDistroUserResourceHash(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_user" "test" {
-		username      = "%s"
-		password_hash = "$2a$04$jQcEXpODnTFoGDuA7DPdSevA84CuH/7MOYkb80M3XZIrH76YMWS9G"
-	}
+resource "elasticsearch_opendistro_user" "test" {
+  username      = "%s"
+  password_hash = "$2a$04$jQcEXpODnTFoGDuA7DPdSevA84CuH/7MOYkb80M3XZIrH76YMWS9G"
+}
 	`, resourceName)
 }
 
 func testAccOpenDistroUserResourceUpdated(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_user" "test" {
-		username      = "%s"
-		password      = "passw0rd"
-		description   = "test"
-		backend_roles = ["some_role", "monitor_role"]
+resource "elasticsearch_opendistro_user" "test" {
+  username      = "%s"
+  password      = "passw0rd"
+  description   = "test"
+  backend_roles = ["some_role", "monitor_role"]
 
-		attributes = {
-			some_attribute  = "alpha"
-			other_attribute = "beta"
-		}
-	}
+  attributes = {
+    some_attribute  = "alpha"
+    other_attribute = "beta"
+  }
+}
 
-	resource "elasticsearch_opendistro_role" "security_role" {
-		role_name           = "monitor_security_role"
-		cluster_permissions = ["cluster_monitor"]
-	}
+resource "elasticsearch_opendistro_role" "security_role" {
+  role_name           = "monitor_security_role"
+  cluster_permissions = ["cluster_monitor"]
+}
 
-	resource "elasticsearch_opendistro_roles_mapping" "security_role" {
-		role_name = "${elasticsearch_opendistro_role.security_role.id}"
-		backend_roles = ["monitor_role"]
-	}
+resource "elasticsearch_opendistro_roles_mapping" "security_role" {
+  role_name     = "${elasticsearch_opendistro_role.security_role.id}"
+  backend_roles = ["monitor_role"]
+}
 	`, resourceName)
 }
 
 func testAccOpenDistroUserResourceMinimal(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_user" "test" {
-		username = "%s"
-		password = "passw0rd"
-	}
+resource "elasticsearch_opendistro_user" "test" {
+  username = "%s"
+  password = "passw0rd"
+}
 	`, resourceName)
 }
 
 func testAccOpenDistroUserMultiple(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_user" "testuser1" {
-	  username = "%s-testuser1"
-	  password = "testuser1"
-	  description   = "testuser1"
-	}
+resource "elasticsearch_opendistro_user" "testuser1" {
+  username    = "%s-testuser1"
+  password    = "testuser1"
+  description = "testuser1"
+}
 
-	resource "elasticsearch_opendistro_user" "testuser2" {
-	  username = "%s-testuser2"
-	  password = "testuser2"
-	  description   = "testuser2"
-	}
+resource "elasticsearch_opendistro_user" "testuser2" {
+  username    = "%s-testuser2"
+  password    = "testuser2"
+  description = "testuser2"
+}
 
-	resource "elasticsearch_opendistro_user" "testuser3" {
-	  username = "%s-testuser3"
-	  password = "testuser3"
-	  description   = "testuser3"
-	}
+resource "elasticsearch_opendistro_user" "testuser3" {
+  username    = "%s-testuser3"
+  password    = "testuser3"
+  description = "testuser3"
+}
 	`, resourceName, resourceName, resourceName)
 }

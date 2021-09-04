@@ -12,5 +12,5 @@
 # }
 
 data "elasticsearch_opendistro_destination" "test" {
-  name = my-destination"
+  name = "my-destination"
 }

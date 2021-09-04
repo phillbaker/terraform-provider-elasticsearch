@@ -1,5 +1,5 @@
 provider "elasticsearch" {
-    url = "localhost:9200"
+  url = "localhost:9200"
 }
 
 resource "elasticsearch_ingest_pipeline" "filebeat_nginx_log" {
@@ -13,7 +13,7 @@ resource "elasticsearch_ingest_pipeline" "filebeat_nginx_log" {
       "grok": {
         "field": "message",
         "patterns": [
-          """%{IPORHOST:clientip} %{USER:ident} %{USER:auth} \[%{HTTPDATE:timestamp}\] "%{WORD:verb} %{DATA:request} HTTP/%{NUMBER:httpversion}" %{NUMBER:response:int} (?:-|%{NUMBER:bytes:int}) %{QS:referrer} %{QS:agent}"""
+          """%%{IPORHOST:clientip} %%{USER:ident} %%{USER:auth} \[%%{HTTPDATE:timestamp}\] "%%{WORD:verb} %%{DATA:request} HTTP/%%{NUMBER:httpversion}" %%{NUMBER:response:int} (?:-|%%{NUMBER:bytes:int}) %%{QS:referrer} %%{QS:agent}"""
         ]
       }
     },
@@ -41,7 +41,7 @@ resource "elasticsearch_ingest_pipeline" "filebeat_nginx_error" {
       "grok": {
         "field": "message",
         "patterns": [
-          """^(?<timestamp>%{YEAR}[./]%{MONTHNUM}[./]%{MONTHDAY} %{TIME}) \[%{LOGLEVEL:severity}\] %{POSINT:pid}#%{NUMBER:threadid}\:( \*%{NUMBER:connectionid})? %{DATA:message}(,|$)( client: %{IPORHOST:client})?(, server: %{IPORHOST:server})?(, request: "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion}))")?(, upstream: "%{DATA:upstream}")?(, host: "%{IPORHOST:vhost}")?"""
+          """^(?<timestamp>%%{YEAR}[./]%%{MONTHNUM}[./]%%{MONTHDAY} %%{TIME}) \[%%{LOGLEVEL:severity}\] %%{POSINT:pid}#%%{NUMBER:threadid}\:( \*%%{NUMBER:connectionid})? %%{DATA:message}(,|$)( client: %%{IPORHOST:client})?(, server: %%{IPORHOST:server})?(, request: "(?:%%{WORD:verb} %%{NOTSPACE:request}(?: HTTP/%%{NUMBER:httpversion}))")?(, upstream: "%%{DATA:upstream}")?(, host: "%%{IPORHOST:vhost}")?"""
         ]
       }
     },

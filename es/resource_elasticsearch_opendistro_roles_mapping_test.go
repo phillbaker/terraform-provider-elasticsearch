@@ -142,27 +142,27 @@ func testCheckElasticSearchOpenDistroRolesMappingExists(name string) resource.Te
 
 func testAccOpenDistroRolesMappingResource(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_roles_mapping" "test" {
-		role_name = "readall"
-		backend_roles = [
-			"active_directory",
-		]
+resource "elasticsearch_opendistro_roles_mapping" "test" {
+  role_name = "readall"
+  backend_roles = [
+    "active_directory",
+  ]
 
-		description = "%s"
-	}
+  description = "%s"
+}
 	`, resourceName)
 }
 
 func testAccOpenDistroRoleMappingResourceUpdated(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_opendistro_roles_mapping" "test" {
-		role_name = "readall"
-		backend_roles = [
-			"active_directory",
-			"ldap",
-		]
+resource "elasticsearch_opendistro_roles_mapping" "test" {
+  role_name = "readall"
+  backend_roles = [
+    "active_directory",
+    "ldap",
+  ]
 
-		description = "%s update"
-	}
+  description = "%s update"
+}
 	`, resourceName)
 }

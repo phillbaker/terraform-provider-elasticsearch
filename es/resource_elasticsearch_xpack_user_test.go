@@ -200,11 +200,11 @@ func testCheckUserCanLogIn(name string) resource.TestCheckFunc {
 func testAccUserResource(resourceName string) string {
 	return fmt.Sprintf(`
 resource "elasticsearch_xpack_user" "test" {
-	username = "%s"
-	fullname = "John Do"
-	email    = "john@do.com"
-	password = "secret"
-	roles    = ["superuser"]
+  username = "%s"
+  fullname = "John Do"
+  email    = "john@do.com"
+  password = "secret"
+  roles    = ["superuser"]
 }
 `, resourceName)
 }
@@ -212,11 +212,11 @@ resource "elasticsearch_xpack_user" "test" {
 func testAccUserResource_Updated(resourceName string) string {
 	return fmt.Sprintf(`
 resource "elasticsearch_xpack_user" "test" {
-	username = "%s"
-	fullname = "John DoDo"
-	email    = "john@do.com"
-	password = "secret"
-	roles    = ["superuser", "kibana_admin"]
+  username = "%s"
+  fullname = "John DoDo"
+  email    = "john@do.com"
+  password = "secret"
+  roles    = ["superuser", "kibana_admin"]
   metadata = <<-EOF
   {
     "foo": "bar"
@@ -229,9 +229,9 @@ resource "elasticsearch_xpack_user" "test" {
 func testAccUserResource_Global(resourceName string) string {
 	return fmt.Sprintf(`
 resource "elasticsearch_xpack_user" "test" {
-	username = "%s"
-	password = "secret"
-	roles    = []
+  username = "%s"
+  password = "secret"
+  roles    = []
 }
 `, resourceName)
 }

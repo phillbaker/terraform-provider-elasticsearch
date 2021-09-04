@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+# test examples are terraform formatted, terraform fmt has non zero exit code
+# if there are non canonical files
+terraform fmt -recursive -no-color -check -diff examples/ | while IFS= read -r line; do
+    echo "$line"
+
+    if [[ -f "$line" ]]; then
+        echo "::error file=$line::File is not in canonical format (terraform fmt)"
+    fi
+done
+
+# test terraform HCL content in test files is formatted
+terrafmt diff -f ./es --check --pattern '*_test.go' --quiet || (echo; \
+		echo "Unexpected differences in acceptance test HCL content formatting."; \
+		echo "To see the full differences, run: terrafmt diff ./es --pattern '*_test.go'"; \
+		exit 1)

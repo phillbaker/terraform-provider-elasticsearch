@@ -154,7 +154,7 @@ resource "elasticsearch_xpack_role_mapping" "test" {
     "admin",
     "user",
   ]
-  rules = <<-EOF
+  rules   = <<-EOF
   {
     "any": [
       {
@@ -181,10 +181,10 @@ resource "elasticsearch_xpack_role_mapping" "test" {
   role_mapping_name = "%s"
   roles = [
     "admin",
-	"user",
-	"guest",
+    "user",
+    "guest",
   ]
-  rules = <<-EOF
+  rules   = <<-EOF
   {
     "any": [
       {

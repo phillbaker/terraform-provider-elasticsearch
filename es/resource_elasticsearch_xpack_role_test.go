@@ -141,110 +141,110 @@ func testCheckRoleExists(name string) resource.TestCheckFunc {
 
 func testAccRoleResource(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_xpack_role" "test" {
-		role_name = "%s"
-		indices {
-			names 	   = ["testIndice"]
-			privileges = ["read"]
-                        field_security {
-                                       grant = ["testField", "testField2"]
-                        }
-		}
-		indices {
-			names 	   = ["testIndice2"]
-			privileges = ["write"]
-                        field_security {
-                                       grant = ["*"]
-                                       except = ["testField3"]
-                        }
-		}
-		cluster = [
-		"all"
-		]
-		applications {
-			application = "testapp"
-			privileges = [
-			"write",
-			"read"
-			]
-			resources = [
-			"*"
-			]
-		}
-	}
+resource "elasticsearch_xpack_role" "test" {
+  role_name = "%s"
+  indices {
+    names      = ["testIndice"]
+    privileges = ["read"]
+    field_security {
+      grant = ["testField", "testField2"]
+    }
+  }
+  indices {
+    names      = ["testIndice2"]
+    privileges = ["write"]
+    field_security {
+      grant  = ["*"]
+      except = ["testField3"]
+    }
+  }
+  cluster = [
+    "all"
+  ]
+  applications {
+    application = "testapp"
+    privileges = [
+      "write",
+      "read"
+    ]
+    resources = [
+      "*"
+    ]
+  }
+}
 	`, resourceName)
 }
 
 func testAccRoleResource_Updated(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_xpack_role" "test" {
-		role_name = "%s"
-		indices {
-			names 	 = ["testIndice"]
-			privileges = ["read"]
-		}
-		indices {
-			names 	 = ["testIndice2"]
-			privileges = ["write"]
-		}
-		cluster = [
-		"all"
-		]
-		applications {
-			application = "testapp"
-			privileges = [
-			"write",
-			"read",
-			"delete",
-			]
-			resources = [
-			"*"
-			]
-		}
-		metadata = <<-EOF
+resource "elasticsearch_xpack_role" "test" {
+  role_name = "%s"
+  indices {
+    names      = ["testIndice"]
+    privileges = ["read"]
+  }
+  indices {
+    names      = ["testIndice2"]
+    privileges = ["write"]
+  }
+  cluster = [
+    "all"
+  ]
+  applications {
+    application = "testapp"
+    privileges = [
+      "write",
+      "read",
+      "delete",
+    ]
+    resources = [
+      "*"
+    ]
+  }
+  metadata = <<-EOF
 		{
 			"foo": "bar"
 		}
 		EOF
-	}
+}
 	`, resourceName)
 }
 
 func testAccRoleResource_Global(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "elasticsearch_xpack_role" "test" {
-		role_name = "%s"
-		indices {
-			names 	 = ["testIndice"]
-			privileges = ["read"]
-		}
-		indices {
-			names 	 = ["testIndice2"]
-			privileges = ["write"]
-		}
-		cluster = [
-		"all",
-		]
-		applications {
-			application = "testapp"
-			privileges = [
-			"write",
-			"read",
-			"delete",
-			]
-			resources = [
-			"*" ,
-			]
-		}
+resource "elasticsearch_xpack_role" "test" {
+  role_name = "%s"
+  indices {
+    names      = ["testIndice"]
+    privileges = ["read"]
+  }
+  indices {
+    names      = ["testIndice2"]
+    privileges = ["write"]
+  }
+  cluster = [
+    "all",
+  ]
+  applications {
+    application = "testapp"
+    privileges = [
+      "write",
+      "read",
+      "delete",
+    ]
+    resources = [
+      "*",
+    ]
+  }
 
-		metadata = <<-EOF
+  metadata = <<-EOF
 		{
 			"foo": "bar"
 		}
 		EOF
 
 
-		global = <<-EOF
+  global = <<-EOF
 		{
 			"application": {
 				"manage": {
@@ -253,7 +253,7 @@ func testAccRoleResource_Global(resourceName string) string {
 			}
 		}
 		EOF
-	}
+}
 	`, resourceName)
 }
 

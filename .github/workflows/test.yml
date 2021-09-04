@@ -48,7 +48,7 @@ jobs:
       run: |
         sudo sysctl -w vm.max_map_count=262144
     - name: Setup Go ${{ matrix.go-version }}
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@v2
       with:
         go-version: ${{ matrix.go-version }}
     - name: Checkout code
@@ -79,14 +79,17 @@ jobs:
     - name: Get dependencies
       run: |
         go mod vendor
-    - name: Run check scripts
-      run: |
-        ./script/test-mod-tidy
+        # install tools
+        cat tools/tools.go | grep _ | awk -F'"' '{print $2}' | xargs -tI % go install %
     - name: Install managed version of terraform
       uses: hashicorp/setup-terraform@v1
       with:
         terraform_version: 0.14.11
         terraform_wrapper: false
+    - name: Run check scripts
+      run: |
+        ./script/test-mod-tidy
+        ./script/test-terraform-fmt
     - name: Wait for Elasticsearch
       # ensure that ES has come up and is available
       run: |
@@ -127,7 +130,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Setup Go
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@v2
       with:
         go-version: 1.16.x
     - name: Import GPG key
