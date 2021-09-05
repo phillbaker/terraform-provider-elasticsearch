@@ -14,7 +14,6 @@ import (
 )
 
 func TestAccElasticsearchOpenDistroRolesMapping(t *testing.T) {
-
 	provider := Provider()
 	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
 	if diags.HasError() {
@@ -35,7 +34,7 @@ func TestAccElasticsearchOpenDistroRolesMapping(t *testing.T) {
 
 	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {

@@ -16,7 +16,7 @@ import (
 func TestAccElasticsearchXpackUser(t *testing.T) {
 	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
@@ -257,7 +257,7 @@ func TestAccUserResource_importBasic(t *testing.T) {
 
 	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {

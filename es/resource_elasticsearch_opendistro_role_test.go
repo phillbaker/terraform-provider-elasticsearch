@@ -34,7 +34,7 @@ func TestAccElasticsearchOpenDistroRole(t *testing.T) {
 
 	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {
@@ -140,7 +140,7 @@ func TestAccElasticsearchOpenDistroRole_importBasic(t *testing.T) {
 
 	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {

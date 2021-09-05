@@ -35,7 +35,7 @@ func TestAccElasticsearchOpenDistroUser(t *testing.T) {
 
 	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {
@@ -131,7 +131,7 @@ func TestAccElasticsearchOpenDistroUserMultiple(t *testing.T) {
 
 	randomName := "test" + acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 			if !allowed {
@@ -146,7 +146,6 @@ func TestAccElasticsearchOpenDistroUserMultiple(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticSearchOpenDistroUserExists("elasticsearch_opendistro_user.testuser1"),
 				),
-				// ExpectError: regexp.MustCompile("Failed to parse mapping"),
 			},
 		},
 	})
