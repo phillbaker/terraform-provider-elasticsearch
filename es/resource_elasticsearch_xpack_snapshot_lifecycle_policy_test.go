@@ -163,13 +163,21 @@ func testCheckElasticsearchXpackSnapshotLifecyclePolicyDestroy(s *terraform.Stat
 }
 
 var testAccElasticsearchXpackSnapshotLifecyclePolicy = `
+resource "elasticsearch_snapshot_repository" "test" {
+  name = "terraform-test"
+  type = "fs"
+  settings = {
+    location = "/tmp/elasticsearch"
+  }
+}
+
 resource "elasticsearch_xpack_snapshot_lifecycle_policy" "terraform-test" {
   name = "terraformtest"
   body = <<EOF
 {
   "schedule": "0 30 1 * * ?",
   "name": "<daily-snap-{now/d}>",
-  "repository": "terraform-test",
+  "repository": "${elasticsearch_snapshot_repository.test.name}",
   "config": {
     "indices": ["data-*", "important"],
     "ignore_unavailable": false,
