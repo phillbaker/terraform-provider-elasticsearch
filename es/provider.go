@@ -288,6 +288,10 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 	var relevantClient interface{}
 	client, err := elastic7.NewClient(opts...)
 	if err != nil {
+		if errors.Is(err, elastic7.ErrNoClient) {
+			log.Printf("[INFO] couldn't create client: %T, %s, %T", err, err.Error(), errors.Unwrap(err))
+			return nil, errors.New("HEAD healthcheck failed: This is usually due to network or permission issues. The underlying error isn't accessible, please debug by disabling healthchecks.")
+		}
 		return nil, err
 	}
 	relevantClient = client
@@ -295,7 +299,10 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 	// Use the v7 client to ping the cluster to determine the version if one was not provided
 	if conf.esVersion == "" {
 		log.Printf("[INFO] Pinging url to determine version %+v", conf.rawUrl)
-		info, _, err := client.Ping(conf.rawUrl).Do(context.TODO())
+		info, httpStatus, err := client.Ping(conf.rawUrl).Do(context.TODO())
+		if httpStatus == http.StatusForbidden {
+			return nil, errors.New("HTTP 403 Forbidden: Permission denied. Please ensure that the correct credentials are being used to access the cluster.")
+		}
 		if err != nil {
 			return nil, err
 		}
