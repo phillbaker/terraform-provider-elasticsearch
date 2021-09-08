@@ -1,6 +1,7 @@
 # Changelog
 ## Unreleased
 ### Changed
+- [provider] Change default for healthcheck and sniffing to false, see https://github.com/phillbaker/terraform-provider-elasticsearch/pull/161.
 
 ### Added
 - [index] Add include_type_name for compatibility between ESv6/7

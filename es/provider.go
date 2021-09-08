@@ -71,13 +71,13 @@ func Provider() *schema.Provider {
 			"sniff": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_SNIFF", true),
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_SNIFF", false),
 				Description: "Set the node sniffing option for the elastic client. Client won't work with sniffing if nodes are not routable.",
 			},
 			"healthcheck": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_HEALTH", true),
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_HEALTH", false),
 				Description: "Set the client healthcheck option for the elastic client. Healthchecking is designed for direct access to the cluster.",
 			},
 			"username": {

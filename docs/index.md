@@ -57,8 +57,8 @@ EOF
 The following arguments are supported:
 
 * `url` (Required) - Elasticsearch URL. Defaults to `ELASTICSEARCH_URL` from the environment.
-* `sniff` (Optional) - Set the node sniffing option for the elastic client. Client won't work with sniffing if nodes are not routable. Defaults to `ELASTICSEARCH_SNIFF` from the environment or true.
-* `healthcheck` (Optional) - Set the client healthcheck option for the elastic client. Healthchecking is designed for direct access to the cluster. Defaults to `ELASTICSEARCH_HEALTH` from the environment, or true.
+* `sniff` (Optional) - Set the node sniffing option for the elastic client. Client won't work with sniffing if nodes are not routable. Defaults to `ELASTICSEARCH_SNIFF` from the environment or false.
+* `healthcheck` (Optional) - Set the client healthcheck option for the elastic client. Healthchecking is designed for direct access to the cluster. Defaults to `ELASTICSEARCH_HEALTH` from the environment, or false.
 * `username` (Optional) - Username to use to connect to elasticsearch using basic auth. Defaults to `ELASTICSEARCH_USERNAME` from the environment
 * `password` (Optional) - Password to use to connect to elasticsearch using basic auth. Defaults to `ELASTICSEARCH_PASSWORD` from the environment
 * `aws_assume_role_arn` (Optional) - ARN of role to assume when using AWS Elasticsearch Service domains.
