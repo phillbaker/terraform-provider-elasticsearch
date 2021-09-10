@@ -155,14 +155,14 @@ func resourceElasticsearchGetOpenDistroUser(userID string, m interface{}) (UserB
 			Method: "GET",
 			Path:   path,
 		})
+		if err != nil {
+			return *user, err
+		}
 		body = res.Body
 	default:
-		err = errors.New("Role resource not implemented prior to Elastic v7")
+		return *user, errors.New("Role resource not implemented prior to Elastic v7")
 	}
 
-	if err != nil {
-		return *user, err
-	}
 	var userDefinition map[string]UserBody
 
 	if err := json.Unmarshal(body, &userDefinition); err != nil {
@@ -232,15 +232,12 @@ func resourceElasticsearchPutOpenDistroUser(d *schema.ResourceData, m interface{
 			} else {
 				log.Printf("[INFO] error creating user: %v %v %v", res, res.Body, e)
 			}
+			return response, err
 		}
 
 		body = res.Body
 	default:
-		err = errors.New("User resource not implemented prior to Elastic v7")
-	}
-
-	if err != nil {
-		return response, fmt.Errorf("Error creating user: %+v: %+v: %+v", err, body, string(userJSON))
+		return response, errors.New("User resource not implemented prior to Elastic v7")
 	}
 
 	if err := json.Unmarshal(body, response); err != nil {

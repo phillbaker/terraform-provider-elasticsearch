@@ -224,6 +224,9 @@ func resourceElasticsearchOpenDistroPostDestination(d *schema.ResourceData, m in
 			Path:   path,
 			Body:   destinationJSON,
 		})
+		if err != nil {
+			return response, err
+		}
 		body = res.Body
 	case *elastic6.Client:
 		var res *elastic6.Response
@@ -232,13 +235,12 @@ func resourceElasticsearchOpenDistroPostDestination(d *schema.ResourceData, m in
 			Path:   path,
 			Body:   destinationJSON,
 		})
+		if err != nil {
+			return response, err
+		}
 		body = res.Body
 	default:
-		err = errors.New("destination resource not implemented prior to Elastic v6")
-	}
-
-	if err != nil {
-		return response, err
+		return response, errors.New("destination resource not implemented prior to Elastic v6")
 	}
 
 	if err := json.Unmarshal(body, response); err != nil {
@@ -274,6 +276,9 @@ func resourceElasticsearchOpenDistroPutDestination(d *schema.ResourceData, m int
 			Path:   path,
 			Body:   destinationJSON,
 		})
+		if err != nil {
+			return response, err
+		}
 		body = res.Body
 	case *elastic6.Client:
 		var res *elastic6.Response
@@ -282,13 +287,12 @@ func resourceElasticsearchOpenDistroPutDestination(d *schema.ResourceData, m int
 			Path:   path,
 			Body:   destinationJSON,
 		})
+		if err != nil {
+			return response, err
+		}
 		body = res.Body
 	default:
-		err = errors.New("destination resource not implemented prior to Elastic v6")
-	}
-
-	if err != nil {
-		return response, err
+		return response, errors.New("destination resource not implemented prior to Elastic v6")
 	}
 
 	if err := json.Unmarshal(body, response); err != nil {

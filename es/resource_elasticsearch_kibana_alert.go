@@ -464,11 +464,11 @@ func kibanaGetAlert(client *elastic7.Client, id, spaceID string) (kibana.Alert, 
 		Method: "GET",
 		Path:   path,
 	})
-	body = res.Body
-
 	if err != nil {
 		return kibana.Alert{}, err
 	}
+
+	body = res.Body
 
 	alert := new(kibana.Alert)
 	if err := json.Unmarshal(body, alert); err != nil {

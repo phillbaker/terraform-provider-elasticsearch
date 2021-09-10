@@ -164,14 +164,14 @@ func resourceElasticsearchGetOpenDistroKibanaTenant(tenantID string, m interface
 			Method: "GET",
 			Path:   path,
 		})
+		if err != nil {
+			return *tenant, err
+		}
 		body = res.Body
 	default:
-		err = errors.New("Creating tenants requires elastic v7 client")
+		return *tenant, errors.New("Creating tenants requires elastic v7 client")
 	}
 
-	if err != nil {
-		return *tenant, err
-	}
 	var tenantDefinition map[string]TenantBody
 
 	if err := json.Unmarshal(body, &tenantDefinition); err != nil {
@@ -219,13 +219,12 @@ func resourceElasticsearchPutOpenDistroKibanaTenant(d *schema.ResourceData, m in
 				elastic7.NewExponentialBackoff(100*time.Millisecond, 30*time.Second),
 			),
 		})
+		if err != nil {
+			return response, err
+		}
 		body = res.Body
 	default:
-		err = errors.New("Creating tenants requires elastic v7 client")
-	}
-
-	if err != nil {
-		return response, fmt.Errorf("error creating tenant: %+v: %+v", err, body)
+		return response, errors.New("Creating tenants requires elastic v7 client")
 	}
 
 	if err := json.Unmarshal(body, response); err != nil {

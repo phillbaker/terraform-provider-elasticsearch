@@ -123,6 +123,9 @@ func resourceElasticsearchGetXpackLicense(meta interface{}) (License, error) {
 			Method: "GET",
 			Path:   "/_license",
 		})
+		if err != nil {
+			return *license, err
+		}
 		body = res.Body
 	case *elastic6.Client:
 		var res *elastic6.Response
@@ -130,14 +133,14 @@ func resourceElasticsearchGetXpackLicense(meta interface{}) (License, error) {
 			Method: "GET",
 			Path:   "/_xpack/license",
 		})
+		if err != nil {
+			return *license, err
+		}
 		body = res.Body
 	default:
 		return *license, errors.New("License is only supported by the elasticsearch >= v6!")
 	}
 
-	if err != nil {
-		return *license, err
-	}
 	var licenseResponse map[string]License
 
 	if err := json.Unmarshal(body, &licenseResponse); err != nil {
@@ -186,6 +189,9 @@ func resourceElasticsearchPutEnterpriseLicense(l string, meta interface{}) (Lice
 			Path:   "/_license?acknowledge=true",
 			Body:   request,
 		})
+		if err != nil {
+			return emptyLicense, err
+		}
 		body = res.Body
 	case *elastic6.Client:
 		var res *elastic6.Response
@@ -194,14 +200,14 @@ func resourceElasticsearchPutEnterpriseLicense(l string, meta interface{}) (Lice
 			Path:   "/_xpack/license?acknowledge=true",
 			Body:   request,
 		})
+		if err != nil {
+			return emptyLicense, err
+		}
 		body = res.Body
 	default:
 		return emptyLicense, errors.New("License is only supported by the elastic library >= v6!")
 	}
 
-	if err != nil {
-		return emptyLicense, err
-	}
 	var licenseResponse map[string][]License
 
 	if err := json.Unmarshal(body, &licenseResponse); err != nil {

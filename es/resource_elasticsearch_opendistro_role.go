@@ -216,14 +216,14 @@ func resourceElasticsearchGetOpenDistroRole(roleID string, m interface{}) (RoleB
 			Method: "GET",
 			Path:   path,
 		})
+		if err != nil {
+			return *role, err
+		}
 		body = res.Body
 	default:
-		err = errors.New("role resource not implemented prior to Elastic v7")
+		return *role, errors.New("role resource not implemented prior to Elastic v7")
 	}
 
-	if err != nil {
-		return *role, err
-	}
 	var roleDefinition map[string]RoleBody
 
 	if err := json.Unmarshal(body, &roleDefinition); err != nil {
@@ -308,13 +308,12 @@ func resourceElasticsearchPutOpenDistroRole(d *schema.ResourceData, m interface{
 				elastic7.NewExponentialBackoff(100*time.Millisecond, 30*time.Second),
 			),
 		})
+		if err != nil {
+			return response, err
+		}
 		body = res.Body
 	default:
-		err = errors.New("role resource not implemented prior to Elastic v7")
-	}
-
-	if err != nil {
-		return response, fmt.Errorf("error creating role: %+v: %+v", err, body)
+		return response, errors.New("role resource not implemented prior to Elastic v7")
 	}
 
 	if err := json.Unmarshal(body, response); err != nil {

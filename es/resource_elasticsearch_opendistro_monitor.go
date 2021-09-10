@@ -151,6 +151,9 @@ func resourceElasticsearchOpenDistroGetMonitor(monitorID string, m interface{}) 
 			Method: "GET",
 			Path:   path,
 		})
+		if err != nil {
+			return response, err
+		}
 		body = res.Body
 	case *elastic6.Client:
 		var res *elastic6.Response
@@ -158,13 +161,12 @@ func resourceElasticsearchOpenDistroGetMonitor(monitorID string, m interface{}) 
 			Method: "GET",
 			Path:   path,
 		})
+		if err != nil {
+			return response, err
+		}
 		body = res.Body
 	default:
-		err = errors.New("monitor resource not implemented prior to Elastic v6")
-	}
-
-	if err != nil {
-		return response, err
+		return response, errors.New("monitor resource not implemented prior to Elastic v6")
 	}
 
 	if err := json.Unmarshal(body, response); err != nil {
@@ -195,6 +197,9 @@ func resourceElasticsearchOpenDistroPostMonitor(d *schema.ResourceData, m interf
 			Path:   path,
 			Body:   monitorJSON,
 		})
+		if err != nil {
+			return response, err
+		}
 		body = res.Body
 	case *elastic6.Client:
 		var res *elastic6.Response
@@ -203,13 +208,12 @@ func resourceElasticsearchOpenDistroPostMonitor(d *schema.ResourceData, m interf
 			Path:   path,
 			Body:   monitorJSON,
 		})
+		if err != nil {
+			return response, err
+		}
 		body = res.Body
 	default:
-		err = errors.New("monitor resource not implemented prior to Elastic v6")
-	}
-
-	if err != nil {
-		return response, err
+		return response, errors.New("monitor resource not implemented prior to Elastic v6")
 	}
 
 	if err := json.Unmarshal(body, response); err != nil {
@@ -245,6 +249,9 @@ func resourceElasticsearchOpenDistroPutMonitor(d *schema.ResourceData, m interfa
 			Path:   path,
 			Body:   monitorJSON,
 		})
+		if err != nil {
+			return response, err
+		}
 		body = res.Body
 	case *elastic6.Client:
 		var res *elastic6.Response
@@ -253,13 +260,12 @@ func resourceElasticsearchOpenDistroPutMonitor(d *schema.ResourceData, m interfa
 			Path:   path,
 			Body:   monitorJSON,
 		})
+		if err != nil {
+			return response, err
+		}
 		body = res.Body
 	default:
-		err = errors.New("monitor resource not implemented prior to Elastic v6")
-	}
-
-	if err != nil {
-		return response, err
+		return response, errors.New("monitor resource not implemented prior to Elastic v6")
 	}
 
 	if err := json.Unmarshal(body, response); err != nil {

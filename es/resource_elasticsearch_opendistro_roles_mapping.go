@@ -165,7 +165,7 @@ func resourceElasticsearchGetOpenDistroRolesMapping(roleID string, m interface{}
 		})
 		body = res.Body
 	default:
-		err = errors.New("role mapping  resource not implemented prior to Elastic v7")
+		err = errors.New("role mapping resource not implemented prior to Elastic v7")
 	}
 
 	if err != nil {
@@ -229,13 +229,12 @@ func resourceElasticsearchPutOpenDistroRolesMapping(d *schema.ResourceData, m in
 				elastic7.NewExponentialBackoff(100*time.Millisecond, 30*time.Second),
 			),
 		})
+		if err != nil {
+			return response, err
+		}
 		body = res.Body
 	default:
-		err = errors.New("role mapping resource not implemented prior to Elastic v7")
-	}
-
-	if err != nil {
-		return response, fmt.Errorf("error creating role mapping: %+v: %+v", err, body)
+		return response, errors.New("role mapping resource not implemented prior to Elastic v7")
 	}
 
 	if err := json.Unmarshal(body, response); err != nil {
