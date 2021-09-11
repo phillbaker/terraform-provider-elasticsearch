@@ -12,7 +12,7 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 )
 
-var componentTemplateMinimalVersion, _ = version.NewVersion("7.8.0")
+var esComponentTemplateMinimalVersion, _ = version.NewVersion("7.8.0")
 
 func resourceElasticsearchComponentTemplate() *schema.Resource {
 	return &schema.Resource{
@@ -67,10 +67,10 @@ func resourceElasticsearchComponentTemplateRead(d *schema.ResourceData, meta int
 	case *elastic7.Client:
 		elasticVersion, err = version.NewVersion(providerConf.esVersion)
 		if err == nil {
-			if elasticVersion.LessThan(componentTemplateMinimalVersion) {
-				err = fmt.Errorf("component_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
-			} else {
+			if resourceElasticsearchComponentTemplateAvailable(elasticVersion, providerConf) {
 				result, err = elastic7GetComponentTemplate(client, id)
+			} else {
+				err = fmt.Errorf("component_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
 			}
 		}
 	default:
@@ -127,10 +127,10 @@ func resourceElasticsearchComponentTemplateDelete(d *schema.ResourceData, meta i
 	case *elastic7.Client:
 		elasticVersion, err = version.NewVersion(providerConf.esVersion)
 		if err == nil {
-			if elasticVersion.LessThan(componentTemplateMinimalVersion) {
-				err = fmt.Errorf("component_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
-			} else {
+			if resourceElasticsearchComponentTemplateAvailable(elasticVersion, providerConf) {
 				err = elastic7DeleteComponentTemplate(client, id)
+			} else {
+				err = fmt.Errorf("component_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
 			}
 		}
 	default:
@@ -142,6 +142,10 @@ func resourceElasticsearchComponentTemplateDelete(d *schema.ResourceData, meta i
 	}
 	d.SetId("")
 	return nil
+}
+
+func resourceElasticsearchComponentTemplateAvailable(v *version.Version, c *ProviderConf) bool {
+	return v.GreaterThanOrEqual(esComponentTemplateMinimalVersion) || c.flavor == Unknown
 }
 
 func elastic7DeleteComponentTemplate(client *elastic7.Client, id string) error {
@@ -165,10 +169,10 @@ func resourceElasticsearchPutComponentTemplate(d *schema.ResourceData, meta inte
 	case *elastic7.Client:
 		elasticVersion, err = version.NewVersion(providerConf.esVersion)
 		if err == nil {
-			if elasticVersion.LessThan(componentTemplateMinimalVersion) {
-				err = fmt.Errorf("component_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
-			} else {
+			if resourceElasticsearchComponentTemplateAvailable(elasticVersion, providerConf) {
 				err = elastic7PutComponentTemplate(client, name, body, create)
+			} else {
+				err = fmt.Errorf("component_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
 			}
 		}
 	default:
