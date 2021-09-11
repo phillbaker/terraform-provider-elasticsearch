@@ -144,7 +144,7 @@ func resourceElasticsearchGetXpackLicense(meta interface{}) (License, error) {
 	var licenseResponse map[string]License
 
 	if err := json.Unmarshal(body, &licenseResponse); err != nil {
-		return *license, fmt.Errorf("Error unmarshalling license body: %+v: %+v", err, body)
+		return *license, fmt.Errorf("Error unmarshalling license body on get: %+v: %+v", err, body)
 	}
 
 	return licenseResponse["license"], err
@@ -208,13 +208,26 @@ func resourceElasticsearchPutEnterpriseLicense(l string, meta interface{}) (Lice
 		return emptyLicense, errors.New("License is only supported by the elastic library >= v6!")
 	}
 
-	var licenseResponse map[string][]License
+	var licenseResponse LicenseResponse
 
 	if err := json.Unmarshal(body, &licenseResponse); err != nil {
-		return emptyLicense, fmt.Errorf("Error unmarshalling license body: %+v: %+v", err, body)
+		return emptyLicense, fmt.Errorf("Error unmarshalling license body on put: %+v: %+v", err, body)
 	}
 
-	return licenseResponse["licenses"][0], err
+	if !licenseResponse.Acknowledged {
+		return emptyLicense, errors.New("License waas not acknowledged")
+	}
+
+	if len(licenseResponse.Licenses) > 0 {
+		return licenseResponse.Licenses[0], err
+	} else {
+		// The API can ackowledge a license, but not return it :|, so we parse what we PUTed
+		var license License
+		if err := json.Unmarshal([]byte(l), &license); err != nil {
+			return emptyLicense, fmt.Errorf("Error unmarshalling license: %+v: %+v", err, body)
+		}
+		return license, err
+	}
 }
 
 func resourceElasticsearchPostBasicLicense(meta interface{}) (License, error) {
@@ -243,6 +256,12 @@ func resourceElasticsearchPostBasicLicense(meta interface{}) (License, error) {
 		return l, err
 	}
 	return resourceElasticsearchGetXpackLicense(meta)
+}
+
+type LicenseResponse struct {
+	Acknowledged  bool      `json:"acknowledged,omitempty"`
+	LicenseStatus string    `json:"license_status,omitempty"`
+	Licenses      []License `json:"licenses,omitempty"`
 }
 
 type License struct {
