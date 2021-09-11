@@ -10,7 +10,7 @@ The provider is used to interact with the resources supported by
 Elasticsearch/Opensearch. The provider needs to be configured with an endpoint
 URL before it can be used.
 
-AWS Opensearch Service domains and OpenSearch clusters deployed on Kubernetes and other infrastructure are supported [via compatibility mode](https://opensearch.org/docs/latest/clients/agents-and-ingestion-tools/index/).
+AWS Opensearch Service domains and OpenSearch clusters deployed on Kubernetes and other infrastructure are supported.
 
 Use the navigation to the left to read about the available resources.
 
