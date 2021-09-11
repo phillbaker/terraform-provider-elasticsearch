@@ -438,8 +438,12 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
+	} else if conf.flavor == Unknown && conf.esVersion < "2.0.0" && conf.esVersion >= "1.0.0" {
+		// Version 1.x of OpenSearch very likely. Nothing to do since it's API
+		// compatible with 7.x of ES. If elastic client library supports detecting
+		// flavor, update to Opensearch.
 	} else if conf.esVersion < "6.0.0" {
-		return nil, fmt.Errorf("ElasticSearch version %s is older than 6.0.0 and is not supported.", conf.esVersion)
+		return nil, fmt.Errorf("ElasticSearch version %s is older than 6.0.0 and is not supported, flavor: %v.", conf.esVersion, conf.flavor)
 	}
 
 	return relevantClient, nil

@@ -110,9 +110,9 @@ jobs:
       # ensure that ES has come up and is available
       run: |
         ./script/wait-for-endpoint --timeout=20 http://localhost:9200
-        if [ -n "$OPENSEARCH_PREFIX" ]; then
-          curl -s -v -X PUT -H 'Content-type: application/json' -d '{"persistent": {"compatibility.override_main_response_version": true}}' http://localhost:9200/_cluster/settings
-        fi
+        #if [ -n "$OPENSEARCH_PREFIX" ]; then
+        #  curl -s -v -X PUT -H 'Content-type: application/json' -d '{"persistent": {"compatibility.override_main_response_version": true}}' http://localhost:9200/_cluster/settings
+        #fi
     - name: Wait for Kibana
       # ensure that Kibana API has come up and is available
       run: |
@@ -128,9 +128,9 @@ jobs:
           ./script/wait-for-endpoint --timeout=120 http://admin:admin@localhost:9220
           curl -s -v -X POST -H 'Content-type: application/json' -d '{"name":"_warmup","type":"slack","slack":{"url": "http://www.example.com"}}' http://admin:admin@localhost:9220/_opendistro/_alerting/destinations
         fi
-        if [ -n "$OPENSEARCH_PREFIX" ]; then
-          curl -s -v -X PUT -H 'Content-type: application/json' -d '{"persistent": {"compatibility.override_main_response_version": true}}' http://admin:admin@localhost:9220/_cluster/settings
-        fi
+        #if [ -n "$OPENSEARCH_PREFIX" ]; then
+        #  curl -s -v -X PUT -H 'Content-type: application/json' -d '{"persistent": {"compatibility.override_main_response_version": true}}' http://admin:admin@localhost:9220/_cluster/settings
+        #fi
     - name: Dump docker logs on failure
       if: failure()
       uses: jwalton/gh-docker-logs@v2
