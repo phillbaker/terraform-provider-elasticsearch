@@ -17,7 +17,7 @@ Please refer to the Open Distro [documentation][1] for details.
 # Create a tenant
 resource "elasticsearch_opendistro_kibana_tenant" "test" {
   tenant_name   = "test"
-  description = "test tenant"
+  description   = "test tenant"
 }
 ```
 

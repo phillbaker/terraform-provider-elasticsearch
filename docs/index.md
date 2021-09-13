@@ -96,10 +96,10 @@ Example usage:
 
 ```tf
 provider "elasticsearch" {
-    url = "https://search-foo-bar-pqrhr4w3u4dzervg41frow4mmy.us-east-1.es.amazonaws.com"
+    url            = "https://search-foo-bar-pqrhr4w3u4dzervg41frow4mmy.us-east-1.es.amazonaws.com"
     aws_access_key = "anaccesskey"
     aws_secret_key = "asecretkey"
-    aws_token = "" # if necessary
+    aws_token      = "" # if necessary
 }
 ```
 
@@ -111,8 +111,8 @@ Example usage:
 
 ```tf
 provider "elasticsearch" {
-    url = "https://search-foo-bar-pqrhr4w3u4dzervg41frow4mmy.us-east-1.es.amazonaws.com"
-    aws_assume_role_arn = "arn:aws:iam::012345678901:role/rolename`
+    url                 = "https://search-foo-bar-pqrhr4w3u4dzervg41frow4mmy.us-east-1.es.amazonaws.com"
+    aws_assume_role_arn = "arn:aws:iam::012345678901:role/rolename"
 }
 ```
 
@@ -151,7 +151,7 @@ If you need to connect to an Elasticsearch cluster via an SSH tunnel (for exampl
 
 ```tf
 provider "elasticsearch" {
-  url   = "https://localhost:9999" # Replace 9999 with the port your SSH tunnel is running on
+  url           = "https://localhost:9999" # Replace 9999 with the port your SSH tunnel is running on
   host_override = "vpc-<******>.us-east-1.es.amazonaws.com"
 }
 ```

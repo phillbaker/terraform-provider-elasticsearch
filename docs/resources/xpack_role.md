@@ -27,7 +27,7 @@ resource "elasticsearch_xpack_role" "test" {
     names 	   = ["testIndice2"]
     privileges = ["write"]
     field_security {
-      grant = ["*"]
+      grant  = ["*"]
       except = ["testField3"]
     }
   }
@@ -36,11 +36,11 @@ resource "elasticsearch_xpack_role" "test" {
   ]
   applications {
     application = "testapp"
-    privileges = [
+    privileges  = [
       "write",
       "read"
     ]
-    resources = [
+    resources   = [
       "*"
     ]
   }
