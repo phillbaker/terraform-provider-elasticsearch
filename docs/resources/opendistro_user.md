@@ -15,8 +15,8 @@ Provides an Elasticsearch Open Distro security user. Please refer to the Open Di
 ```hcl
 # Create a user
 resource "elasticsearch_opendistro_user" "mapper" {
-  username = "app-reader"
-  password = "supersekret123!"
+  username    = "app-reader"
+  password    = "supersekret123!"
   description = "a reader role for our app"
 }
 ```
