@@ -114,6 +114,7 @@ jobs:
     - name: Run the tests
       run: |
         export ELASTICSEARCH_URL=http://localhost:9200
+        export ELASTICSEARCH_HEALTH=true # avoids failure to ping cluster
         export TF_LOG=INFO
         TF_ACC=1 go test ./... -v -parallel 20 -cover -short
         TF_ACC=1 go test ./... -v -cover -run XpackLicense

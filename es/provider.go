@@ -345,7 +345,7 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 			return nil, err
 		}
 	} else if conf.esVersion < "6.0.0" {
-		return nil, errors.New("ElasticSearch older than 6.0.0 is not supported.")
+		return nil, fmt.Errorf("ElasticSearch version %s is older than 6.0.0 and is not supported.", conf.esVersion)
 	}
 
 	return relevantClient, nil
