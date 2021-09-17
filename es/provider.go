@@ -26,6 +26,13 @@ import (
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
+const (
+	// DefaultVersionPingTimeout is the time the ping to check the cluster
+	// version waits for a response from Elasticsearch on startup, i.e. when
+	// creating a provider.
+	DefaultVersionPingTimeout = 5 * time.Second
+)
+
 var awsUrlRegexp = regexp.MustCompile(`([a-z0-9-]+).es.amazonaws.com$`)
 
 type ProviderConf struct {
@@ -299,7 +306,9 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 	// Use the v7 client to ping the cluster to determine the version if one was not provided
 	if conf.esVersion == "" {
 		log.Printf("[INFO] Pinging url to determine version %+v", conf.rawUrl)
-		info, httpStatus, err := client.Ping(conf.rawUrl).Do(context.TODO())
+		ctx, cancel := context.WithTimeout(context.Background(), DefaultVersionPingTimeout)
+		defer cancel()
+		info, httpStatus, err := client.Ping(conf.rawUrl).Do(ctx)
 		if httpStatus == http.StatusForbidden {
 			return nil, errors.New("HTTP 403 Forbidden: Permission denied. Please ensure that the correct credentials are being used to access the cluster.")
 		}

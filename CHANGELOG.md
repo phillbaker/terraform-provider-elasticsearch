@@ -7,6 +7,7 @@
 - [index] Add include_type_name for compatibility between ESv6/7
 
 ### Fixed
+- [provider] Add a timeout for pinging ES in case of no network access.
 
 
 ## [2.0.0-beta.1] - 2021-08-30
