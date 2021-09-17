@@ -84,7 +84,7 @@ func Provider() *schema.Provider {
 			"healthcheck": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_HEALTH", false),
+				DefaultFunc: schema.EnvDefaultFunc("ELASTICSEARCH_HEALTH", true),
 				Description: "Set the client healthcheck option for the elastic client. Healthchecking is designed for direct access to the cluster.",
 			},
 			"username": {
