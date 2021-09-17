@@ -2,6 +2,7 @@
 ## Unreleased
 ### Changed
 - [provider] Change default for healthcheck and sniffing to false, see https://github.com/phillbaker/terraform-provider-elasticsearch/pull/161.
+- [many] Add body json attributes as a workaround for API returning more data. See https://github.com/phillbaker/terraform-provider-elasticsearch/issues/93.
 
 ### Added
 - [index] Add include_type_name for compatibility between ESv6/7

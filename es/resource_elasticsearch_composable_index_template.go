@@ -32,6 +32,10 @@ func resourceElasticsearchComposableIndexTemplate() *schema.Resource {
 				DiffSuppressFunc: diffSuppressComposableIndexTemplate,
 				ValidateFunc:     validation.StringIsJSON,
 			},
+			"body_json": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -84,7 +88,8 @@ func resourceElasticsearchComposableIndexTemplateRead(d *schema.ResourceData, me
 
 	ds := &resourceDataSetter{d: d}
 	ds.set("name", d.Id())
-	ds.set("body", result)
+	ds.set("body_json", result)
+	ds.set("body", d.Get("body"))
 	return ds.err
 }
 

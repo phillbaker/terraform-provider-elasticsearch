@@ -29,6 +29,10 @@ func resourceElasticsearchIngestPipeline() *schema.Resource {
 				Required:         true,
 				ValidateFunc:     validation.StringIsJSON,
 			},
+			"body_json": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -69,7 +73,8 @@ func resourceElasticsearchIngestPipelineRead(d *schema.ResourceData, meta interf
 
 	ds := &resourceDataSetter{d: d}
 	ds.set("name", d.Id())
-	ds.set("body", result)
+	ds.set("body_json", result)
+	ds.set("body", d.Get("body"))
 	return ds.err
 }
 

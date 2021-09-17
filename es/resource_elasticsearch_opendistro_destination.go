@@ -31,6 +31,10 @@ var openDistroDestinationSchema = map[string]*schema.Schema{
 		},
 		Description: "The JSON body of the destination.",
 	},
+	"body_json": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }
 
 func resourceElasticsearchOpenDistroDestination() *schema.Resource {
@@ -82,8 +86,10 @@ func resourceElasticsearchOpenDistroDestinationRead(d *schema.ResourceData, m in
 		return err
 	}
 
-	err = d.Set("body", string(body))
-	return err
+	ds := &resourceDataSetter{d: d}
+	ds.set("body_json", string(body))
+	ds.set("body", d.Get("body"))
+	return ds.err
 }
 
 func resourceElasticsearchOpenDistroDestinationUpdate(d *schema.ResourceData, m interface{}) error {

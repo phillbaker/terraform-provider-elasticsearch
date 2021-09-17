@@ -27,6 +27,10 @@ var openDistroMonitorSchema = map[string]*schema.Schema{
 		},
 		ValidateFunc: validation.StringIsJSON,
 	},
+	"body_json": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }
 
 func resourceElasticsearchOpenDistroMonitor() *schema.Resource {
@@ -82,8 +86,10 @@ func resourceElasticsearchOpenDistroMonitorRead(d *schema.ResourceData, m interf
 	if err != nil {
 		return err
 	}
-	err = d.Set("body", monitorJsonNormalized)
-	return err
+	ds := &resourceDataSetter{d: d}
+	ds.set("body_json", monitorJsonNormalized)
+	ds.set("body", d.Get("body"))
+	return ds.err
 }
 
 func resourceElasticsearchOpenDistroMonitorUpdate(d *schema.ResourceData, m interface{}) error {

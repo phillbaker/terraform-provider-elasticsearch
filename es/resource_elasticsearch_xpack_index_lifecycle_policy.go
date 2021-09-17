@@ -23,6 +23,10 @@ var xPackIndexLifecyclePolicySchema = map[string]*schema.Schema{
 		DiffSuppressFunc: diffSuppressIndexLifecyclePolicy,
 		ValidateFunc:     validation.StringIsJSON,
 	},
+	"body_json": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }
 
 func resourceElasticsearchXpackIndexLifecyclePolicy() *schema.Resource {
@@ -70,7 +74,8 @@ func resourceElasticsearchXpackIndexLifecyclePolicyRead(d *schema.ResourceData, 
 
 	ds := &resourceDataSetter{d: d}
 	ds.set("name", d.Id())
-	ds.set("body", result)
+	ds.set("body_json", result)
+	ds.set("body", d.Get("body"))
 	return ds.err
 }
 

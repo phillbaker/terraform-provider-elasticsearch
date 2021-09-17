@@ -31,6 +31,10 @@ var xPackWatchSchema = map[string]*schema.Schema{
 			return json
 		},
 	},
+	"body_json": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"active": {
 		Type:        schema.TypeBool,
 		Required:    false,
@@ -115,7 +119,8 @@ func resourceElasticsearchWatchRead(d *schema.ResourceData, m interface{}) error
 	}
 
 	ds := &resourceDataSetter{d: d}
-	ds.set("body", string(watch))
+	ds.set("body_json", string(watch))
+	ds.set("body", d.Get("body"))
 	ds.set("watch_id", d.Id())
 	ds.set("active", status)
 

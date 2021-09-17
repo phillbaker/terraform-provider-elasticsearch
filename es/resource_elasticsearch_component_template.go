@@ -34,6 +34,10 @@ func resourceElasticsearchComponentTemplate() *schema.Resource {
 				ValidateFunc:     validation.StringIsJSON,
 				Description:      "The JSON body of the template.",
 			},
+			"body_json": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -87,7 +91,8 @@ func resourceElasticsearchComponentTemplateRead(d *schema.ResourceData, meta int
 
 	ds := &resourceDataSetter{d: d}
 	ds.set("name", d.Id())
-	ds.set("body", result)
+	ds.set("body_json", result)
+	ds.set("body", d.Get("body"))
 	return ds.err
 }
 

@@ -32,6 +32,10 @@ func resourceElasticsearchXpackSnapshotLifecyclePolicy() *schema.Resource {
 				ValidateFunc:     validation.StringIsJSON,
 				Description:      "See the policy definition defined in the [docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/slm-api-put-policy.html#slm-api-put-request-body)",
 			},
+			"body_json": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -69,7 +73,8 @@ func resourceElasticsearchXpackSnapshotLifecyclePolicyRead(d *schema.ResourceDat
 
 	ds := &resourceDataSetter{d: d}
 	ds.set("name", d.Id())
-	ds.set("body", result)
+	ds.set("body_json", result)
+	ds.set("body", d.Get("body"))
 	return ds.err
 }
 
