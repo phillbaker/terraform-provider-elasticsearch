@@ -114,37 +114,37 @@ func Provider() *schema.Provider {
 			"aws_assume_role_arn": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "",
+				DefaultFunc: schema.EnvDefaultFunc("AWS_ROLE_ARN", ""),
 				Description: "Amazon Resource Name of an IAM Role to assume prior to making AWS API calls.",
 			},
 			"aws_access_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "",
+				DefaultFunc: schema.EnvDefaultFunc("AWS_ACCESS_KEY_ID", ""),
 				Description: "The access key for use with AWS Elasticsearch Service domains",
 			},
 			"aws_secret_key": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "",
+				DefaultFunc: schema.EnvDefaultFunc("AWS_SECRET_ACCESS_KEY", ""),
 				Description: "The secret key for use with AWS Elasticsearch Service domains",
 			},
 			"aws_token": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "",
+				DefaultFunc: schema.EnvDefaultFunc("AWS_SESSION_TOKEN", ""),
 				Description: "The session token for use with AWS Elasticsearch Service domains",
 			},
 			"aws_profile": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "",
+				DefaultFunc: schema.EnvDefaultFunc("AWS_PROFILE", ""),
 				Description: "The AWS profile for use with AWS Elasticsearch Service domains",
 			},
 			"aws_region": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "",
+				DefaultFunc: schema.EnvDefaultFunc("AWS_DEFAULT_REGION", ""),
 				Description: "The AWS region for use in signing of AWS elasticsearch requests. Must be specified in order to use AWS URL signing with AWS ElasticSearch endpoint exposed on a custom DNS domain.",
 			},
 			"cacert_file": {
