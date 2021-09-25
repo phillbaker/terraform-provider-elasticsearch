@@ -412,8 +412,21 @@ func getKibanaClient(conf *ProviderConf) (interface{}, error) {
 }
 
 func assumeRoleCredentials(region, roleARN, profile string) *awscredentials.Credentials {
-	sess := awssession.Must(awssession.NewSessionWithOptions(awssession.Options{
-		Profile: profile,
+	sessOpts := awsSessionOptions(region)
+	sessOpts.Profile = profile
+
+	sess := awssession.Must(awssession.NewSessionWithOptions(sessOpts))
+	stsClient := awssts.New(sess)
+	assumeRoleProvider := &awsstscreds.AssumeRoleProvider{
+		Client:  stsClient,
+		RoleARN: roleARN,
+	}
+
+	return awscredentials.NewChainCredentials([]awscredentials.Provider{assumeRoleProvider})
+}
+
+func awsSessionOptions(region string) awssession.Options {
+	return awssession.Options{
 		Config: aws.Config{
 			Region:   aws.String(region),
 			LogLevel: aws.LogLevel(aws.LogDebugWithHTTPBody),
@@ -429,22 +442,12 @@ func assumeRoleCredentials(region, roleARN, profile string) *awscredentials.Cred
 			HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		},
 		SharedConfigState: awssession.SharedConfigEnable,
-	}))
-	stsClient := awssts.New(sess)
-	assumeRoleProvider := &awsstscreds.AssumeRoleProvider{
-		Client:  stsClient,
-		RoleARN: roleARN,
 	}
-
-	return awscredentials.NewChainCredentials([]awscredentials.Provider{assumeRoleProvider})
 }
 
 func awsSession(region string, conf *ProviderConf) *awssession.Session {
-	sessOpts := awssession.Options{
-		Config: aws.Config{
-			Region: aws.String(region),
-		},
-	}
+	sessOpts := awsSessionOptions(region)
+
 	// 1. access keys take priority
 	// 2. next is an assume role configuration
 	// 3. followed by a profile (for assume role)
@@ -457,7 +460,6 @@ func awsSession(region string, conf *ProviderConf) *awssession.Session {
 		sessOpts.Config.Credentials = assumeRoleCredentials(region, conf.awsAssumeRoleArn, conf.awsProfile)
 	} else if conf.awsProfile != "" {
 		sessOpts.Profile = conf.awsProfile
-		sessOpts.SharedConfigState = awssession.SharedConfigEnable
 	}
 
 	// If configured as insecure, turn off SSL verification
@@ -479,6 +481,12 @@ func awsSession(region string, conf *ProviderConf) *awssession.Session {
 
 func awsHttpClient(region string, conf *ProviderConf, headers map[string]string) *http.Client {
 	session := awsSession(region, conf)
+	// Call Get() to ensure concurrency safe retrieval of credentials. Since the
+	// client is created in many go routines, this synchronizes it.
+	_, err := session.Config.Credentials.Get()
+	if err != nil {
+		log.Fatal(err)
+	}
 	signer := awssigv4.NewSigner(session.Config.Credentials)
 	client, err := aws_signing_client.New(signer, session.Config.HTTPClient, "es", region)
 	if err != nil {
