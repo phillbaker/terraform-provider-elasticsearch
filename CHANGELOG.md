@@ -1,11 +1,21 @@
 # Changelog
 ## Unreleased
 ### Changed
+
+### Added
+
+### Fixed
+
+
+## [2.0.0-beta.2] - 2021-09-25
+### Changed
 - [provider] Change default for sniffing to false, see https://github.com/phillbaker/terraform-provider-elasticsearch/pull/161.
 - [aws] Reuse session options, ensure synchronization before using credentials, see https://github.com/phillbaker/terraform-provider-elasticsearch/issues/124.
 
 ### Added
 - [index] Add include_type_name for compatibility between ESv6/7
+- [xpack license] Handle ackowledged only reponse.
+- [kibana alert] Fix storing actions, missing descriptions.
 
 ### Fixed
 - [provider] Add a timeout for pinging ES in case of no network access.
