@@ -1,16 +1,16 @@
 ---
 page_title: "Provider: Elasticsearch"
 description: |-
-  The Elasticsearch provider is used to interact with the resources supported by Elasticsearch. The provider needs to be configured with an endpoint URL before it can be used.
+  The provider is used to interact with the resources supported by Elasticsearch/Opensearch. The provider needs to be configured with an endpoint URL before it can be used.
 ---
 
-# Elasticsearch Provider
+# Elasticsearch/OpenSearch Provider
 
-The Elasticsearch provider is used to interact with the
-resources supported by Elasticsearch. The provider needs
-to be configured with an endpoint URL before it can be used.
+The provider is used to interact with the resources supported by
+Elasticsearch/Opensearch. The provider needs to be configured with an endpoint
+URL before it can be used.
 
-AWS Elasticsearch Service domains are supported.
+AWS Opensearch Service domains and OpenSearch clusters deployed on Kubernetes and other infrastructure are supported [via compatibility mode](https://opensearch.org/docs/latest/clients/agents-and-ingestion-tools/index/).
 
 Use the navigation to the left to read about the available resources.
 
@@ -79,7 +79,7 @@ The following arguments are supported:
 
 ### AWS authentication
 
-The Elasticsearch provider is flexible in the means of providing credentials for authentication with AWS Elasticsearch domains. The following methods are supported, in this order, and explained below:
+The provider is flexible in the means of providing credentials for authentication with AWS OpenSearch domains. The following methods are supported, in this order, and explained below:
 
 - Static credentials
 - Assume role configuration
@@ -90,7 +90,7 @@ If a [custom domain](https://docs.aws.amazon.com/elasticsearch-service/latest/de
 
 #### Static credentials
 
-Static credentials can be provided by adding an `aws_access_key` and `aws_secret_key` in-line in the Elasticsearch provider block. If applicable, you may also specify a `aws_token` value.
+Static credentials can be provided by adding an `aws_access_key` and `aws_secret_key` in-line in the provider block. If applicable, you may also specify a `aws_token` value.
 
 Example usage:
 
@@ -105,7 +105,7 @@ provider "elasticsearch" {
 
 #### Assume role configuration
 
-You can instruct the provider to assume a role in AWS before interacting with Elasticsearch by setting the `aws_assume_role_arn` variable.
+You can instruct the provider to assume a role in AWS before interacting with the cluster by setting the `aws_assume_role_arn` variable.
 
 Example usage:
 
@@ -145,9 +145,9 @@ You can use an AWS credentials file to specify your credentials. The default loc
 
 Please refer to the official [userguide](https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html) for instructions on how to create the credentials file.
 
-### Connecting to Elasticsearch via an SSH Tunnel
+### Connecting to a cluster via an SSH Tunnel
 
-If you need to connect to an Elasticsearch cluster via an SSH tunnel (for example, to an AWS VPC Cluster), set the following configuration options in your provider:
+If you need to connect to a cluster via an SSH tunnel (for example, to an AWS VPC Cluster), set the following configuration options in your provider:
 
 ```tf
 provider "elasticsearch" {
@@ -156,4 +156,4 @@ provider "elasticsearch" {
 }
 ```
 
-The `host_override` flag will set the `Host` header of requests to Elasticsearch and the `ServerName` used for certificate validation. It is recommended to set this flag instead of `insecure = true`, which causes certificate validation to be skipped. Note that if both `host_override` and `insecure = true` are set, certificate validation will be skipped and the `Host` header will be overridden.
+The `host_override` flag will set the `Host` header of requests to the cluster and the `ServerName` used for certificate validation. It is recommended to set this flag instead of `insecure = true`, which causes certificate validation to be skipped. Note that if both `host_override` and `insecure = true` are set, certificate validation will be skipped and the `Host` header will be overridden.

@@ -2,11 +2,11 @@ version: '3'
 
 services:
   elasticsearch:
-    image: ${ES_OSS_IMAGE}
+    image: ${OSS_IMAGE}
     hostname: elasticsearch
     container_name: elasticsearch
-    networks:
-      - elasticsearch
+    networks: 
+      - elasticsearch # used by ESv6 kibana
     environment:
       - cluster.name=elasticsearch
       - bootstrap.memory_lock=true
@@ -15,6 +15,7 @@ services:
       - network.publish_host=127.0.0.1
       - logger.org.elasticsearch=warn
       - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - ${OSS_ENV_VAR:-FOO=bar}
     command: ${ES_COMMAND}
     ulimits:
       nproc: 65536
@@ -27,7 +28,7 @@ services:
     ports:
       - 9200:9200
   xpack:
-    image: ${ES_IMAGE}
+    image: ${XPACK_IMAGE:-rwgrim/docker-noop}
     hostname: elasticsearch-xpack
     container_name: elasticsearch-xpack
     environment:
@@ -62,7 +63,7 @@ services:
       - bootstrap.memory_lock=true
       - discovery.type=single-node
       - path.repo=/tmp
-      - opendistro_security.ssl.http.enabled=false
+      - ${OPENSEARCH_PREFIX:-opendistro_security}.ssl.http.enabled=false
       - http.port=9220
       - network.publish_host=127.0.0.1
       - logger.org.elasticsearch=warn
@@ -77,17 +78,40 @@ services:
         hard: -1
     ports:
       - 9220:9220
+  xpack-kibana:
+    image: ${XPACK_IMAGE:-rwgrim/docker-noop}
+    networks:
+      - elasticsearch  # used by ESv7 kibana
+    environment:
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - http.port=9230
+      - logger.org.elasticsearch=warn
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    mem_limit: 1g
+    ulimits:
+      nproc: 65536
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9230:9230
   kibana:
     image: ${ES_KIBANA_IMAGE:-rwgrim/docker-noop}
-    hostname: elasticsearch-kibana
-    container_name: elasticsearch-kibana
     networks:
       - elasticsearch
+    links:
+      - xpack-kibana
     environment:
       XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: aaaa1111bbbb2222cccc3333dddd4444
-      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: http://xpack-kibana:9230
     depends_on:
       - elasticsearch
+      - xpack-kibana
     ulimits:
       nproc: 65536
       nofile:

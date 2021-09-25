@@ -2,7 +2,7 @@
 
 ![Test](https://github.com/phillbaker/terraform-provider-elasticsearch/workflows/Test/badge.svg?branch=master)
 
-This is a terraform provider that lets you provision elasticsearch resources, compatible with v6 and v7 of elasticsearch. Based off of an [original PR to Terraform](https://github.com/hashicorp/terraform/pull/13238).
+This is a terraform provider that lets you provision Elasticsearch and Opensearch resources, compatible with v6 and v7 of Elasticsearch and v1 of Opensearch ([via compatibility mode](https://opensearch.org/docs/latest/clients/agents-and-ingestion-tools/index/)). Based off of an [original PR to Terraform](https://github.com/hashicorp/terraform/pull/13238).
 
 ## Using the Provider
 
@@ -42,7 +42,7 @@ provider "elasticsearch" {
 
 ### API Coverage
 
-Examples of resources can be found in the examples directory. The resources currently supported from the: opensource Elasticsearch, XPack and OpenDistro distributions are described below.
+Examples of resources can be found in the examples directory. The resources currently supported from the: opensource Elasticsearch, XPack and OpenDistro/OpenSearch distributions are described below.
 
 #### Elasticsearch
 
@@ -71,7 +71,7 @@ Examples of resources can be found in the examples directory. The resources curr
 - [x] [Snapshot lifecycle policy](https://www.elastic.co/guide/en/elasticsearch/reference/current/snapshot-lifecycle-management-api.html)
 - [x] [Watch](https://www.elastic.co/guide/en/elasticsearch/reference/current/watcher-api.html)
 
-#### OpenDistro
+#### OpenDistro/OpenSearch
 
 - [x] [Alerting](https://opendistro.github.io/for-elasticsearch-docs/docs/alerting/api/) (Destinations/Monitors)
 - [x] [Security](https://opendistro.github.io/for-elasticsearch-docs/docs/security/access-control/api/) (Role/Role Mapping/User)
@@ -271,7 +271,7 @@ EOF
 }
 ```
 
-### For use with AWS Elasticsearch domains
+### For use with AWS Opensearch domains
 
 Please see [the documentation](./docs/index.md#AWS-authentication) for details.
 

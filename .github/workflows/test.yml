@@ -28,21 +28,39 @@ jobs:
         es-major-version:
           - "6"
           - "7"
+          - "7-opensearch"
         include:
         - es-major-version: "6"
-          es-version: 6.8.9
+          version: 6.8.9
+          # oss-image: "docker.elastic.co/elasticsearch/elasticsearch-oss"
+          oss-image: "elasticsearch"
+          XPACK_IMAGE: "docker.elastic.co/elasticsearch/elasticsearch:6.8.9"
           ES_OPENDISTRO_IMAGE: "ghcr.io/phillbaker/opendistro-for-elasticsearch:0.10.0"
           ES_KIBANA_IMAGE: "docker.elastic.co/kibana/kibana-oss:6.0.0"
         - es-major-version: "7"
-          es-version: 7.10.1
+          version: 7.10.1
+          # oss-image: "docker.elastic.co/elasticsearch/elasticsearch-oss"
+          oss-image: "elasticsearch"
+          XPACK_IMAGE: "docker.elastic.co/elasticsearch/elasticsearch:7.10.1"
           ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:1.13.2"
           ES_KIBANA_IMAGE: "docker.elastic.co/kibana/kibana:7.10.1"
+        - es-major-version: "7-opensearch"
+          version: 1.0.0
+          oss-image: "opensearchproject/opensearch"
+          XPACK_IMAGE: "docker.elastic.co/elasticsearch/elasticsearch:7.10.1"
+          ES_OPENDISTRO_IMAGE: "opensearchproject/opensearch:1.0.0"
+          ES_KIBANA_IMAGE: "" # opensearchproject/opensearch-dashboards:1.0.0"
+          OPENSEARCH_PREFIX: "plugins.security"
+          OSS_ENV_VAR: "plugins.security.disabled=true"
     needs: [lint]
     name: Test against ES ${{ matrix.es-major-version }} on ${{ matrix.go-version }}/${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
+      XPACK_IMAGE: "${{matrix.XPACK_IMAGE}}"
       ES_OPENDISTRO_IMAGE: "${{matrix.ES_OPENDISTRO_IMAGE}}"
       ES_KIBANA_IMAGE: "${{matrix.ES_KIBANA_IMAGE}}"
+      OPENSEARCH_PREFIX: "${{matrix.OPENSEARCH_PREFIX}}"
+      OSS_ENV_VAR: "${{matrix.OSS_ENV_VAR}}"
     steps:
     - name: Prepare tests
       run: |
@@ -69,9 +87,7 @@ jobs:
     - name: Run Docker containers
       run: docker-compose up --detach
       env:
-        ES_VERSION: ${{ matrix.es-version }}
-        ES_OSS_IMAGE: "elasticsearch:${{ matrix.es-version }}"
-        ES_IMAGE: "docker.elastic.co/elasticsearch/elasticsearch:${{ matrix.es-version }}"
+        OSS_IMAGE: "${{ matrix.oss-image }}:${{ matrix.version }}"
         ES_COMMAND: "${{matrix.ES_COMMAND}}"
     - name: Check Docker containers
       run: docker ps -a
@@ -93,20 +109,27 @@ jobs:
     - name: Wait for Elasticsearch
       # ensure that ES has come up and is available
       run: |
-        ./script/wait-for-endpoint --timeout=120 http://localhost:9200
+        ./script/wait-for-endpoint --timeout=20 http://localhost:9200
+        if [ -n "$OPENSEARCH_PREFIX" ]; then
+          curl -s -v -X PUT -H 'Content-type: application/json' -d '{"persistent": {"compatibility.override_main_response_version": true}}' http://localhost:9200/_cluster/settings
+        fi
     - name: Wait for Kibana
       # ensure that Kibana API has come up and is available
       run: |
         if [ -n "$ES_KIBANA_IMAGE" ]; then
           ./script/wait-for-endpoint --timeout=120 http://localhost:5601/api/saved_objects/_find?type=visualization
         fi
-    - name: Warm up OpenDistro
-      # OpenDistro lazily initializes its indexes, see
-      # https://github.com/opendistro-for-elasticsearch/alerting/issues/60
+    - name: Warm up OpenDistro/Opensearch
+      # - OpenDistro lazily initializes its indexes, see
+      #   https://github.com/opendistro-for-elasticsearch/alerting/issues/60
+      # - OpenSearch 1.x uses a compatibility mode to maintain ESv7.x version
       run: |
         if [ -n "$ES_OPENDISTRO_IMAGE" ]; then
-          ./script/wait-for-endpoint http://admin:admin@localhost:9220
-          curl -s -v -X POST -H 'Content-type: application/json'  -d '{"name":"_warmup","type":"slack","slack":{"url": "http://www.example.com"}}' http://admin:admin@localhost:9220/_opendistro/_alerting/destinations
+          ./script/wait-for-endpoint --timeout=120 http://admin:admin@localhost:9220
+          curl -s -v -X POST -H 'Content-type: application/json' -d '{"name":"_warmup","type":"slack","slack":{"url": "http://www.example.com"}}' http://admin:admin@localhost:9220/_opendistro/_alerting/destinations
+        fi
+        if [ -n "$OPENSEARCH_PREFIX" ]; then
+          curl -s -v -X PUT -H 'Content-type: application/json' -d '{"persistent": {"compatibility.override_main_response_version": true}}' http://admin:admin@localhost:9220/_cluster/settings
         fi
     - name: Dump docker logs on failure
       if: failure()
