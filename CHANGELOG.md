@@ -2,6 +2,7 @@
 ## Unreleased
 ### Changed
 - [provider] Change default for healthcheck and sniffing to false, see https://github.com/phillbaker/terraform-provider-elasticsearch/pull/161.
+- [aws] Reuse session options, ensure synchronization before using credentials, see https://github.com/phillbaker/terraform-provider-elasticsearch/issues/124.
 
 ### Added
 - [index] Add include_type_name for compatibility between ESv6/7
