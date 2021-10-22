@@ -9,7 +9,9 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -290,6 +292,24 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 		opts = append(opts, elastic7.SetHttpClient(tokenHttpClient(conf, map[string]string{})), elastic7.SetSniff(false))
 	} else {
 		opts = append(opts, elastic7.SetHttpClient(defaultHttpClient(conf, map[string]string{})))
+	}
+
+	log_provider_level, ok := os.LookupEnv("TF_LOG_PROVIDER")
+	if !ok {
+		log_provider_level = "ERROR"
+	}
+
+	log_provider_level = strings.ToUpper(log_provider_level)
+
+	switch log_provider_level {
+	case "TRACE":
+		opts = append(opts, elastic7.SetTraceLog(log.Default()))
+		fallthrough
+	case "INFO":
+		opts = append(opts, elastic7.SetInfoLog(log.Default()))
+		fallthrough
+	default:
+		opts = append(opts, elastic7.SetErrorLog(log.Default()))
 	}
 
 	var relevantClient interface{}
