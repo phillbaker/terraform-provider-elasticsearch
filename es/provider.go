@@ -9,7 +9,9 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -19,6 +21,7 @@ import (
 	awssigv4 "github.com/aws/aws-sdk-go/aws/signer/v4"
 	awssts "github.com/aws/aws-sdk-go/service/sts"
 	"github.com/deoxxa/aws_signing_client"
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -292,6 +295,37 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 		opts = append(opts, elastic7.SetHttpClient(defaultHttpClient(conf, map[string]string{})))
 	}
 
+	logProviderLevel, ok := os.LookupEnv("TF_LOG_PROVIDER")
+	if !ok {
+		logProviderLevel = "ERROR"
+	}
+	logProviderLevel = strings.ToUpper(logProviderLevel)
+
+	esLogger := hclog.New(&hclog.LoggerOptions{
+		Level:      hclog.LevelFromString(logProviderLevel),
+		Output:     os.Stderr,
+		JSONFormat: true,
+	})
+	switch logProviderLevel {
+	case "TRACE":
+		traceLogger := esLogger.StandardLogger(&hclog.StandardLoggerOptions{
+			ForceLevel: hclog.LevelFromString("TRACE"),
+		})
+		opts = append(opts, elastic7.SetTraceLog(traceLogger))
+		fallthrough
+	case "INFO":
+		infoLogger := esLogger.StandardLogger(&hclog.StandardLoggerOptions{
+			ForceLevel: hclog.LevelFromString("INFO"),
+		})
+		opts = append(opts, elastic7.SetInfoLog(infoLogger))
+		fallthrough
+	default:
+		errorLogger := esLogger.StandardLogger(&hclog.StandardLoggerOptions{
+			ForceLevel: hclog.LevelFromString("ERROR"),
+		})
+		opts = append(opts, elastic7.SetErrorLog(errorLogger))
+	}
+
 	var relevantClient interface{}
 	client, err := elastic7.NewClient(opts...)
 	if err != nil {
@@ -347,6 +381,26 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 			opts = append(opts, elastic6.SetHttpClient(tokenHttpClient(conf, map[string]string{})), elastic6.SetSniff(false))
 		} else {
 			opts = append(opts, elastic6.SetHttpClient(defaultHttpClient(conf, map[string]string{})))
+		}
+
+		switch logProviderLevel {
+		case "TRACE":
+			traceLogger := esLogger.StandardLogger(&hclog.StandardLoggerOptions{
+				ForceLevel: hclog.LevelFromString("TRACE"),
+			})
+			opts = append(opts, elastic6.SetTraceLog(traceLogger))
+			fallthrough
+		case "INFO":
+			infoLogger := esLogger.StandardLogger(&hclog.StandardLoggerOptions{
+				ForceLevel: hclog.LevelFromString("INFO"),
+			})
+			opts = append(opts, elastic6.SetInfoLog(infoLogger))
+			fallthrough
+		default:
+			errorLogger := esLogger.StandardLogger(&hclog.StandardLoggerOptions{
+				ForceLevel: hclog.LevelFromString("ERROR"),
+			})
+			opts = append(opts, elastic6.SetErrorLog(errorLogger))
 		}
 
 		relevantClient, err = elastic6.NewClient(opts...)

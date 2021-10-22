@@ -3,6 +3,7 @@
 ### Changed
 
 ### Added
+- [provider] Output ES Client logs in JSON format, depending on TF_LOG_PROVIDER
 
 ### Fixed
 
