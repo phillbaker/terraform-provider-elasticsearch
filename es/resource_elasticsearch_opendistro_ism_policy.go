@@ -19,41 +19,57 @@ import (
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
+var openDistroISMPolicySchema = map[string]*schema.Schema{
+	"policy_id": {
+		Type:     schema.TypeString,
+		Required: true,
+		ForceNew: true,
+	},
+	"body": {
+		Type:             schema.TypeString,
+		Required:         true,
+		DiffSuppressFunc: diffSuppressPolicy,
+		StateFunc: func(v interface{}) string {
+			json, _ := structure.NormalizeJsonString(v)
+			return json
+		},
+	},
+	"primary_term": {
+		Type:     schema.TypeInt,
+		Optional: true,
+		Computed: true,
+	},
+	"seq_no": {
+		Type:     schema.TypeInt,
+		Optional: true,
+		Computed: true,
+	},
+}
+
+func resourceOpenSearchISMPolicy() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceElasticsearchOpenDistroISMPolicyCreate,
+		Read:   resourceElasticsearchOpenDistroISMPolicyRead,
+		Update: resourceElasticsearchOpenDistroISMPolicyUpdate,
+		Delete: resourceElasticsearchOpenDistroISMPolicyDelete,
+		Schema: openDistroISMPolicySchema,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+	}
+}
+
 func resourceElasticsearchOpenDistroISMPolicy() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceElasticsearchOpenDistroISMPolicyCreate,
 		Read:   resourceElasticsearchOpenDistroISMPolicyRead,
 		Update: resourceElasticsearchOpenDistroISMPolicyUpdate,
 		Delete: resourceElasticsearchOpenDistroISMPolicyDelete,
-		Schema: map[string]*schema.Schema{
-			"policy_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			"body": {
-				Type:             schema.TypeString,
-				Required:         true,
-				DiffSuppressFunc: diffSuppressPolicy,
-				StateFunc: func(v interface{}) string {
-					json, _ := structure.NormalizeJsonString(v)
-					return json
-				},
-			},
-			"primary_term": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
-			},
-			"seq_no": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
-			},
-		},
+		Schema: openDistroISMPolicySchema,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		DeprecationMessage: "elasticsearch_opendistro_ism_policy is deprecated, please use opensearch_ism_policy resource instead.",
 	}
 }
 

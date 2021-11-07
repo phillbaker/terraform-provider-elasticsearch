@@ -15,46 +15,62 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 )
 
+var openDistroRolesMappingSchema = map[string]*schema.Schema{
+	"role_name": {
+		Type:     schema.TypeString,
+		Required: true,
+		ForceNew: true,
+	},
+	"backend_roles": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+	},
+	"hosts": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+	},
+	"users": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+	},
+	"description": {
+		Type:     schema.TypeString,
+		Optional: true,
+	},
+	"and_backend_roles": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+	},
+}
+
+func resourceOpenSearchRolesMapping() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceElasticsearchOpenDistroRolesMappingCreate,
+		Read:   resourceElasticsearchOpenDistroRolesMappingRead,
+		Update: resourceElasticsearchOpenDistroRolesMappingUpdate,
+		Delete: resourceElasticsearchOpenDistroRolesMappingDelete,
+		Schema: openDistroRolesMappingSchema,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+	}
+}
+
 func resourceElasticsearchOpenDistroRolesMapping() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceElasticsearchOpenDistroRolesMappingCreate,
 		Read:   resourceElasticsearchOpenDistroRolesMappingRead,
 		Update: resourceElasticsearchOpenDistroRolesMappingUpdate,
 		Delete: resourceElasticsearchOpenDistroRolesMappingDelete,
-		Schema: map[string]*schema.Schema{
-			"role_name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			"backend_roles": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"hosts": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"users": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"and_backend_roles": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-		},
+		Schema: openDistroRolesMappingSchema,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		DeprecationMessage: "elasticsearch_opendistro_roles_mapping is deprecated, please use opensearch_roles_mapping resource instead.",
 	}
 }
 

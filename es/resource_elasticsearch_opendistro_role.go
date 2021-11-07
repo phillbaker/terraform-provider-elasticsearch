@@ -15,101 +15,117 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 )
 
+var openDistroRoleSchema = map[string]*schema.Schema{
+	"role_name": {
+		Type:     schema.TypeString,
+		Required: true,
+		ForceNew: true,
+	},
+	"cluster_permissions": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+	},
+	"index_permissions": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"index_patterns": {
+					Type:     schema.TypeSet,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+					Set: schema.HashString,
+				},
+				"document_level_security": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"field_level_security": {
+					Type:     schema.TypeSet,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+					Set: schema.HashString,
+				},
+				"masked_fields": {
+					Type:     schema.TypeSet,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+					Set: schema.HashString,
+				},
+				"allowed_actions": {
+					Type:     schema.TypeSet,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+					Set: schema.HashString,
+				},
+			},
+		},
+		Set: indexPermissionsHash,
+	},
+	"tenant_permissions": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"tenant_patterns": {
+					Type:     schema.TypeSet,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+					Set: schema.HashString,
+				},
+				"allowed_actions": {
+					Type:     schema.TypeSet,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+					Set: schema.HashString,
+				},
+			},
+		},
+		Set: tenantPermissionsHash,
+	},
+	"description": {
+		Type:     schema.TypeString,
+		Optional: true,
+	},
+}
+
+func resourceOpenSearchRole() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceElasticsearchOpenDistroRoleCreate,
+		Read:   resourceElasticsearchOpenDistroRoleRead,
+		Update: resourceElasticsearchOpenDistroRoleUpdate,
+		Delete: resourceElasticsearchOpenDistroRoleDelete,
+		Schema: openDistroRoleSchema,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+	}
+}
+
 func resourceElasticsearchOpenDistroRole() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceElasticsearchOpenDistroRoleCreate,
 		Read:   resourceElasticsearchOpenDistroRoleRead,
 		Update: resourceElasticsearchOpenDistroRoleUpdate,
 		Delete: resourceElasticsearchOpenDistroRoleDelete,
-		Schema: map[string]*schema.Schema{
-			"role_name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			"cluster_permissions": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"index_permissions": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"index_patterns": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Set: schema.HashString,
-						},
-						"document_level_security": {
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"field_level_security": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Set: schema.HashString,
-						},
-						"masked_fields": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Set: schema.HashString,
-						},
-						"allowed_actions": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Set: schema.HashString,
-						},
-					},
-				},
-				Set: indexPermissionsHash,
-			},
-			"tenant_permissions": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"tenant_patterns": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Set: schema.HashString,
-						},
-						"allowed_actions": {
-							Type:     schema.TypeSet,
-							Optional: true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Set: schema.HashString,
-						},
-					},
-				},
-				Set: tenantPermissionsHash,
-			},
-			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-		},
+		Schema: openDistroRoleSchema,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		DeprecationMessage: "elasticsearch_opendistro_role is deprecated, please use opensearch_role resource instead.",
 	}
 }
 

@@ -29,6 +29,19 @@ var openDistroMonitorSchema = map[string]*schema.Schema{
 	},
 }
 
+func resourceOpenSearchMonitor() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceElasticsearchOpenDistroMonitorCreate,
+		Read:   resourceElasticsearchOpenDistroMonitorRead,
+		Update: resourceElasticsearchOpenDistroMonitorUpdate,
+		Delete: resourceElasticsearchOpenDistroMonitorDelete,
+		Schema: openDistroMonitorSchema,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+	}
+}
+
 func resourceElasticsearchOpenDistroMonitor() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceElasticsearchOpenDistroMonitorCreate,
@@ -39,6 +52,7 @@ func resourceElasticsearchOpenDistroMonitor() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		DeprecationMessage: "elasticsearch_opendistro_monitor is deprecated, please use opensearch_monitor resource instead.",
 	}
 }
 

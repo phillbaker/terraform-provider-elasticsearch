@@ -15,6 +15,62 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 )
 
+var openDistroISMPolicyMappingSchema = map[string]*schema.Schema{
+	"policy_id": {
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "The name of the policy.",
+	},
+	"indexes": {
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "Name of the index to apply the policy to. You can use an index pattern to update multiple indices at once.",
+	},
+	"state": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Default:     "",
+		Description: "After a change in policy takes place, specify the state for the index to transition to",
+	},
+	"include": {
+		Type:        schema.TypeSet,
+		Optional:    true,
+		Elem:        &schema.Schema{Type: schema.TypeMap},
+		Description: "When updating multiple indices, you might want to include a state filter to only affect certain managed indices. The background process only applies the change if the index is currently in the state specified.",
+	},
+	"is_safe": {
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Default:     false,
+		Description: "",
+	},
+	"managed_indexes": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Computed: true,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+	},
+}
+
+func resourceOpenSearchISMPolicyMapping() *schema.Resource {
+	return &schema.Resource{
+		Description: "Provides an Elasticsearch Open Distro Index State Management (ISM) policy. Please refer to the Open Distro [ISM documentation](https://opendistro.github.io/for-elasticsearch-docs/docs/ism/) for details.",
+		Create:      resourceElasticsearchOpenDistroISMPolicyMappingCreate,
+		Read:        resourceElasticsearchOpenDistroISMPolicyMappingRead,
+		Update:      resourceElasticsearchOpenDistroISMPolicyMappingUpdate,
+		Delete:      resourceElasticsearchOpenDistroISMPolicyMappingDelete,
+		Schema:      openDistroISMPolicyMappingSchema,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(5 * time.Minute),
+			Update: schema.DefaultTimeout(5 * time.Minute),
+		},
+		DeprecationMessage: "opensearch_ism_policy_mapping is deprecated in Opensearch 1.x please use ism_template attribute in policies instead.",
+	}
+}
+
 func resourceElasticsearchOpenDistroISMPolicyMapping() *schema.Resource {
 	return &schema.Resource{
 		Description: "Provides an Elasticsearch Open Distro Index State Management (ISM) policy. Please refer to the Open Distro [ISM documentation](https://opendistro.github.io/for-elasticsearch-docs/docs/ism/) for details.",
@@ -22,42 +78,7 @@ func resourceElasticsearchOpenDistroISMPolicyMapping() *schema.Resource {
 		Read:        resourceElasticsearchOpenDistroISMPolicyMappingRead,
 		Update:      resourceElasticsearchOpenDistroISMPolicyMappingUpdate,
 		Delete:      resourceElasticsearchOpenDistroISMPolicyMappingDelete,
-		Schema: map[string]*schema.Schema{
-			"policy_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The name of the policy.",
-			},
-			"indexes": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Name of the index to apply the policy to. You can use an index pattern to update multiple indices at once.",
-			},
-			"state": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "",
-				Description: "After a change in policy takes place, specify the state for the index to transition to",
-			},
-			"include": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Elem:        &schema.Schema{Type: schema.TypeMap},
-				Description: "When updating multiple indices, you might want to include a state filter to only affect certain managed indices. The background process only applies the change if the index is currently in the state specified.",
-			},
-			"is_safe": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "",
-			},
-			"managed_indexes": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-		},
+		Schema:      openDistroISMPolicyMappingSchema,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

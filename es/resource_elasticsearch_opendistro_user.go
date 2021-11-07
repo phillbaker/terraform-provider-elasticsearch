@@ -15,49 +15,65 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 )
 
+var openDistroUserSchema = map[string]*schema.Schema{
+	"username": {
+		Type:     schema.TypeString,
+		Required: true,
+	},
+	"password": {
+		Type:          schema.TypeString,
+		Optional:      true,
+		Sensitive:     true,
+		StateFunc:     hashSum,
+		ConflictsWith: []string{"password_hash"},
+	},
+	"password_hash": {
+		Type:          schema.TypeString,
+		Optional:      true,
+		Sensitive:     true,
+		StateFunc:     hashSum,
+		ConflictsWith: []string{"password"},
+	},
+	"backend_roles": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+	},
+	"attributes": {
+		Type:     schema.TypeMap,
+		Optional: true,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+	},
+	"description": {
+		Type:     schema.TypeString,
+		Optional: true,
+	},
+}
+
+func resourceOpenSearchUser() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceElasticsearchOpenDistroUserCreate,
+		Read:   resourceElasticsearchOpenDistroUserRead,
+		Update: resourceElasticsearchOpenDistroUserUpdate,
+		Delete: resourceElasticsearchOpenDistroUserDelete,
+		Schema: openDistroUserSchema,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+	}
+}
+
 func resourceElasticsearchOpenDistroUser() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceElasticsearchOpenDistroUserCreate,
 		Read:   resourceElasticsearchOpenDistroUserRead,
 		Update: resourceElasticsearchOpenDistroUserUpdate,
 		Delete: resourceElasticsearchOpenDistroUserDelete,
-		Schema: map[string]*schema.Schema{
-			"username": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"password": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Sensitive:     true,
-				StateFunc:     hashSum,
-				ConflictsWith: []string{"password_hash"},
-			},
-			"password_hash": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Sensitive:     true,
-				StateFunc:     hashSum,
-				ConflictsWith: []string{"password"},
-			},
-			"backend_roles": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"attributes": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-		},
+		Schema: openDistroUserSchema,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		DeprecationMessage: "elasticsearch_opendistro_user is deprecated, please use opensearch_user resource instead.",
 	}
 }
 

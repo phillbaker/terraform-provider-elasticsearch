@@ -17,30 +17,46 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 )
 
+var openDistroKibanaTenantSchema = map[string]*schema.Schema{
+	"tenant_name": {
+		Type:     schema.TypeString,
+		Required: true,
+		ForceNew: true,
+	},
+	"description": {
+		Type:     schema.TypeString,
+		Optional: true,
+	},
+	"index": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+}
+
+func resourceOpenSearchKibanaTenant() *schema.Resource {
+	return &schema.Resource{
+		Create: resourceElasticsearchOpenDistroKibanaTenantCreate,
+		Read:   resourceElasticsearchOpenDistroKibanaTenantRead,
+		Update: resourceElasticsearchOpenDistroKibanaTenantUpdate,
+		Delete: resourceElasticsearchOpenDistroKibanaTenantDelete,
+		Schema: openDistroKibanaTenantSchema,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+	}
+}
+
 func resourceElasticsearchOpenDistroKibanaTenant() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceElasticsearchOpenDistroKibanaTenantCreate,
 		Read:   resourceElasticsearchOpenDistroKibanaTenantRead,
 		Update: resourceElasticsearchOpenDistroKibanaTenantUpdate,
 		Delete: resourceElasticsearchOpenDistroKibanaTenantDelete,
-		Schema: map[string]*schema.Schema{
-			"tenant_name": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-			},
-			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"index": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-		},
+		Schema: openDistroKibanaTenantSchema,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		DeprecationMessage: "elasticsearch_opendistro_kibana_tentant is deprecated, please use opensearch_kibana_tenant resource instead.",
 	}
 }
 

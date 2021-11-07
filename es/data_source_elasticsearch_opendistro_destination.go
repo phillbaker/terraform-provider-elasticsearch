@@ -29,11 +29,20 @@ var datasourceOpenDistroDestinationSchema = map[string]*schema.Schema{
 	},
 }
 
-func dataSourceElasticsearchOpenDistroDestination() *schema.Resource {
+func dataSourceOpenSearchDestination() *schema.Resource {
 	return &schema.Resource{
-		Description: "`elasticsearch_opendistro_destination` can be used to retrieve the destination object by name.",
+		Description: "`opensearch_destination` can be used to retrieve the destination object by name.",
 		Read:        dataSourceElasticsearchOpenDistroDestinationRead,
 		Schema:      datasourceOpenDistroDestinationSchema,
+	}
+}
+
+func dataSourceElasticsearchOpenDistroDestination() *schema.Resource {
+	return &schema.Resource{
+		Description:        "`elasticsearch_opendistro_destination` can be used to retrieve the destination object by name.",
+		Read:               dataSourceElasticsearchOpenDistroDestinationRead,
+		Schema:             datasourceOpenDistroDestinationSchema,
+		DeprecationMessage: "elasticsearch_opendistro_destination is deprecated, please use opensearch_destination data source instead.",
 	}
 }
 

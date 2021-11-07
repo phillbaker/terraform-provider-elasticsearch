@@ -2,6 +2,7 @@
 ## Unreleased
 ### Changed
 - [build] Clarify that a minimum of Go 1.13 is required to build the provider
+- [opendistro *] Rename elasticsearch_opendistro_* resources to opensearch_*. Test OpenSearch against 1.x.
 
 ### Added
 - [provider] Output ES Client logs in JSON format, depending on TF_LOG_PROVIDER
