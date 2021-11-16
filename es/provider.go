@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"time"
 
@@ -263,11 +264,15 @@ func providerConfigure(c context.Context, d *schema.ResourceData) (interface{}, 
 }
 
 func getClient(conf *ProviderConf) (interface{}, error) {
+	f, err := os.OpenFile("/home/joe/elasticsearch_provider.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	opts := []elastic7.ClientOptionFunc{
 		elastic7.SetURL(conf.rawUrl),
 		elastic7.SetScheme(conf.parsedUrl.Scheme),
 		elastic7.SetSniff(conf.sniffing),
 		elastic7.SetHealthcheck(conf.healthchecking),
+		elastic7.SetErrorLog(log.New(f, "", 0)),
+		elastic7.SetInfoLog(log.New(f, "", 0)),
+		elastic7.SetTraceLog(log.New(f, "", 0)),
 	}
 
 	if conf.parsedUrl.User.Username() != "" {
