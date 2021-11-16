@@ -59,9 +59,8 @@ func resourceElasticsearchOpenDistroRolesMapping() *schema.Resource {
 }
 
 func resourceElasticsearchOpenDistroRolesMappingCreate(d *schema.ResourceData, m interface{}) error {
-	if response, err := resourceElasticsearchPutOpenDistroRolesMapping(d, m); err != nil {
+	if _, err := resourceElasticsearchPutOpenDistroRolesMapping(d, m); err != nil {
 		log.Printf("[INFO] Failed to put role mapping: %+v", err)
-		log.Printf("[INFO] Response from ES: %+v", response)
 		return err
 	}
 
