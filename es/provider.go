@@ -36,6 +36,16 @@ const (
 	DefaultVersionPingTimeout = 5 * time.Second
 )
 
+type ServerFlavor int64
+
+// e.g. elasticsearch, opensearch, elasticsearch-oss, etc.
+const (
+	Unknown ServerFlavor = iota
+	Elasticsearch
+	ElasticsearchOpenSource
+	OpenSearch
+)
+
 var awsUrlRegexp = regexp.MustCompile(`([a-z0-9-]+).es.amazonaws.com$`)
 
 type ProviderConf struct {
@@ -61,6 +71,8 @@ type ProviderConf struct {
 	keyPemPath         string
 	kibanaUrl          string
 	hostOverride       string
+	// determined after connecting to the server
+	flavor ServerFlavor
 }
 
 func Provider() *schema.Provider {
@@ -350,6 +362,16 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 			return nil, err
 		}
 		conf.esVersion = info.Version.Number
+
+		// if upstream library exposes support for OpenSearch's distribution
+		// param, we can use that as well
+		log.Printf("[INFO] ES version %+v", info.Version)
+		switch info.Version.BuildFlavor {
+		case "default":
+			conf.flavor = Elasticsearch
+		case "oss":
+			conf.flavor = ElasticsearchOpenSource
+		}
 	}
 
 	if conf.esVersion < "7.0.0" && conf.esVersion >= "6.0.0" {

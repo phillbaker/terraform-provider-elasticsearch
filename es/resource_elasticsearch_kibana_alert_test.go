@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"testing"
 
 	elastic7 "github.com/olivere/elastic/v7"
+	elastic6 "gopkg.in/olivere/elastic.v6"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -25,7 +27,8 @@ func TestAccElasticsearchKibanaAlert(t *testing.T) {
 
 	// We use the elasticsearch version to check compatibilty, it'll connect to
 	// kibana below
-	esClient, err := getClient(meta.(*ProviderConf))
+	providerConf := meta.(*ProviderConf)
+	esClient, err := getClient(providerConf)
 	if err != nil {
 		t.Skipf("err: %s", err)
 	}
@@ -33,7 +36,10 @@ func TestAccElasticsearchKibanaAlert(t *testing.T) {
 	var allowed bool
 	switch esClient.(type) {
 	case *elastic7.Client:
-		allowed = true
+		allowed = providerConf.flavor == Elasticsearch
+		log.Printf("[INFO] TestAccElasticsearchKibanaAlert_importBasic %+v %+v", providerConf.flavor, providerConf.flavor == Elasticsearch)
+	case *elastic6.Client:
+		allowed = false
 	default:
 		allowed = false
 	}
@@ -75,7 +81,8 @@ func TestAccElasticsearchKibanaAlert_importBasic(t *testing.T) {
 	}
 	meta := provider.Meta()
 
-	esClient, err := getClient(meta.(*ProviderConf))
+	providerConf := meta.(*ProviderConf)
+	esClient, err := getClient(providerConf)
 	if err != nil {
 		t.Skipf("err: %s", err)
 	}
@@ -83,7 +90,10 @@ func TestAccElasticsearchKibanaAlert_importBasic(t *testing.T) {
 	var allowed bool
 	switch esClient.(type) {
 	case *elastic7.Client:
-		allowed = true
+		log.Printf("[INFO] TestAccElasticsearchKibanaAlert_importBasic %+v %+v", providerConf.flavor, providerConf.flavor == Elasticsearch)
+		allowed = providerConf.flavor == Elasticsearch
+	case *elastic6.Client:
+		allowed = false
 	default:
 		allowed = false
 	}
