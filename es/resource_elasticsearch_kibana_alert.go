@@ -208,7 +208,8 @@ func resourceElasticsearchKibanaAlertRead(d *schema.ResourceData, meta interface
 
 	var alert kibana.Alert
 
-	esClient, err := getKibanaClient(meta.(*ProviderConf))
+	providerConf := meta.(*ProviderConf)
+	esClient, err := getKibanaClient(providerConf)
 	if err != nil {
 		return err
 	}
@@ -266,7 +267,8 @@ func resourceElasticsearchKibanaAlertDelete(d *schema.ResourceData, meta interfa
 	id := d.Id()
 	spaceID := ""
 
-	kibanaClient, err := getKibanaClient(meta.(*ProviderConf))
+	providerConf := meta.(*ProviderConf)
+	kibanaClient, err := getKibanaClient(providerConf)
 	if err != nil {
 		return err
 	}
@@ -288,7 +290,8 @@ func resourceElasticsearchKibanaAlertDelete(d *schema.ResourceData, meta interfa
 func resourceElasticsearchPostKibanaAlert(d *schema.ResourceData, meta interface{}) (string, error) {
 	spaceID := ""
 
-	kibanaClient, err := getKibanaClient(meta.(*ProviderConf))
+	providerConf := meta.(*ProviderConf)
+	kibanaClient, err := getKibanaClient(providerConf)
 	if err != nil {
 		return "", err
 	}
@@ -424,14 +427,15 @@ func resourceElasticsearchPutKibanaAlert(d *schema.ResourceData, meta interface{
 }
 
 func resourceElasticsearchKibanaGetVersion(meta interface{}) (*version.Version, error) {
-	esClient, err := getClient(meta.(*ProviderConf))
+	providerConf := meta.(*ProviderConf)
+	esClient, err := getClient(providerConf)
 	if err != nil {
 		return nil, err
 	}
 
-	switch client := esClient.(type) {
+	switch esClient.(type) {
 	case *elastic7.Client:
-		return elastic7GetVersion(client)
+		return version.NewVersion(providerConf.esVersion)
 	default:
 		return nil, fmt.Errorf("Kibana Alert endpoint only available from ElasticSearch >= 7.7, got version < 7.0.0")
 	}
