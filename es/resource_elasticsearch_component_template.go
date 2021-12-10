@@ -57,14 +57,15 @@ func resourceElasticsearchComponentTemplateRead(d *schema.ResourceData, meta int
 	var result string
 	var elasticVersion *version.Version
 
-	esClient, err := getClient(meta.(*ProviderConf))
+	providerConf := meta.(*ProviderConf)
+	esClient, err := getClient(providerConf)
 	if err != nil {
 		return err
 	}
 
 	switch client := esClient.(type) {
 	case *elastic7.Client:
-		elasticVersion, err = elastic7GetVersion(client)
+		elasticVersion, err = version.NewVersion(providerConf.esVersion)
 		if err == nil {
 			if elasticVersion.LessThan(componentTemplateMinimalVersion) {
 				err = fmt.Errorf("component_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
@@ -116,14 +117,15 @@ func resourceElasticsearchComponentTemplateDelete(d *schema.ResourceData, meta i
 
 	var elasticVersion *version.Version
 
-	esClient, err := getClient(meta.(*ProviderConf))
+	providerConf := meta.(*ProviderConf)
+	esClient, err := getClient(providerConf)
 	if err != nil {
 		return err
 	}
 
 	switch client := esClient.(type) {
 	case *elastic7.Client:
-		elasticVersion, err = elastic7GetVersion(client)
+		elasticVersion, err = version.NewVersion(providerConf.esVersion)
 		if err == nil {
 			if elasticVersion.LessThan(componentTemplateMinimalVersion) {
 				err = fmt.Errorf("component_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())
@@ -153,14 +155,15 @@ func resourceElasticsearchPutComponentTemplate(d *schema.ResourceData, meta inte
 
 	var elasticVersion *version.Version
 
-	esClient, err := getClient(meta.(*ProviderConf))
+	providerConf := meta.(*ProviderConf)
+	esClient, err := getClient(providerConf)
 	if err != nil {
 		return err
 	}
 
 	switch client := esClient.(type) {
 	case *elastic7.Client:
-		elasticVersion, err = elastic7GetVersion(client)
+		elasticVersion, err = version.NewVersion(providerConf.esVersion)
 		if err == nil {
 			if elasticVersion.LessThan(componentTemplateMinimalVersion) {
 				err = fmt.Errorf("component_template endpoint only available from ElasticSearch >= 7.8, got version %s", elasticVersion.String())

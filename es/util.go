@@ -10,13 +10,11 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 	"unicode"
 
-	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/mitchellh/go-homedir"
@@ -641,15 +639,6 @@ func readPathOrContent(poc string) (string, bool, error) {
 	}
 
 	return poc, false, nil
-}
-
-func elastic7GetVersion(client *elastic7.Client) (*version.Version, error) {
-	urls := reflect.ValueOf(client).Elem().FieldByName("urls")
-	versionString, err := client.ElasticsearchVersion(urls.Index(0).String())
-	if err != nil {
-		return nil, err
-	}
-	return version.NewVersion(versionString)
 }
 
 func toCamelCase(underScored string, startUpperCased bool) (camelCased string) {
