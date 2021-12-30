@@ -4,6 +4,7 @@
 
 ### Added
 - [provider] Output ES Client logs in JSON format, depending on TF_LOG_PROVIDER
+- [index] Add support for rollover alias in opensearch.
 
 ### Fixed
 

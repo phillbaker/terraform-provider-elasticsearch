@@ -779,6 +779,11 @@ func resourceElasticsearchIndexRead(d *schema.ResourceData, meta interface{}) er
 		if err != nil {
 			return err
 		}
+	} else if alias, ok := settings["plugins.index_state_management.rollover_alias"].(string); ok {
+		err := d.Set("rollover_alias", alias)
+		if err != nil {
+			return err
+		}
 	}
 
 	indexResourceDataFromSettings(settings, d)
