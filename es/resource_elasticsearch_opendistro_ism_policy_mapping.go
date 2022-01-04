@@ -127,6 +127,8 @@ func resourceElasticsearchOpendistroPolicyIndices(indexPattern string, policyID 
 		p, ok := parameters.(map[string]interface{})
 		if ok && p["index.opendistro.index_state_management.policy_id"] == policyID {
 			mappedIndexes = append(mappedIndexes, indexName)
+		} else if ok && p["index.plugins.index_state_management.policy_id"] == policyID {
+			mappedIndexes = append(mappedIndexes, indexName)
 		}
 	}
 
@@ -239,7 +241,7 @@ func resourceElasticsearchPostOpendistroPolicyMapping(d *schema.ResourceData, m 
 			Body:   requestBody,
 		})
 		if err != nil {
-			return response, fmt.Errorf("error posting policy attachement: %+v : %+v : %+v", path, requestBody, err)
+			return response, fmt.Errorf("error posting policy attachment: %+v : %+v : %+v", path, requestBody, err)
 		}
 		body = &res.Body
 	default:
@@ -279,7 +281,7 @@ func resourceElasticsearchGetOpendistroPolicyMapping(indexPattern string, m inte
 			Path:   path,
 		})
 		if err != nil {
-			return *response, fmt.Errorf("error getting policy attachement: %+v : %+v", path, err)
+			return *response, fmt.Errorf("error getting policy attachment: %+v, %w", path, err)
 		}
 		body = &res.Body
 	default:

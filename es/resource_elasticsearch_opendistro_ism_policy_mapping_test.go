@@ -2,6 +2,7 @@ package es
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -113,6 +114,8 @@ func indicesMappedToPolicy(policy string) ([]string, error) {
 		p, ok := parameters.(map[string]interface{})
 		if ok && p["index.opendistro.index_state_management.policy_id"] == policy {
 			mappedIndices = append(mappedIndices, indexName)
+		} else if ok && p["index.plugins.index_state_management.policy_id"] == policy {
+			mappedIndices = append(mappedIndices, indexName)
 		}
 	}
 	return mappedIndices, nil
@@ -125,6 +128,14 @@ func testCheckElasticsearchOpenDistroISMPolicyMappingDestroy(s *terraform.State)
 		}
 
 		mappedIndices, err := indicesMappedToPolicy(rs.Primary.ID)
+
+		// if the underlying index is deleted, it triggers a cascading delete for
+		// the mapping and the mapping explain endpoint returns a 400, so we know
+		// it's been cleaned up
+		var e *elastic7.Error
+		if err != nil && errors.As(err, &e) && e.Status == 400 {
+			return nil
+		}
 
 		if err != nil {
 			return err
