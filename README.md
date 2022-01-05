@@ -279,7 +279,7 @@ Please see [the documentation](./docs/index.md#AWS-authentication) for details.
 
 ### Requirements
 
-* [Golang](https://golang.org/dl/) >= 1.11
+* [Golang](https://golang.org/dl/) >= 1.13
 
 
 ```
