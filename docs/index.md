@@ -57,6 +57,7 @@ EOF
 The following arguments are supported:
 
 * `url` (Required) - Elasticsearch URL. Defaults to `ELASTICSEARCH_URL` from the environment.
+* `kibana_url` (Optional) - URL to reach the Kibana API. Required if using elasticsearch_kibana_* resources.
 * `sniff` (Optional) - Set the node sniffing option for the elastic client. Client won't work with sniffing if nodes are not routable. Defaults to `ELASTICSEARCH_SNIFF` from the environment or false.
 * `healthcheck` (Optional) - Set the client healthcheck option for the elastic client. Healthchecking is designed for direct access to the cluster. Defaults to `ELASTICSEARCH_HEALTH` from the environment, or true.
 * `username` (Optional) - Username to use to connect to elasticsearch using basic auth. Defaults to `ELASTICSEARCH_USERNAME` from the environment
