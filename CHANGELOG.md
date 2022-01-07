@@ -1,6 +1,14 @@
 # Changelog
 ## Unreleased
 ### Changed
+
+### Added
+
+### Fixed
+
+
+## [2.0.0-beta.3] - 2022-01-07
+### Changed
 - [build] Clarify that a minimum of Go 1.13 is required to build the provider
 - [opendistro *] Rename elasticsearch_opendistro_* resources to opensearch_*. Test OpenSearch against 1.x.
 
@@ -9,6 +17,7 @@
 - [index] Add support for rollover alias in opensearch.
 
 ### Fixed
+- [composable_index_template, kibana_alert] Use provider's version, instead of pinging the server.
 
 
 ## [2.0.0-beta.2] - 2021-09-25
