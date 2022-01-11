@@ -141,6 +141,17 @@ For legacy index templates (ES < 7.8) or /_template endpoint on ES >= 7.8 see no
 */
 func normalizeComposableIndexTemplate(tpl map[string]interface{}) {
 	delete(tpl, "version")
+
+	// data_stream accepts only the attribute "hidden", but can return additional attributes, so
+	// remove them
+	if dataStream, ok := tpl["data_stream"].(map[string]interface{}); ok {
+		for k := range dataStream {
+			if k != "hidden" {
+				delete(dataStream, k)
+			}
+		}
+	}
+
 	if innerTpl, ok := tpl["template"]; ok {
 		if innerTplMap, ok := innerTpl.(map[string]interface{}); ok {
 			if settings, ok := innerTplMap["settings"]; ok {

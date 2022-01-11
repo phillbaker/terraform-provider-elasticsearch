@@ -95,6 +95,7 @@ func resourceElasticsearchComposableIndexTemplateRead(d *schema.ResourceData, me
 
 func elastic7GetIndexTemplate(client *elastic7.Client, id string) (string, error) {
 	res, err := client.IndexGetIndexTemplate(id).Do(context.TODO())
+	log.Printf("[INFO] Index template %+v %+v", res, err)
 	if err != nil {
 		return "", err
 	}
