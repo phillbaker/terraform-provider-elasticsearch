@@ -28,6 +28,7 @@ resource "elasticsearch_index" "test" {
   name = "terraform-test"
   number_of_shards = 1
   number_of_replicas = 2
+  number_of_routing_shards = 1
   routing_partition_size = 1
   refresh_interval = "10s"
 	max_result_window = 1000

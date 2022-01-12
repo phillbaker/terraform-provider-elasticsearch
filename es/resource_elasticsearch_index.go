@@ -20,6 +20,7 @@ var (
 		"number_of_shards",
 		"codec",
 		"routing_partition_size",
+		"number_of_routing_shards",
 		"load_fixed_bitset_filters_eagerly",
 		"shard.check_on_startup",
 	}
@@ -102,6 +103,13 @@ var (
 			ForceNew:    true,
 			Optional:    true,
 		},
+		"number_of_routing_shards": {
+                        Type:        schema.TypeString,
+                        Description: "Value used with number_of_shards to route documents to a primary shard. A stringified number. This can be set only on creation.",
+                        ForceNew:    true,
+			Default:     "1",
+                        Optional:    true,
+                },
 		"load_fixed_bitset_filters_eagerly": {
 			Type:        schema.TypeBool,
 			Description: "Indicates whether cached filters are pre-loaded for nested queries. This can be set only on creation.",
