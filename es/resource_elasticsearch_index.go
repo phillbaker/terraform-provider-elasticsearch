@@ -107,7 +107,6 @@ var (
                         Type:        schema.TypeString,
                         Description: "Value used with number_of_shards to route documents to a primary shard. A stringified number. This can be set only on creation.",
                         ForceNew:    true,
-			Default:     "1",
                         Optional:    true,
                 },
 		"load_fixed_bitset_filters_eagerly": {
