@@ -104,11 +104,11 @@ var (
 			Optional:    true,
 		},
 		"number_of_routing_shards": {
-                        Type:        schema.TypeString,
-                        Description: "Value used with number_of_shards to route documents to a primary shard. A stringified number. This can be set only on creation.",
-                        ForceNew:    true,
-                        Optional:    true,
-                },
+			Type:        schema.TypeString,
+			Description: "Value used with number_of_shards to route documents to a primary shard. A stringified number. This can be set only on creation.",
+			ForceNew:    true,
+			Optional:    true,
+		},
 		"load_fixed_bitset_filters_eagerly": {
 			Type:        schema.TypeBool,
 			Description: "Indicates whether cached filters are pre-loaded for nested queries. This can be set only on creation.",
