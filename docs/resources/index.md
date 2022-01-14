@@ -81,6 +81,7 @@ EOF
 - **max_shingle_diff** (String) The maximum allowed difference between max_shingle_size and min_shingle_size for ShingleTokenFilter. A stringified number.
 - **max_terms_count** (String) The maximum number of terms that can be used in Terms Query. A stringified number.
 - **number_of_replicas** (String) Number of shard replicas. A stringified number.
+- **number_of_routing_shards** (String) Value used with number_of_shards to route documents to a primary shard. A stringified number. This can be set only on creation.
 - **number_of_shards** (String) Number of shards for the index. This can be set only on creation.
 - **refresh_interval** (String) How often to perform a refresh operation, which makes recent changes to the index visible to search. Can be set to `-1` to disable refresh.
 - **routing_allocation_enable** (String) Controls shard allocation for this index. It can be set to: `all` , `primaries` , `new_primaries` , `none`.

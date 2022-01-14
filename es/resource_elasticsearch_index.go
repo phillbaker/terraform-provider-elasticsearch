@@ -20,6 +20,7 @@ var (
 		"number_of_shards",
 		"codec",
 		"routing_partition_size",
+		"number_of_routing_shards",
 		"load_fixed_bitset_filters_eagerly",
 		"shard.check_on_startup",
 	}
@@ -99,6 +100,12 @@ var (
 		"routing_partition_size": {
 			Type:        schema.TypeString,
 			Description: "The number of shards a custom routing value can go to. A stringified number. This can be set only on creation.",
+			ForceNew:    true,
+			Optional:    true,
+		},
+		"number_of_routing_shards": {
+			Type:        schema.TypeString,
+			Description: "Value used with number_of_shards to route documents to a primary shard. A stringified number. This can be set only on creation.",
 			ForceNew:    true,
 			Optional:    true,
 		},
