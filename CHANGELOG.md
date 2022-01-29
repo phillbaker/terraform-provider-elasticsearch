@@ -6,6 +6,13 @@
 
 ### Fixed
 
+## [2.0.0-beta.4] - 2022-01-29
+### Changed
+- Fix renamed opensearch resources to start with provider name
+
+### Added
+- Recognize Opensearch version without compatibility mode.
+- [index] Support number_of_routing_shards setting
 
 ## [2.0.0-beta.3] - 2022-01-07
 ### Changed
