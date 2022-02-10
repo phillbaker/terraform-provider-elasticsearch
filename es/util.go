@@ -238,6 +238,23 @@ func flattenMap(m map[string]interface{}) map[string]interface{} {
 	return f
 }
 
+func concatStringSlice(args ...[]string) []string {
+	merged := make([]string, 0)
+	for _, slice := range args {
+		merged = append(merged, slice...)
+	}
+	return merged
+}
+
+func containsString(h []string, n string) bool {
+	for _, e := range h {
+		if e == n {
+			return true
+		}
+	}
+	return false
+}
+
 func flattenIndicesFieldSecurity(rawSettings map[string]interface{}) []map[string]interface{} {
 	out := make([]map[string]interface{}, 0, 1)
 	out = append(out, rawSettings)

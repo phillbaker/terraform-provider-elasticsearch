@@ -3,6 +3,7 @@
 ### Changed
 
 ### Added
+* Add custer settings resource
 
 ### Fixed
 
