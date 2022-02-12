@@ -69,6 +69,12 @@ func TestAccElasticsearchKibanaAlert(t *testing.T) {
 					testCheckElasticsearchKibanaAlertExists("elasticsearch_kibana_alert.test"),
 				),
 			},
+			{
+				Config: testAccElasticsearchKibanaAlertParamsJSONV77,
+				Check: resource.ComposeTestCheckFunc(
+					testCheckElasticsearchKibanaAlertExists("elasticsearch_kibana_alert.test_params_json"),
+				),
+			},
 		},
 	})
 }
@@ -267,6 +273,34 @@ resource "elasticsearch_kibana_alert" "test" {
     aggregation_field = "sheet.version"
     term_field = "name.keyword"
   }
+}
+`
+
+var testAccElasticsearchKibanaAlertParamsJSONV77 = `
+resource "elasticsearch_kibana_alert" "test_params_json" {
+  name = "terraform-alert"
+  schedule {
+  	interval = "1m"
+  }
+  params_json = <<EOF
+{
+  "aggType":"avg",
+  "termSize":6,
+  "thresholdComparator":">",
+  "timeWindowSize":5,
+  "timeWindowUnit":"m",
+  "groupBy":"top",
+  "threshold":[
+    1000
+  ],
+  "index":[
+    ".test-index"
+  ],
+  "timeField":"@timestamp",
+  "aggField":"sheet.version",
+  "termField":"name.keyword"
+}
+EOF
 }
 `
 

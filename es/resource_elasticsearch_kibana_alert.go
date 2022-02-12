@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/olivere/elastic/uritemplates"
 
 	elastic7 "github.com/olivere/elastic/v7"
@@ -83,10 +84,10 @@ func resourceElasticsearchKibanaAlert() *schema.Resource {
 			},
 			"conditions": {
 				Type:        schema.TypeSet,
-				Required:    true,
+				Optional:    true,
 				MaxItems:    1,
 				MinItems:    1,
-				Description: "The conditions under which the alert is active, they create an expression to be evaluated by the alert type executor. These parameters are passed to the executor `params`. There may be specific attributes for different alert types.",
+				Description: "The conditions under which the alert is active, they create an expression to be evaluated by the alert type executor. These parameters are passed to the executor `params`. There may be specific attributes for different alert types. Either `params_json` or `conditions` must be specified.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"threshold_comparator": {
@@ -141,6 +142,14 @@ func resourceElasticsearchKibanaAlert() *schema.Resource {
 						},
 					},
 				},
+			},
+			"params_json": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          "",
+				ValidateFunc:     validation.StringIsJSON,
+				Description:      "JSON body of alert `params`. Either `params_json` or `conditions` must be specified.",
+				DiffSuppressFunc: suppressEquivalentJson,
 			},
 			"actions": {
 				Type:        schema.TypeSet,
@@ -243,7 +252,15 @@ func resourceElasticsearchKibanaAlertRead(d *schema.ResourceData, meta interface
 	ds.set("notify_when", alert.NotifyWhen)
 	ds.set("enabled", alert.Enabled)
 	ds.set("consumer", alert.Consumer)
-	ds.set("conditions", flattenKibanaAlertConditions(alert.Params))
+	if _, ok := d.GetOk("params_json"); ok {
+		pj, err := json.Marshal(alert.Params)
+		if err != nil {
+			return err
+		}
+		ds.set("params_json", string(pj))
+	} else {
+		ds.set("conditions", flattenKibanaAlertConditions(alert.Params))
+	}
 	ds.set("actions", flattenKibanaAlertActions(alert.Actions))
 
 	return ds.err
@@ -309,7 +326,17 @@ func resourceElasticsearchPostKibanaAlert(d *schema.ResourceData, meta interface
 
 	tags := expandStringList(d.Get("tags").(*schema.Set).List())
 
-	conditions := d.Get("conditions").(*schema.Set).List()[0].(map[string]interface{})
+	var params map[string]interface{}
+	if conditions, ok := d.GetOk("conditions"); ok {
+		c := conditions.(*schema.Set).List()[0].(map[string]interface{})
+		params = expandKibanaAlertConditions(c)
+	} else if pj, ok := d.GetOk("params_json"); ok {
+		bytes := []byte(pj.(string))
+		err = json.Unmarshal(bytes, &params)
+		if err != nil {
+			return "", fmt.Errorf("fail to unmarshal: %v", err)
+		}
+	}
 
 	alert := kibana.Alert{
 		Name:        d.Get("name").(string),
@@ -319,7 +346,7 @@ func resourceElasticsearchPostKibanaAlert(d *schema.ResourceData, meta interface
 		Throttle:    d.Get("throttle").(string),
 		Enabled:     d.Get("enabled").(bool),
 		Consumer:    d.Get("consumer").(string),
-		Params:      expandKibanaAlertConditions(conditions),
+		Params:      params,
 		Actions:     actions,
 	}
 
