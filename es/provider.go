@@ -218,6 +218,7 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"elasticsearch_index":                           resourceElasticsearchIndex(),
 			"elasticsearch_index_template":                  resourceElasticsearchIndexTemplate(),
+			"elasticsearch_cluster_settings":                resourceElasticsearchClusterSettings(),
 			"elasticsearch_composable_index_template":       resourceElasticsearchComposableIndexTemplate(),
 			"elasticsearch_component_template":              resourceElasticsearchComponentTemplate(),
 			"elasticsearch_ingest_pipeline":                 resourceElasticsearchIngestPipeline(),
