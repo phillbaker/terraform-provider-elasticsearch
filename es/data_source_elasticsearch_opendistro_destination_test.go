@@ -39,6 +39,6 @@ EOF
 
 data "elasticsearch_opendistro_destination" "test" {
   # Ugh, song and dance to get the json value to force dependency
-  name = "${element(list("my-destination", "${elasticsearch_opendistro_destination.test.body}"), 0)}"
+  name = "${element(tolist(["my-destination", "${elasticsearch_opendistro_destination.test.body}"]), 0)}"
 }
 `
