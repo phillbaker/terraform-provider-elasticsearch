@@ -98,6 +98,17 @@ func TestAccElasticsearchOpenDistroRole(t *testing.T) {
 				),
 			},
 			{
+				Config: testAccOpenDistroRoleResourceWithEmptyTenantPermissions(randomName),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckElasticSearchOpenDistroRoleExists("elasticsearch_opendistro_role.test"),
+					resource.TestCheckResourceAttr(
+						"elasticsearch_opendistro_role.testwithempty",
+						"tenant_permissions.#",
+						"0",
+					),
+				),
+			},
+			{
 				Config: testAccOpenDistroRoleResourceFieldLevelSecurity(randomName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticSearchOpenDistroRoleExists("elasticsearch_opendistro_role.test"),
@@ -320,6 +331,22 @@ resource "elasticsearch_opendistro_role" "test" {
     ]
     allowed_actions = [
       "indices_all",
+    ]
+  }
+  cluster_permissions = ["*"]
+}
+	`, resourceName)
+}
+
+func testAccOpenDistroRoleResourceWithEmptyTenantPermissions(resourceName string) string {
+	return fmt.Sprintf(`
+resource "elasticsearch_opendistro_role" "testwithempty" {
+  role_name   = "%s"
+  description = "test"
+  index_permissions {
+    index_patterns = []
+    allowed_actions = [
+      "read",
     ]
   }
   cluster_permissions = ["*"]
