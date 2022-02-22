@@ -66,6 +66,7 @@ type ProviderConf struct {
 	awsAccessKeyId     string
 	awsSecretAccessKey string
 	awsSessionToken    string
+	awsSig4Service     string
 	awsProfile         string
 	certPemPath        string
 	keyPemPath         string
@@ -194,6 +195,12 @@ func Provider() *schema.Provider {
 				Default:     true,
 				Description: "Enable signing of AWS elasticsearch requests. The `url` must refer to AWS ES domain (`*.<region>.es.amazonaws.com`), or `aws_region` must be specified explicitly.",
 			},
+			"aws_signature_service": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "es",
+				Description: "AWS service name used in the credential scope of signed requests to ElasticSearch.",
+			},
 			"elasticsearch_version": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -272,6 +279,7 @@ func providerConfigure(c context.Context, d *schema.ResourceData) (interface{}, 
 		tokenName:       d.Get("token_name").(string),
 		parsedUrl:       parsedUrl,
 		signAWSRequests: d.Get("sign_aws_requests").(bool),
+		awsSig4Service:  d.Get("aws_signature_service").(string),
 		esVersion:       d.Get("elasticsearch_version").(string),
 		awsRegion:       d.Get("aws_region").(string),
 
@@ -577,7 +585,7 @@ func awsHttpClient(region string, conf *ProviderConf, headers map[string]string)
 		log.Fatal(err)
 	}
 	signer := awssigv4.NewSigner(session.Config.Credentials)
-	client, err := aws_signing_client.New(signer, session.Config.HTTPClient, "es", region)
+	client, err := aws_signing_client.New(signer, session.Config.HTTPClient, conf.awsSig4Service, region)
 	if err != nil {
 		log.Fatal(err)
 	}

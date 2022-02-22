@@ -75,6 +75,7 @@ The following arguments are supported:
 * `client_cert_path` (Optional) - A X509 certificate to connect to elasticsearch. Defaults to `ES_CLIENT_CERTIFICATE_PATH` from the environment
 * `client_key_path` (Optional) - A X509 key to connect to elasticsearch. Defaults to `ES_CLIENT_KEY_PATH`
 * `sign_aws_requests` (Optional) - Enable signing of AWS elasticsearch requests (defaults to `true`). The `url` must refer to AWS ES domain (`*.<region>.es.amazonaws.com`), or `aws_region` must be specified explicitly.
+* `aws_signature_service` (Optional) - AWS service name (e.g. `execute-api` for IAM secured API Gateways) used in the [credential scope](https://docs.aws.amazon.com/general/latest/gr/sigv4_elements.html) of signed requests to ElasticSearch.
 * `elasticsearch_version` (Optional) - ElasticSearch Version, if set, skips the version detection at provider start.
 * `host_override` (Optional) - If provided, sets the 'Host' header of requests and the 'ServerName' for certificate validation to this value. See the documentation on connecting to Elasticsearch via an SSH tunnel.
 
