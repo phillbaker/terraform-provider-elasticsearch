@@ -601,21 +601,24 @@ func awsHttpClient(region string, conf *ProviderConf, headers map[string]string)
 }
 
 func tokenHttpClient(conf *ProviderConf, headers map[string]string) *http.Client {
-	client := http.DefaultClient
+	// Setup TLS options
+	tlsConfig := &tls.Config{}
+	if conf.insecure {
+		tlsConfig.InsecureSkipVerify = true
+	} else if conf.hostOverride != "" {
+		tlsConfig.ServerName = conf.hostOverride
+	}
 
-	rt := WithHeader(client.Transport)
+	// Wrapper to inject headers as needed
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	rt := WithHeader(transport)
 	rt.hostOverride = conf.hostOverride
 	rt.Set("Authorization", fmt.Sprintf("%s %s", conf.tokenName, conf.token))
 	for k, v := range headers {
 		rt.Set(k, v)
 	}
-	client.Transport = rt
 
-	if conf.insecure {
-		client.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify = true
-	} else if conf.hostOverride != "" {
-		client.Transport.(*http.Transport).TLSClientConfig.ServerName = conf.hostOverride
-	}
+	client := &http.Client{Transport: rt}
 
 	return client
 }
@@ -669,19 +672,22 @@ func tlsHttpClient(conf *ProviderConf, headers map[string]string) *http.Client {
 }
 
 func defaultHttpClient(conf *ProviderConf, headers map[string]string) *http.Client {
-	// Gets the default HTTP client
-	client := http.DefaultClient
-	rt := WithHeader(client.Transport)
+	// Setup TLS options
+	tlsConfig := &tls.Config{}
+	if conf.insecure {
+		tlsConfig.InsecureSkipVerify = true
+	} else if conf.hostOverride != "" {
+		tlsConfig.ServerName = conf.hostOverride
+	}
+
+	// Wrapper to inject headers as needed
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	rt := WithHeader(transport)
+	rt.hostOverride = conf.hostOverride
 	for k, v := range headers {
 		rt.Set(k, v)
 	}
-	rt.hostOverride = conf.hostOverride
-	client.Transport = rt
 
-	if conf.insecure {
-		client.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify = true
-	} else if conf.hostOverride != "" {
-		client.Transport.(*http.Transport).TLSClientConfig.ServerName = conf.hostOverride
-	}
+	client := &http.Client{Transport: rt}
 	return client
 }
