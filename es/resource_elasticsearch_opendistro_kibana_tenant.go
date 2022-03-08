@@ -56,7 +56,7 @@ func resourceElasticsearchOpenDistroKibanaTenant() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		DeprecationMessage: "elasticsearch_opendistro_kibana_tentant is deprecated, please use opensearch_kibana_tenant resource instead.",
+		DeprecationMessage: "elasticsearch_opendistro_kibana_tentant is deprecated, please use elasticsearch_opensearch_kibana_tenant resource instead.",
 	}
 }
 

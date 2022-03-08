@@ -73,7 +73,7 @@ func resourceElasticsearchOpenDistroUser() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		DeprecationMessage: "elasticsearch_opendistro_user is deprecated, please use opensearch_user resource instead.",
+		DeprecationMessage: "elasticsearch_opendistro_user is deprecated, please use elasticsearch_opensearch_user resource instead.",
 	}
 }
 

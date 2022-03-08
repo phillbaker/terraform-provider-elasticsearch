@@ -31,7 +31,7 @@ var datasourceOpenDistroDestinationSchema = map[string]*schema.Schema{
 
 func dataSourceOpenSearchDestination() *schema.Resource {
 	return &schema.Resource{
-		Description: "`opensearch_destination` can be used to retrieve the destination object by name.",
+		Description: "`elasticsearch_opensearch_destination` can be used to retrieve the destination object by name.",
 		Read:        dataSourceElasticsearchOpenDistroDestinationRead,
 		Schema:      datasourceOpenDistroDestinationSchema,
 	}
@@ -42,7 +42,7 @@ func dataSourceElasticsearchOpenDistroDestination() *schema.Resource {
 		Description:        "`elasticsearch_opendistro_destination` can be used to retrieve the destination object by name.",
 		Read:               dataSourceElasticsearchOpenDistroDestinationRead,
 		Schema:             datasourceOpenDistroDestinationSchema,
-		DeprecationMessage: "elasticsearch_opendistro_destination is deprecated, please use opensearch_destination data source instead.",
+		DeprecationMessage: "elasticsearch_opendistro_destination is deprecated, please use elasticsearch_opensearch_destination data source instead.",
 	}
 }
 

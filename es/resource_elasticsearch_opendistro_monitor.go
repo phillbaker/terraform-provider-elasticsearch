@@ -52,7 +52,7 @@ func resourceElasticsearchOpenDistroMonitor() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		DeprecationMessage: "elasticsearch_opendistro_monitor is deprecated, please use opensearch_monitor resource instead.",
+		DeprecationMessage: "elasticsearch_opendistro_monitor is deprecated, please use elasticsearch_opensearch_monitor resource instead.",
 	}
 }
 

@@ -252,7 +252,7 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"elasticsearch_host":                   dataSourceElasticsearchHost(),
 			"elasticsearch_opendistro_destination": dataSourceElasticsearchOpenDistroDestination(),
-			"opensearch_destination":               dataSourceOpenSearchDestination(),
+			"elasticsearch_opensearch_destination": dataSourceOpenSearchDestination(),
 		},
 
 		ConfigureContextFunc: providerConfigure,
