@@ -8,7 +8,7 @@ This is a terraform provider that lets you provision Elasticsearch and Opensearc
 
 ### Terraform 0.13 and above
 
-[This package is published on the official Terraform registry](https://registry.terraform.io/providers/phillbaker/elasticsearch/latest).
+[This package is published on the official Terraform registry](https://registry.terraform.io/providers/phillbaker/elasticsearch/latest). Note, we currently test against the 1.x branch of Terraform - this should continue to work with >= 0.13 versions, however, compatibility is not tested in the >= 2.x version of this provider.
 
 ### Terraform 0.12 or manual installation
 
