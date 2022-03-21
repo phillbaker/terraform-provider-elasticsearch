@@ -62,7 +62,7 @@ jobs:
         # decrypt and import gpg signing key
         - openssl aes-256-cbc -K $encrypted_d823238f3370_key -iv $encrypted_d823238f3370_iv -in ci/gpg.priv.enc -out ci/gpg.priv -d
         - gpg --import ci/gpg.priv
-        - rm ci/gpg.priv
+        - shred -vun 1 ci/gpg.priv
         - export GPG_FINGERPRINT=82B6A957
       deploy:
         - provider: script
