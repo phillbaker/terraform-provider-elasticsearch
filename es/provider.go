@@ -66,6 +66,7 @@ type ProviderConf struct {
 	awsAccessKeyId     string
 	awsSecretAccessKey string
 	awsSessionToken    string
+	awsSig4Service     string
 	awsProfile         string
 	certPemPath        string
 	keyPemPath         string
@@ -194,6 +195,12 @@ func Provider() *schema.Provider {
 				Default:     true,
 				Description: "Enable signing of AWS elasticsearch requests. The `url` must refer to AWS ES domain (`*.<region>.es.amazonaws.com`), or `aws_region` must be specified explicitly.",
 			},
+			"aws_signature_service": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "es",
+				Description: "AWS service name used in the credential scope of signed requests to ElasticSearch.",
+			},
 			"elasticsearch_version": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -245,7 +252,7 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"elasticsearch_host":                   dataSourceElasticsearchHost(),
 			"elasticsearch_opendistro_destination": dataSourceElasticsearchOpenDistroDestination(),
-			"opensearch_destination":               dataSourceOpenSearchDestination(),
+			"elasticsearch_opensearch_destination": dataSourceOpenSearchDestination(),
 		},
 
 		ConfigureContextFunc: providerConfigure,
@@ -272,6 +279,7 @@ func providerConfigure(c context.Context, d *schema.ResourceData) (interface{}, 
 		tokenName:       d.Get("token_name").(string),
 		parsedUrl:       parsedUrl,
 		signAWSRequests: d.Get("sign_aws_requests").(bool),
+		awsSig4Service:  d.Get("aws_signature_service").(string),
 		esVersion:       d.Get("elasticsearch_version").(string),
 		awsRegion:       d.Get("aws_region").(string),
 
@@ -577,7 +585,7 @@ func awsHttpClient(region string, conf *ProviderConf, headers map[string]string)
 		log.Fatal(err)
 	}
 	signer := awssigv4.NewSigner(session.Config.Credentials)
-	client, err := aws_signing_client.New(signer, session.Config.HTTPClient, "es", region)
+	client, err := aws_signing_client.New(signer, session.Config.HTTPClient, conf.awsSig4Service, region)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -593,21 +601,24 @@ func awsHttpClient(region string, conf *ProviderConf, headers map[string]string)
 }
 
 func tokenHttpClient(conf *ProviderConf, headers map[string]string) *http.Client {
-	client := http.DefaultClient
+	// Setup TLS options
+	tlsConfig := &tls.Config{}
+	if conf.insecure {
+		tlsConfig.InsecureSkipVerify = true
+	} else if conf.hostOverride != "" {
+		tlsConfig.ServerName = conf.hostOverride
+	}
 
-	rt := WithHeader(client.Transport)
+	// Wrapper to inject headers as needed
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	rt := WithHeader(transport)
 	rt.hostOverride = conf.hostOverride
 	rt.Set("Authorization", fmt.Sprintf("%s %s", conf.tokenName, conf.token))
 	for k, v := range headers {
 		rt.Set(k, v)
 	}
-	client.Transport = rt
 
-	if conf.insecure {
-		client.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify = true
-	} else if conf.hostOverride != "" {
-		client.Transport.(*http.Transport).TLSClientConfig.ServerName = conf.hostOverride
-	}
+	client := &http.Client{Transport: rt}
 
 	return client
 }
@@ -661,19 +672,22 @@ func tlsHttpClient(conf *ProviderConf, headers map[string]string) *http.Client {
 }
 
 func defaultHttpClient(conf *ProviderConf, headers map[string]string) *http.Client {
-	// Gets the default HTTP client
-	client := http.DefaultClient
-	rt := WithHeader(client.Transport)
+	// Setup TLS options
+	tlsConfig := &tls.Config{}
+	if conf.insecure {
+		tlsConfig.InsecureSkipVerify = true
+	} else if conf.hostOverride != "" {
+		tlsConfig.ServerName = conf.hostOverride
+	}
+
+	// Wrapper to inject headers as needed
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	rt := WithHeader(transport)
+	rt.hostOverride = conf.hostOverride
 	for k, v := range headers {
 		rt.Set(k, v)
 	}
-	rt.hostOverride = conf.hostOverride
-	client.Transport = rt
 
-	if conf.insecure {
-		client.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify = true
-	} else if conf.hostOverride != "" {
-		client.Transport.(*http.Transport).TLSClientConfig.ServerName = conf.hostOverride
-	}
+	client := &http.Client{Transport: rt}
 	return client
 }

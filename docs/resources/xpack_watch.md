@@ -15,7 +15,7 @@ Provides an Elasticsearch xpack watch resource.
 ```tf
 # Create an xpack watch
 resource "elasticsearch_xpack_watch" "watch_1" {
-  name = "watch_1"
+  watch_id = "watch_1"
   active = true
   body = <<EOF
 {
@@ -82,7 +82,7 @@ With the watch basic auth stanza, the value of the `password` field return by th
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the xpack watch.
+* `watch_id` - (Required) The name of the xpack watch.
 * `body` - (Required) The JSON body of the xpack watch.
 * `active` - (Optional) Boolean to activate the xpack watcher, defaults `true`
 

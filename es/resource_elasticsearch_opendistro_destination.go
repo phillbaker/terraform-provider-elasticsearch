@@ -58,7 +58,7 @@ func resourceElasticsearchOpenDistroDestination() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		DeprecationMessage: "elasticsearch_opendistro_destination is deprecated, please use opensearch_destination resource instead.",
+		DeprecationMessage: "elasticsearch_opendistro_destination is deprecated, please use elasticsearch_opensearch_destination resource instead.",
 	}
 }
 

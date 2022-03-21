@@ -125,7 +125,7 @@ func resourceElasticsearchOpenDistroRole() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		DeprecationMessage: "elasticsearch_opendistro_role is deprecated, please use opensearch_role resource instead.",
+		DeprecationMessage: "elasticsearch_opendistro_role is deprecated, please use elasticsearch_opensearch_role resource instead.",
 	}
 }
 

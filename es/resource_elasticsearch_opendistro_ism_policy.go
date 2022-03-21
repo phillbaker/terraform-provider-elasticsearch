@@ -69,7 +69,7 @@ func resourceElasticsearchOpenDistroISMPolicy() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		DeprecationMessage: "elasticsearch_opendistro_ism_policy is deprecated, please use opensearch_ism_policy resource instead.",
+		DeprecationMessage: "elasticsearch_opendistro_ism_policy is deprecated, please use elasticsearch_opensearch_ism_policy resource instead.",
 	}
 }
 
