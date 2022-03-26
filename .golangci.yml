@@ -1,3 +1,10 @@
 linters:
   enable:
     - gofmt
+
+issues:
+  exclude-rules:
+    - linters:
+        - staticcheck
+      text: "SA1019:"
+      path: es/resource_elasticsearch_index_template.*.go
