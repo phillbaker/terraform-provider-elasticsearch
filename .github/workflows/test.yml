@@ -20,6 +20,7 @@ jobs:
         # version.
         version: v1.28
         args: --verbose --timeout=10m
+        skip-go-installation: true
   test:
     strategy:
       matrix:
