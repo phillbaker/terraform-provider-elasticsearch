@@ -23,6 +23,8 @@ resource "elasticsearch_script" "script_1" {
 	"source": "Math.log(_score * 2) + params.my_modifier"
   }
 }
+EOF
+}
 ```
 
 ## Argument Reference
