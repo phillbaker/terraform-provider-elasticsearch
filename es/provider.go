@@ -247,6 +247,7 @@ func Provider() *schema.Provider {
 			"elasticsearch_xpack_snapshot_lifecycle_policy": resourceElasticsearchXpackSnapshotLifecyclePolicy(),
 			"elasticsearch_xpack_user":                      resourceElasticsearchXpackUser(),
 			"elasticsearch_xpack_watch":                     resourceElasticsearchXpackWatch(),
+			"elasticsearch_script":                          resourceElasticsearchScript(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
