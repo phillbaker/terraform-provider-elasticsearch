@@ -8,8 +8,6 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
@@ -17,19 +15,21 @@ import (
 
 var scriptSchema = map[string]*schema.Schema{
 	"script_id": {
-		Type:     schema.TypeString,
-		Required: true,
-		ForceNew: true,
+		Type:        schema.TypeString,
+		Description: "Identifier for the stored script. Must be unique within the cluster.",
+		Required:    true,
+		ForceNew:    true,
 	},
-	"body": {
-		Type:             schema.TypeString,
-		Required:         true,
-		ValidateFunc:     validation.StringIsJSON,
-		DiffSuppressFunc: suppressEquivalentJson,
-		StateFunc: func(v interface{}) string {
-			json, _ := structure.NormalizeJsonString(v)
-			return json
-		},
+	"source": {
+		Type:        schema.TypeString,
+		Description: "The source of the stored script",
+		Required:    true,
+	},
+	"lang": {
+		Type:        schema.TypeString,
+		Description: "Specifies the language the script is written in. Defaults to painless.",
+		Default:     "painless",
+		Optional:    true,
 	},
 }
 
@@ -44,6 +44,24 @@ func resourceElasticsearchScript() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 	}
+}
+
+func buildScriptJSONBody(d *schema.ResourceData) (string, error) {
+	var err error
+
+	body := make(map[string]interface{})
+	script := ScriptBody{
+		Language: d.Get("lang").(string),
+		Source:   d.Get("source").(string),
+	}
+	body["script"] = script
+
+	data, err := json.Marshal(body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
 }
 
 func resourceElasticsearchScriptCreate(d *schema.ResourceData, m interface{}) error {
@@ -73,7 +91,7 @@ func resourceElasticsearchScriptCreate(d *schema.ResourceData, m interface{}) er
 }
 
 func resourceElasticsearchScriptRead(d *schema.ResourceData, m interface{}) error {
-	res, err := resourceElasticsearchGetScript(d.Id(), m)
+	scriptBody, err := resourceElasticsearchGetScript(d.Id(), m)
 
 	if elastic6.IsNotFound(err) || elastic7.IsNotFound(err) {
 		log.Printf("[WARN] Script (%s) not found, removing from state", d.Id())
@@ -85,28 +103,10 @@ func resourceElasticsearchScriptRead(d *schema.ResourceData, m interface{}) erro
 		return err
 	}
 
-	var script []byte
-
-	esClient, err := getClient(m.(*ProviderConf))
-	if err != nil {
-		return err
-	}
-	switch esClient.(type) {
-	case *elastic7.Client:
-		scriptResponse := res.(*elastic7.GetScriptResponse)
-		script, err = json.Marshal(scriptResponse.Script)
-	case *elastic6.Client:
-		scriptResponse := res.(*elastic6.GetScriptResponse)
-		script, err = json.Marshal(scriptResponse.Script)
-	}
-
-	if err != nil {
-		return err
-	}
-
 	ds := &resourceDataSetter{d: d}
-	ds.set("body", string(script))
 	ds.set("script_id", d.Id())
+	ds.set("source", scriptBody.Script.Source)
+	ds.set("lang", scriptBody.Script.Language)
 
 	return ds.err
 }
@@ -139,30 +139,50 @@ func resourceElasticsearchScriptDelete(d *schema.ResourceData, m interface{}) er
 	return err
 }
 
-func resourceElasticsearchGetScript(scriptID string, m interface{}) (interface{}, error) {
-	var res interface{}
+func resourceElasticsearchGetScript(scriptID string, m interface{}) (Script, error) {
+	var scriptBody json.RawMessage
 	var err error
 	esClient, err := getClient(m.(*ProviderConf))
 	if err != nil {
-		return "", err
+		return Script{}, err
 	}
 	switch client := esClient.(type) {
 	case *elastic7.Client:
+		var res *elastic7.GetScriptResponse
 		res, err = client.GetScript().Id(scriptID).Do(context.TODO())
+		if err != nil {
+			return Script{}, err
+		}
+		scriptBody = res.Script
 	case *elastic6.Client:
+		var res *elastic6.GetScriptResponse
 		res, err = client.GetScript().Id(scriptID).Do(context.TODO())
+		if err != nil {
+			return Script{}, err
+		}
+		scriptBody = res.Script
 	default:
 		err = errors.New("script resource not implemented prior to Elastic v6")
 	}
 
-	return res, err
+	var script Script
+
+	if err := json.Unmarshal(scriptBody, &script); err != nil {
+		return Script{}, fmt.Errorf("error unmarshalling destination body: %+v: %+v", err, scriptBody)
+	}
+
+	return script, err
 }
 
 func resourceElasticsearchPutScript(d *schema.ResourceData, m interface{}) (string, error) {
-	scriptID := d.Get("script_id").(string)
-	scriptJSON := d.Get("body").(string)
-
 	var err error
+	scriptID := d.Get("script_id").(string)
+	scriptBody, err := buildScriptJSONBody(d)
+
+	if err != nil {
+		return "", err
+	}
+
 	esClient, err := getClient(m.(*ProviderConf))
 	if err != nil {
 		return "", err
@@ -171,12 +191,12 @@ func resourceElasticsearchPutScript(d *schema.ResourceData, m interface{}) (stri
 	case *elastic7.Client:
 		_, err = client.PutScript().
 			Id(scriptID).
-			BodyJson(scriptJSON).
+			BodyJson(scriptBody).
 			Do(context.TODO())
 	case *elastic6.Client:
 		_, err = client.PutScript().
 			Id(scriptID).
-			BodyJson(scriptJSON).
+			BodyJson(scriptBody).
 			Do(context.TODO())
 	default:
 		err = errors.New("script resource not implemented prior to Elastic v6")
@@ -187,4 +207,14 @@ func resourceElasticsearchPutScript(d *schema.ResourceData, m interface{}) (stri
 	}
 
 	return scriptID, nil
+}
+
+type ScriptBody struct {
+	Language string `json:"lang"`
+	Source   string `json:"source"`
+}
+
+type Script struct {
+	Name   string     `json:"name"`
+	Script ScriptBody `json:"script"`
 }

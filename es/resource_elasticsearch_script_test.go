@@ -18,13 +18,12 @@ func TestAccElasticsearchScript(t *testing.T) {
 			testAccPreCheck(t)
 		},
 		Providers:    testAccXPackProviders,
-		CheckDestroy: testCheckElasticsearchWatchDestroy,
+		CheckDestroy: testCheckElasticsearchScriptDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccElasticsearchWatch,
+				Config: testAccElasticsearchScript,
 				Check: resource.ComposeTestCheckFunc(
-					testCheckElasticsearchWatchExists("elasticsearch_script.test_script"),
-					testCheckElasticsearchWatchDeactivated("elasticsearch_script.test_script"),
+					testCheckElasticsearchScriptExists("elasticsearch_script.test_script"),
 				),
 			},
 		},
@@ -96,15 +95,9 @@ func testCheckElasticsearchScriptDestroy(s *terraform.State) error {
 }
 
 var testAccElasticsearchScript = `
-resource "elasticsearch_xpack_script" "test_script" {
+resource "elasticsearch_script" "test_script" {
   script_id = "my_script"
-  body = <<EOF
-{
-  "script": {
-	"lang": "painless",
-	"source": "Math.log(_score * 2) + params.my_modifier"
-  }
-}
-EOF
+  lang      = "painless"
+  source    = "Math.log(_score * 2) + params.my_modifier"
 }
 `

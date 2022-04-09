@@ -14,16 +14,10 @@ Provides an Elasticsearch script resource.
 
 ```tf
 # Create a script
-resource "elasticsearch_script" "script_1" {
-  script_id = "script_1"
-  body = <<EOF
-{
-  "script": {
-	"lang": "painless",
-	"source": "Math.log(_score * 2) + params.my_modifier"
-  }
-}
-EOF
+resource "elasticsearch_script" "test_script" {
+  script_id = "my_script"
+  lang      = "painless"
+  source    = "Math.log(_score * 2) + params.my_modifier"
 }
 ```
 
@@ -32,7 +26,8 @@ EOF
 The following arguments are supported:
 
 * `script_id` - (Required) The name of the script.
-* `body` - (Required) The JSON body of the script.
+* `lang` - Specifies the language the script is written in. Defaults to painless..
+* `source` - (Required) The source of the stored script.
 
 ## Attributes Reference
 
