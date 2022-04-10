@@ -6,6 +6,14 @@
 
 ### Fixed
 
+
+## [2.0.1] - 2022-04-10
+### Added
+* Add script resource (#264)
+
+### Fixed
+* [composable index template] Fix diff on data_streams
+
 ## [2.0.0] - 2022-03-13
 ### Changed
 - [index] Remove primary shards default so templates can specify.
