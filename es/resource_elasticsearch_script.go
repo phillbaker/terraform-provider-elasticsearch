@@ -105,8 +105,8 @@ func resourceElasticsearchScriptRead(d *schema.ResourceData, m interface{}) erro
 
 	ds := &resourceDataSetter{d: d}
 	ds.set("script_id", d.Id())
-	ds.set("source", scriptBody.Script.Source)
-	ds.set("lang", scriptBody.Script.Language)
+	ds.set("source", scriptBody.Source)
+	ds.set("lang", scriptBody.Language)
 
 	return ds.err
 }
@@ -139,36 +139,36 @@ func resourceElasticsearchScriptDelete(d *schema.ResourceData, m interface{}) er
 	return err
 }
 
-func resourceElasticsearchGetScript(scriptID string, m interface{}) (Script, error) {
+func resourceElasticsearchGetScript(scriptID string, m interface{}) (ScriptBody, error) {
 	var scriptBody json.RawMessage
 	var err error
 	esClient, err := getClient(m.(*ProviderConf))
 	if err != nil {
-		return Script{}, err
+		return ScriptBody{}, err
 	}
 	switch client := esClient.(type) {
 	case *elastic7.Client:
 		var res *elastic7.GetScriptResponse
 		res, err = client.GetScript().Id(scriptID).Do(context.TODO())
 		if err != nil {
-			return Script{}, err
+			return ScriptBody{}, err
 		}
 		scriptBody = res.Script
 	case *elastic6.Client:
 		var res *elastic6.GetScriptResponse
 		res, err = client.GetScript().Id(scriptID).Do(context.TODO())
 		if err != nil {
-			return Script{}, err
+			return ScriptBody{}, err
 		}
 		scriptBody = res.Script
 	default:
 		err = errors.New("script resource not implemented prior to Elastic v6")
 	}
 
-	var script Script
+	var script ScriptBody
 
 	if err := json.Unmarshal(scriptBody, &script); err != nil {
-		return Script{}, fmt.Errorf("error unmarshalling destination body: %+v: %+v", err, scriptBody)
+		return ScriptBody{}, fmt.Errorf("error unmarshalling destination body: %+v: %+v", err, scriptBody)
 	}
 
 	return script, err
