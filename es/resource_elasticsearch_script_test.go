@@ -17,7 +17,7 @@ func TestAccElasticsearchScript(t *testing.T) {
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
-		Providers:    testAccXPackProviders,
+		Providers:    testAccProviders,
 		CheckDestroy: testCheckElasticsearchScriptDestroy,
 		Steps: []resource.TestStep{
 			{
@@ -40,7 +40,7 @@ func testCheckElasticsearchScriptExists(name string) resource.TestCheckFunc {
 			return fmt.Errorf("No script ID is set")
 		}
 
-		meta := testAccXPackProvider.Meta()
+		meta := testAccProvider.Meta()
 
 		var err error
 		esClient, err := getClient(meta.(*ProviderConf))
@@ -69,7 +69,7 @@ func testCheckElasticsearchScriptDestroy(s *terraform.State) error {
 			continue
 		}
 
-		meta := testAccXPackProvider.Meta()
+		meta := testAccProvider.Meta()
 
 		var err error
 		esClient, err := getClient(meta.(*ProviderConf))
