@@ -41,7 +41,7 @@ The following attributes are exported:
 
 Elasticsearch Open Distro tenant can be imported using the `tenant_name`, e.g.
 
-```
+```sh
 $ terraform import elasticsearch_opendistro_kibana_tenant.writer test
 ```
 

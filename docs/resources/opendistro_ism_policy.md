@@ -45,7 +45,7 @@ The following attributes are exported:
 
 Elasticsearch Open Distro ISM policy can be imported using the `policy_id`, e.g.
 
-```
+```sh
 $ terraform import elasticsearch_opendistro_ism_policy.cleanup delete_after_15d
 ```
 

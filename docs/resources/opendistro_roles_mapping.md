@@ -53,7 +53,7 @@ The following attributes are exported:
 
 Elasticsearch Open Distro security role mapping can be imported using the `role_name`, e.g.
 
-```
+```sh
 $ terraform import elasticsearch_opendistro_roles_mapping.mapper logs_writer
 ```
 

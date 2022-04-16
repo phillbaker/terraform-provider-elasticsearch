@@ -13,7 +13,7 @@ For example, using ILM:
 
 1. Create the following `main.tf` file:
 
-```
+```hcl
 provider "elasticsearch" {
   url = "http://localhost:9200"
 }
@@ -73,7 +73,7 @@ resource "elasticsearch_index" "test" {
 
 2. Start a new Elasticsearch Container:
 
-```
+```sh
 $ export ES_OSS_IMAGE=elasticsearch:7.9.2
 $ docker-compose up -d elasticsearch
 Creating network "terraform-provider-elasticsearch_default" with the default driver
@@ -82,7 +82,7 @@ Creating terraform-provider-elasticsearch_elasticsearch_1 ... done
 
 3. Create the example Index Lifecycle Policy, Index Template and Index:
 
-```
+```sh
 $ terraform apply -auto-approve
 elasticsearch_xpack_index_lifecycle_policy.test: Creating...
 elasticsearch_xpack_index_lifecycle_policy.test: Creation complete after 0s [id=test]
@@ -96,14 +96,14 @@ Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
 
 4. Manually rollover the example index:
 
-```
+```sh
 $ curl -X POST http://localhost:9200/test/_rollover
 {"acknowledged":true,"shards_acknowledged":true,"old_index":"test-000001","new_index":"test-000002","rolled_over":true,"dry_run":false,"conditions":{}}
 ```
 
 5. Delete the initial created index:
 
-```
+```sh
 $ curl -X DELETE http://localhost:9200/test-000001
 {"acknowledged":true}
 ```

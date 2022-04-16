@@ -9,7 +9,7 @@ the example's own directory.
 
 For example:
 
-```
+```sh
 $ git clone https://github.com/phillbaker/terraform-provider-elasticsearch
 $ cd terraform-provider-elasticsearch/examples/ingest_pipeline
 $ terraform apply

@@ -96,7 +96,7 @@ The following attributes are exported:
 
 Elasticsearch Open Distro security role can be imported using the `role_name`, e.g.
 
-```
+```sh
 $ terraform import elasticsearch_opendistro_role.writer logs_writer
 ```
 
