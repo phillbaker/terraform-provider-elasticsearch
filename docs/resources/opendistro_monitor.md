@@ -104,7 +104,7 @@ The following attributes are exported:
 
 Elasticsearch Open Distro monitor can be imported using the `id`, e.g.
 
-```
+```sh
 $ terraform import elasticsearch_opendistro_monitor.alert lgOZb3UB96pyyRQv0ppQ
 ```
 

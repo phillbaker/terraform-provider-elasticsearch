@@ -142,7 +142,7 @@ resource "elasticsearch_kibana_object" "test_dashboard" {
 
 Example watches (target notification actions must be setup manually before hand)
 
-```
+```hcl
 # Monitor cluster status with auth being required
 resource "elasticsearch_xpack_watch" "cluster-status-red" {
   watch_id = "cluster-status-red"
@@ -282,7 +282,7 @@ Please see [the documentation](./docs/index.md#AWS-authentication) for details.
 * [Golang](https://golang.org/dl/) >= 1.13
 
 
-```
+```sh
 go build -o /path/to/binary/terraform-provider-elasticsearch
 ```
 

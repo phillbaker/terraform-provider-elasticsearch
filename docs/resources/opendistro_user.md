@@ -74,7 +74,7 @@ The following attributes are exported:
 
 Elasticsearch Open Distro user can be imported using the `username`, e.g.
 
-```
+```sh
 $ terraform import elasticsearch_opendistro_user.reader app_reader
 ```
 
