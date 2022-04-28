@@ -179,6 +179,9 @@ func resourceElasticsearchGetOpenDistroRolesMapping(roleID string, m interface{}
 			Method: "GET",
 			Path:   path,
 		})
+		if err != nil {
+			return *roleMapping, err
+		}
 		body = res.Body
 	default:
 		err = errors.New("role mapping resource not implemented prior to Elastic v7")

@@ -6,7 +6,7 @@
 * Add custer settings resource
 
 ### Fixed
-
+* [role mapping] Check error before referencing response
 
 ## [2.0.1] - 2022-04-10
 ### Added
