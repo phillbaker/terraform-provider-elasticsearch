@@ -1,20 +1,20 @@
 ---
 layout: "elasticsearch"
-page_title: "Elasticsearch: elasticsearch_opendistro_user"
-subcategory: "Elasticsearch Open Distro"
+page_title: "Elasticsearch: elasticsearch_opensearch_user"
+subcategory: "OpenSearch"
 description: |-
-  Provides an Elasticsearch Open Distro security user.
+  Provides an Elasticsearch OpenSearch security user.
 ---
 
-# elasticsearch_opendistro_user
+# elasticsearch_opensearch_user
 
-Provides an Elasticsearch Open Distro security user. Please refer to the Open Distro [Access Control documentation][1] for details.
+Provides an Elasticsearch OpenSearch security user. Please refer to the OpenSearch [Access Control documentation][1] for details.
 
 ## Example Usage
 
 ```hcl
 # Create a user
-resource "elasticsearch_opendistro_user" "mapper" {
+resource "elasticsearch_opensearch_user" "mapper" {
   username    = "app-reader"
   password    = "supersekret123!"
   description = "a reader role for our app"
@@ -24,7 +24,7 @@ resource "elasticsearch_opendistro_user" "mapper" {
 And a full user, role and role mapping example:
 
 ```hcl
-resource "elasticsearch_opendistro_role" "reader" {
+resource "elasticsearch_opensearch_role" "reader" {
   role_name   = "app_reader"
   description = "App Reader Role"
 
@@ -34,15 +34,15 @@ resource "elasticsearch_opendistro_role" "reader" {
   }
 }
 
-resource "elasticsearch_opendistro_user" "reader" {
+resource "elasticsearch_opensearch_user" "reader" {
   username = "app-reader"
   password = var.password
 }
 
-resource "elasticsearch_opendistro_roles_mapping" "reader" {
-  role_name   = elasticsearch_opendistro_role.reader.id
+resource "elasticsearch_opensearch_roles_mapping" "reader" {
+  role_name   = elasticsearch_opensearch_role.reader.id
   description = "App Reader Role"
-  users       = [elasticsearch_opendistro_user.reader.id]
+  users       = [elasticsearch_opensearch_user.reader.id]
 }
 ```
 
@@ -72,10 +72,10 @@ The following attributes are exported:
 
 ## Import
 
-Elasticsearch Open Distro user can be imported using the `username`, e.g.
+Elasticsearch OpenSearch user can be imported using the `username`, e.g.
 
 ```sh
-$ terraform import elasticsearch_opendistro_user.reader app_reader
+$ terraform import elasticsearch_opensearch_user.reader app_reader
 ```
 
 <!-- External links -->

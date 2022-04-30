@@ -1,4 +1,4 @@
-resource "elasticsearch_opendistro_destination" "test_destination" {
+resource "elasticsearch_opensearch_destination" "test_destination" {
   body = <<EOF
 {
   "name": "my-destination",

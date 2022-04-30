@@ -1,21 +1,21 @@
 ---
 layout: "elasticsearch"
-page_title: "Elasticsearch: elasticsearch_opendistro_kibana_tenant"
-subcategory: "Elasticsearch Open Distro"
+page_title: "Elasticsearch: elasticsearch_opensearch_kibana_tenant"
+subcategory: "OpenSearch"
 description: |-
-  Provides an Elasticsearch Open Distro Kibana tenant resource.
+  Provides an Elasticsearch OpenSearch Kibana tenant resource.
 ---
 
-# elasticsearch_opendistro_kibana_tenant
+# elasticsearch_opensearch_kibana_tenant
 
-Provides an Elasticsearch Open Distro Kibana tenant resource.
-Please refer to the Open Distro [documentation][1] for details.
+Provides an Elasticsearch OpenSearch Kibana tenant resource.
+Please refer to the OpenSearch [documentation][1] for details.
 
 ## Example Usage
 
 ```hcl
 # Create a tenant
-resource "elasticsearch_opendistro_kibana_tenant" "test" {
+resource "elasticsearch_opensearch_kibana_tenant" "test" {
   tenant_name   = "test"
   description   = "test tenant"
 }
@@ -39,10 +39,10 @@ The following attributes are exported:
 
 ## Import
 
-Elasticsearch Open Distro tenant can be imported using the `tenant_name`, e.g.
+Elasticsearch OpenSearch tenant can be imported using the `tenant_name`, e.g.
 
 ```sh
-$ terraform import elasticsearch_opendistro_kibana_tenant.writer test
+$ terraform import elasticsearch_opensearch_kibana_tenant.writer test
 ```
 
 <!-- External links -->

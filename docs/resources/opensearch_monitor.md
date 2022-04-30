@@ -1,21 +1,21 @@
 ---
 layout: "elasticsearch"
-page_title: "Elasticsearch: elasticsearch_opendistro_monitor"
-subcategory: "Elasticsearch Open Distro"
+page_title: "Elasticsearch: elasticsearch_opensearch_monitor"
+subcategory: "OpenSearch"
 description: |-
-  Provides an Elasticsearch Open Distro monitor.
+  Provides an Elasticsearch OpenSearch monitor.
 ---
 
-# elasticsearch_opendistro_monitor
+# elasticsearch_opensearch_monitor
 
-Provides an Elasticsearch Open Distro monitor.
-Please refer to the Open Distro [monitor documentation][1] for details.
+Provides an Elasticsearch OpenSearch monitor.
+Please refer to the OpenSearch [monitor documentation][1] for details.
 
 ## Example Usage
 
 ```hcl
 # Create an monitor
-resource "elasticsearch_opendistro_monitor" "movies_last_hour" {
+resource "elasticsearch_opensearch_monitor" "movies_last_hour" {
   body = <<EOF
 {
   "name": "test-monitor",
@@ -67,7 +67,7 @@ resource "elasticsearch_opendistro_monitor" "movies_last_hour" {
       "actions" : [
         {
           "name" : "Slack",
-          "destination_id" : "${elasticsearch_opendistro_destination.slack_on_call_channel.id}",
+          "destination_id" : "${elasticsearch_opensearch_destination.slack_on_call_channel.id}",
           "message_template" : {
             "source" : "bogus",
             "lang" : "mustache"
@@ -102,10 +102,10 @@ The following attributes are exported:
 
 ## Import
 
-Elasticsearch Open Distro monitor can be imported using the `id`, e.g.
+Elasticsearch OpenSearch monitor can be imported using the `id`, e.g.
 
 ```sh
-$ terraform import elasticsearch_opendistro_monitor.alert lgOZb3UB96pyyRQv0ppQ
+$ terraform import elasticsearch_opensearch_monitor.alert lgOZb3UB96pyyRQv0ppQ
 ```
 
 <!-- External links -->

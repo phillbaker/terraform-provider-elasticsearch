@@ -1,21 +1,21 @@
 ---
 layout: "elasticsearch"
-page_title: "Elasticsearch: elasticsearch_opendistro_role"
-subcategory: "Elasticsearch Open Distro"
+page_title: "Elasticsearch: elasticsearch_opensearch_role"
+subcategory: "OpenSearch"
 description: |-
-  Provides an Elasticsearch Open Distro security role resource.
+  Provides an Elasticsearch OpenSearch security role resource.
 ---
 
-# elasticsearch_opendistro_role
+# elasticsearch_opensearch_role
 
-Provides an Elasticsearch Open Distro security role resource.
-Please refer to the Open Distro [Access Control documentation][1] for details.
+Provides an Elasticsearch OpenSearch security role resource.
+Please refer to the OpenSearch [Access Control documentation][1] for details.
 
 ## Example Usage
 
 ```hcl
 # Create a role
-resource "elasticsearch_opendistro_role" "writer" {
+resource "elasticsearch_opensearch_role" "writer" {
   role_name   = "logs_writer"
   description = "Logs writer role"
 
@@ -36,7 +36,7 @@ resource "elasticsearch_opendistro_role" "writer" {
 To set document level permissions:
 
 ```hcl
-resource "elasticsearch_opendistro_role" "writer" {
+resource "elasticsearch_opensearch_role" "writer" {
   role_name = "foo_writer"
 
   cluster_permissions = ["*"]
@@ -94,10 +94,10 @@ The following attributes are exported:
 
 ## Import
 
-Elasticsearch Open Distro security role can be imported using the `role_name`, e.g.
+Elasticsearch OpenSearch security role can be imported using the `role_name`, e.g.
 
 ```sh
-$ terraform import elasticsearch_opendistro_role.writer logs_writer
+$ terraform import elasticsearch_opensearch_role.writer logs_writer
 ```
 
 <!-- External links -->

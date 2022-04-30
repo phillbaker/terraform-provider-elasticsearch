@@ -1,5 +1,5 @@
 # Example destination in other terraform plan
-# resource "elasticsearch_opendistro_destination" "test" {
+# resource "elasticsearch_opensearch_destination" "test" {
 #   body = <<EOF
 # {
 #   "name": "my-destination",
@@ -11,6 +11,6 @@
 # EOF
 # }
 
-data "elasticsearch_opendistro_destination" "test" {
+data "elasticsearch_opensearch_destination" "test" {
   name = "my-destination"
 }

@@ -1,21 +1,21 @@
 ---
 layout: "elasticsearch"
-page_title: "Elasticsearch: elasticsearch_opendistro_ism_policy"
-subcategory: "Elasticsearch Open Distro"
+page_title: "Elasticsearch: elasticsearch_opensearch_ism_policy"
+subcategory: "OpenSearch"
 description: |-
   Provides an Elasticsearch Open Distro ISM policy.
 ---
 
-# elasticsearch_opendistro_ism_policy
+# elasticsearch_opensearch_ism_policy
 
-Provides an Elasticsearch Open Distro ISM policy.
+Provides an OpenSearch ISM policy.
 Please refer to the Open Distro [ISM documentation][1] for details.
 
 ## Example Usage
 
 ```hcl
 # Create an ISM policy
-resource "elasticsearch_opendistro_ism_policy" "cleanup" {
+resource "elasticsearch_opensearch_ism_policy" "cleanup" {
   policy_id = "delete_after_15d"
   body      = file("${path.module}/policies/delete_after_15d.json")
 }
@@ -46,7 +46,7 @@ The following attributes are exported:
 Elasticsearch Open Distro ISM policy can be imported using the `policy_id`, e.g.
 
 ```sh
-$ terraform import elasticsearch_opendistro_ism_policy.cleanup delete_after_15d
+$ terraform import elasticsearch_opensearch_ism_policy.cleanup delete_after_15d
 ```
 
 <!-- External links -->

@@ -1,21 +1,21 @@
 ---
 layout: "elasticsearch"
-page_title: "Elasticsearch: elasticsearch_opendistro_roles_mapping"
-subcategory: "Elasticsearch Open Distro"
+page_title: "Elasticsearch: elasticsearch_opensearch_roles_mapping"
+subcategory: "OpenSearch"
 description: |-
-  Provides an Elasticsearch Open Distro security role mapping.
+  Provides an Elasticsearch OpenSearch security role mapping.
 ---
 
-# elasticsearch_opendistro_roles_mapping
+# elasticsearch_opensearch_roles_mapping
 
-Provides an Elasticsearch Open Distro security role mapping.
-Please refer to the Open Distro [Access Control documentation][1] for details.
+Provides an Elasticsearch OpenSearch security role mapping.
+Please refer to the OpenSearch [Access Control documentation][1] for details.
 
 ## Example Usage
 
 ```hcl
 # Create a role mapping
-resource "elasticsearch_opendistro_roles_mapping" "mapper" {
+resource "elasticsearch_opensearch_roles_mapping" "mapper" {
   role_name     = "logs_writer"
   description   = "Mapping AWS IAM roles to ES role"
   backend_roles = [
@@ -51,10 +51,10 @@ The following attributes are exported:
 
 ## Import
 
-Elasticsearch Open Distro security role mapping can be imported using the `role_name`, e.g.
+Elasticsearch OpenSearch security role mapping can be imported using the `role_name`, e.g.
 
 ```sh
-$ terraform import elasticsearch_opendistro_roles_mapping.mapper logs_writer
+$ terraform import elasticsearch_opensearch_roles_mapping.mapper logs_writer
 ```
 
 <!-- External links -->

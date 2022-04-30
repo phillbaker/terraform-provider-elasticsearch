@@ -1,19 +1,19 @@
 ---
-page_title: "elasticsearch_opendistro_destination Data Source - terraform-provider-elasticsearch"
+page_title: "elasticsearch_opensearch_destination Data Source - terraform-provider-elasticsearch"
 subcategory: ""
 description: |-
-  elasticsearch_opendistro_destination can be used to retrieve the destination ID by name.
+  elasticsearch_opensearch_destination can be used to retrieve the destination ID by name.
 ---
 
-# Data Source `elasticsearch_opendistro_destination`
+# Data Source `elasticsearch_opensearch_destination`
 
-`elasticsearch_opendistro_destination` can be used to retrieve the destination ID by name.
+`elasticsearch_opensearch_destination` can be used to retrieve the destination ID by name.
 
 ## Example Usage
 
 ```terraform
 # Example destination in other terraform plan
-# resource "elasticsearch_opendistro_destination" "test" {
+# resource "elasticsearch_opensearch_destination" "test" {
 #   body = <<EOF
 # {
 #   "name": "my-destination",
@@ -25,7 +25,7 @@ description: |-
 # EOF
 # }
 
-data "elasticsearch_opendistro_destination" "test" {
+data "elasticsearch_opensearch_destination" "test" {
   name = my-destination"
 }
 ```

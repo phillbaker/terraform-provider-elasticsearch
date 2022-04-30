@@ -15,10 +15,10 @@ Provides an Elasticsearch index resource.
 ```terraform
 # Create a simple index
 resource "elasticsearch_index" "test" {
-  name = "terraform-test"
-  number_of_shards = 1
+  name               = "terraform-test"
+  number_of_shards   = 1
   number_of_replicas = 1
-  mappings = <<EOF
+  mappings           = <<EOF
 {
   "people": {
     "_all": {
@@ -61,7 +61,7 @@ EOF
 - **force_destroy** (Boolean) A boolean that indicates that the index should be deleted even if it contains documents.
 - **gc_deletes** (String) The length of time that a deleted document's version number remains available for further versioned operations.
 - **highlight_max_analyzed_offset** (String) The maximum number of characters that will be analyzed for a highlight request. A stringified number.
-- **id** (String) The ID of this resource.
+- **include_type_name** (String) A string that indicates if and what we should pass to include_type_name parameter. Set to `"false"` when trying to create an index on a v6 cluster without a doc type or set to `"true"` when trying to create an index on a v7 cluster with a doc type. Since mapping updates are not currently supported, this applies only on index create.
 - **indexing_slowlog_level** (String) Set which logging level to use for the search slow log, can be: `warn`, `info`, `debug`, `trace`
 - **indexing_slowlog_source** (String) Set the number of characters of the `_source` to include in the slowlog lines, `false` or `0` will skip logging the source entirely and setting it to `true` will log the entire source regardless of size. The original `_source` is reformatted by default to make sure that it fits on a single log line.
 - **indexing_slowlog_threshold_index_debug** (String) Set the cutoff for shard level slow search logging of slow searches for indexing queries, in time units, e.g. `2s`
@@ -98,5 +98,9 @@ EOF
 - **search_slowlog_threshold_query_trace** (String) Set the cutoff for shard level slow search logging of slow searches in the query phase, in time units, e.g. `500ms`
 - **search_slowlog_threshold_query_warn** (String) Set the cutoff for shard level slow search logging of slow searches in the query phase, in time units, e.g. `10s`
 - **shard_check_on_startup** (String) Whether or not shards should be checked for corruption before opening. When corruption is detected, it will prevent the shard from being opened. Accepts `false`, `true`, `checksum`.
+
+### Read-Only
+
+- **id** (String) The ID of this resource.
 
 

@@ -51,7 +51,7 @@ EOF
 - **body** (String) The JSON body of the template.
 - **name** (String) Name of the component template to create.
 
-### Optional
+### Read-Only
 
 - **id** (String) The ID of this resource.
 
