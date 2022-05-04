@@ -221,6 +221,7 @@ func Provider() *schema.Provider {
 			"elasticsearch_cluster_settings":                resourceElasticsearchClusterSettings(),
 			"elasticsearch_composable_index_template":       resourceElasticsearchComposableIndexTemplate(),
 			"elasticsearch_component_template":              resourceElasticsearchComponentTemplate(),
+			"elasticsearch_data_stream":                     resourceElasticsearchDataStream(),
 			"elasticsearch_ingest_pipeline":                 resourceElasticsearchIngestPipeline(),
 			"elasticsearch_kibana_alert":                    resourceElasticsearchKibanaAlert(),
 			"elasticsearch_kibana_object":                   resourceElasticsearchKibanaObject(),

@@ -4,6 +4,7 @@
 
 ### Added
 * Add custer settings resource
+* Add data stream resource
 
 ### Fixed
 * [role mapping] Check error before referencing response
