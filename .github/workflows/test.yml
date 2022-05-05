@@ -93,11 +93,9 @@ jobs:
     - name: Check Docker containers
       run: docker ps -a
     # While docker/ES is booting up, run the linters
-    - name: Get dependencies
+    - name: Get tools
       run: |
-        go mod vendor
-        # install tools
-        cat tools/tools.go | grep _ | awk -F'"' '{print $2}' | xargs -tI % go install %
+        ./script/install-tools
     - name: Install managed version of terraform
       uses: hashicorp/setup-terraform@v1
       with:

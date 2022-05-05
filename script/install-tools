@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+: ${TOOLS_FILE:="tools/tools.go"}
+
+go install $(go list -f '{{join .Imports " "}}' $TOOLS_FILE)
