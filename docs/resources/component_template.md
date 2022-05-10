@@ -48,11 +48,18 @@ EOF
 
 ### Required
 
-- **body** (String) The JSON body of the template.
-- **name** (String) Name of the component template to create.
+- `body` (String) The JSON body of the template.
+- `name` (String) Name of the component template to create.
 
 ### Read-Only
 
-- **id** (String) The ID of this resource.
+- `id` (String) The ID of this resource.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# Import by name
+terraform import elasticsearch_component_template.test terraform-test
+```

@@ -39,3 +39,10 @@ The following attributes are exported:
 
 * `id` - The name of the snapshot repository.
 
+## Import
+
+Snapshot repositories can be imported using the `name`, e.g.
+
+```sh
+$ terraform import elasticsearch_snapshot_repository.repo es-index-backups
+```

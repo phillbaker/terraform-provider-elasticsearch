@@ -108,4 +108,11 @@ Required:
 
 - **interval** (String) Specifies the interval in seconds, minutes, hours or days at which the alert should execute, e.g. 10s, 5m, 1h.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# Import by name
+terraform import elasticsearch_kibana_alert.test terraform-alert
+```

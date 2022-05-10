@@ -103,4 +103,11 @@ EOF
 
 - **id** (String) The ID of this resource.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# Import by name
+terraform import elasticsearch_index.test terraform-test
+```

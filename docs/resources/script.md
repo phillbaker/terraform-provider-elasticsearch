@@ -34,3 +34,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The name of the script.
+
+## Import
+
+Scripts can be imported using the `script_id`, e.g.
+
+```sh
+$ terraform import elasticsearch_script.test_script my_script
+```
