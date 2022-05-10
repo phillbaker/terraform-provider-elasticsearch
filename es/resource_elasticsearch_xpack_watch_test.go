@@ -143,8 +143,8 @@ func testCheckElasticsearchWatchDestroy(s *terraform.State) error {
 var testAccElasticsearchWatch = `
 resource "elasticsearch_xpack_watch" "test_watch" {
   watch_id = "my_watch"
-  active = false
-  body = <<EOF
+  active   = false
+  body     = <<EOF
 {
   "input": {
     "simple": {

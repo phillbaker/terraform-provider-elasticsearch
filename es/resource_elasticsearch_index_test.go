@@ -18,82 +18,82 @@ import (
 const (
 	testAccElasticsearchIndex = `
 resource "elasticsearch_index" "test" {
-  name = "terraform-test"
-  number_of_shards = 1
+  name               = "terraform-test"
+  number_of_shards   = 1
   number_of_replicas = 1
 }
 `
 	testAccElasticsearchIndexUpdate1 = `
 resource "elasticsearch_index" "test" {
-  name = "terraform-test"
-  number_of_shards = 1
-  number_of_replicas = 2
-  number_of_routing_shards = 1
-  routing_partition_size = 1
-  refresh_interval = "10s"
-	max_result_window = 1000
-	max_refresh_listeners = 10
-	blocks_read_only = false
-	blocks_read = false
-	blocks_write = false
-	blocks_metadata = false
-	search_slowlog_threshold_query_warn = "5s"
-	search_slowlog_threshold_fetch_warn = "5s"
-	search_slowlog_level = "warn"
-	indexing_slowlog_threshold_index_warn = "5s"
-	indexing_slowlog_level = "warn"
+  name                                  = "terraform-test"
+  number_of_shards                      = 1
+  number_of_replicas                    = 2
+  number_of_routing_shards              = 1
+  routing_partition_size                = 1
+  refresh_interval                      = "10s"
+  max_result_window                     = 1000
+  max_refresh_listeners                 = 10
+  blocks_read_only                      = false
+  blocks_read                           = false
+  blocks_write                          = false
+  blocks_metadata                       = false
+  search_slowlog_threshold_query_warn   = "5s"
+  search_slowlog_threshold_fetch_warn   = "5s"
+  search_slowlog_level                  = "warn"
+  indexing_slowlog_threshold_index_warn = "5s"
+  indexing_slowlog_level                = "warn"
 }
 `
 	testAccElasticsearchIndexAnalysis = `
 resource "elasticsearch_index" "test" {
-  name = "terraform-test"
-  number_of_shards = 1
+  name               = "terraform-test"
+  number_of_shards   = 1
   number_of_replicas = 1
   analysis_analyzer = jsonencode({
     default = {
       filter = [
-          "lowercase",
-          "asciifolding",
-        ]
+        "lowercase",
+        "asciifolding",
+      ]
       tokenizer = "standard"
     }
     full_text_search = {
       filter = [
-          "lowercase",
-          "asciifolding",
-        ]
+        "lowercase",
+        "asciifolding",
+      ]
       tokenizer = "custom_ngram_tokenizer"
     }
   })
-	analysis_tokenizer = jsonencode({
+  analysis_tokenizer = jsonencode({
     custom_ngram_tokenizer = {
       max_gram = "4"
       min_gram = "3"
       type     = "ngram"
     }
   })
-	analysis_filter = jsonencode({
-		my_filter_shingle = {
-      type = "shingle"
+  analysis_filter = jsonencode({
+    my_filter_shingle = {
+      type             = "shingle"
       max_shingle_size = 2
       min_shingle_size = 2
-      output_unigrams =  false
+      output_unigrams  = false
     }
-	})
-	analysis_normalizer = jsonencode({
-		my_normalizer = {
-      type = "custom"
+  })
+  analysis_normalizer = jsonencode({
+    my_normalizer = {
+      type   = "custom"
       filter = ["lowercase", "asciifolding"]
     }
-	})
+  })
 }
 `
 	testAccElasticsearchIndexInvalid = `
 resource "elasticsearch_index" "test" {
-  name = "terraform-test"
-  number_of_shards = 1
+  name               = "terraform-test"
+  number_of_shards   = 1
   number_of_replicas = 1
-  mappings = <<EOF
+  mappings           = <<EOF
 {
   "people": {
     "_all": {
@@ -111,10 +111,10 @@ EOF
 `
 	testAccElasticsearchMappingWithDocType = `
 resource "elasticsearch_index" "test_doctype" {
-  name = "terraform-test"
+  name               = "terraform-test"
   number_of_replicas = "1"
-  include_type_name = true
-  mappings = <<EOF
+  include_type_name  = true
+  mappings           = <<EOF
 {
   "_doc": {
     "properties": {
@@ -129,10 +129,10 @@ EOF
 `
 	testAccElasticsearchMappingWithoutDocType = `
 resource "elasticsearch_index" "test_doctype" {
-  name = "terraform-test"
+  name               = "terraform-test"
   number_of_replicas = "1"
-	include_type_name = false
-  mappings = <<EOF
+  include_type_name  = false
+  mappings           = <<EOF
 {
   "properties": {
     "name": {
@@ -145,17 +145,17 @@ EOF
 `
 	testAccElasticsearchIndexUpdateForceDestroy = `
 resource "elasticsearch_index" "test" {
-  name = "terraform-test"
-  number_of_shards = 1
+  name               = "terraform-test"
+  number_of_shards   = 1
   number_of_replicas = 2
-  force_destroy = true
+  force_destroy      = true
 }
 `
 	testAccElasticsearchIndexDateMath = `
 resource "elasticsearch_index" "test_date_math" {
   name = "<terraform-test-{now/y{yyyy}}-000001>"
   # name = "%3Ctest-%7Bnow%2Fy%7Byyyy%7D%7D-000001%3E"
-  number_of_shards = 1
+  number_of_shards   = 1
   number_of_replicas = 1
 }
 `
@@ -198,8 +198,8 @@ EOF
 }
 
 resource "elasticsearch_index" "test" {
-  name = "terraform-test-000001"
-  number_of_shards = 1
+  name               = "terraform-test-000001"
+  number_of_shards   = 1
   number_of_replicas = 1
   aliases = jsonencode({
     "terraform-test" = {
@@ -256,8 +256,8 @@ EOF
 }
 
 resource "elasticsearch_index" "test" {
-  name = "terraform-test-000001"
-  number_of_shards = 1
+  name               = "terraform-test-000001"
+  number_of_shards   = 1
   number_of_replicas = 1
   aliases = jsonencode({
     "terraform-test" = {

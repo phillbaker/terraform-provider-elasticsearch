@@ -126,8 +126,8 @@ func testCheckElasticsearchOpenDistroISMPolicyDestroy(s *terraform.State) error 
 
 var testAccElasticsearchOpenDistroISMPolicyV6 = `
 resource "elasticsearch_opendistro_ism_policy" "test_policy" {
-	policy_id = "test_policy"
-	body      = <<EOF
+  policy_id = "test_policy"
+  body      = <<EOF
   {
 		"policy": {
 		  "description": "ingesting logs",
@@ -181,8 +181,8 @@ resource "elasticsearch_opendistro_ism_policy" "test_policy" {
 
 var testAccElasticsearchOpenDistroISMPolicyV7 = `
 resource "elasticsearch_opendistro_ism_policy" "test_policy" {
-	policy_id = "test_policy"
-	body      = <<EOF
+  policy_id = "test_policy"
+  body      = <<EOF
   {
 		"policy": {
 		  "description": "ingesting logs",

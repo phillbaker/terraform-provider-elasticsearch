@@ -153,8 +153,8 @@ func testCheckElasticsearchOpenDistroISMPolicyMappingDestroy(s *terraform.State)
 
 var testAccElasticsearchOpenDistroISMPolicyMapping = `
 resource "elasticsearch_opendistro_ism_policy" "test_policy" {
-	policy_id = "test_policy"
-	body      = <<EOF
+  policy_id = "test_policy"
+  body      = <<EOF
  {
 	"policy": {
 	  "description": "ingesting logs into ${elasticsearch_index.test.name}",
@@ -179,21 +179,21 @@ resource "elasticsearch_opendistro_ism_policy" "test_policy" {
 }
 
 resource "elasticsearch_index" "test" {
-  name = "ingest-0001"
-  number_of_shards = 1
+  name               = "ingest-0001"
+  number_of_shards   = 1
   number_of_replicas = 1
 }
 
 resource "elasticsearch_opendistro_ism_policy_mapping" "test_mapping" {
-	policy_id = "${elasticsearch_opendistro_ism_policy.test_policy.id}"
-	indexes = "ingest-*"
+  policy_id = "${elasticsearch_opendistro_ism_policy.test_policy.id}"
+  indexes   = "ingest-*"
 }
 `
 
 var testAccElasticsearchOpenDistroISMPolicyMappingUpdate = `
 resource "elasticsearch_opendistro_ism_policy" "test_policy" {
-	policy_id = "test_policy"
-	body      = <<EOF
+  policy_id = "test_policy"
+  body      = <<EOF
  {
 	"policy": {
 	  "description": "ingesting logs into ${elasticsearch_index.test.name}",
@@ -218,16 +218,16 @@ resource "elasticsearch_opendistro_ism_policy" "test_policy" {
 }
 
 resource "elasticsearch_index" "test" {
-  name = "ingest-0001"
-  number_of_shards = 1
+  name               = "ingest-0001"
+  number_of_shards   = 1
   number_of_replicas = 1
 }
 
 resource "elasticsearch_opendistro_ism_policy_mapping" "test_mapping" {
-	policy_id = "${elasticsearch_opendistro_ism_policy.test_policy.id}"
-	indexes = "ingest-*"
-	state = "search"
-	include = [{
+  policy_id = "${elasticsearch_opendistro_ism_policy.test_policy.id}"
+  indexes   = "ingest-*"
+  state     = "search"
+  include = [{
     state = "ingest"
   }]
 }
