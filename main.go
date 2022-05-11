@@ -20,7 +20,7 @@ func main() {
 	flag.Parse()
 
 	if debugMode {
-		err := plugin.Debug(context.Background(), "registry.terraform.io/providers/phillbaker/elasticsearch",
+		err := plugin.Debug(context.Background(), "registry.terraform.io/phillbaker/elasticsearch",
 			&plugin.ServeOpts{
 				ProviderFunc: es.Provider,
 			},

@@ -250,6 +250,7 @@ func Provider() *schema.Provider {
 			"elasticsearch_xpack_user":                      resourceElasticsearchXpackUser(),
 			"elasticsearch_xpack_watch":                     resourceElasticsearchXpackWatch(),
 			"elasticsearch_script":                          resourceElasticsearchScript(),
+			"elasticsearch_opensearch_audit_config":         resourceOpenSearchAuditConfig(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
