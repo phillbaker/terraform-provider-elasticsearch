@@ -8,51 +8,51 @@ jobs:
     name: Runs go linters
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
-        # we depend on full git history for linters
-        fetch-depth: 0
-    - name: golangci-lint
-      uses: golangci/golangci-lint-action@v2
-      with:
-        # Required: the version of golangci-lint is required and must be
-        # specified without patch version: we always use the latest patch
-        # version.
-        version: v1.28
-        args: --verbose --timeout=10m
-        skip-go-installation: true
+      - uses: actions/checkout@v2
+        with:
+          # we depend on full git history for linters
+          fetch-depth: 0
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          # Required: the version of golangci-lint is required and must be
+          # specified without patch version: we always use the latest patch
+          # version.
+          version: v1.28
+          args: --verbose --timeout=10m
+          skip-go-installation: true
   test:
     strategy:
       matrix:
-        go-version: [1.16.x]
+        go-version: [1.18.x]
         os: [ubuntu-latest]
         es-major-version:
           - "6"
           - "7"
           - "7-opensearch"
         include:
-        - es-major-version: "6"
-          version: 6.8.9
-          # oss-image: "docker.elastic.co/elasticsearch/elasticsearch-oss"
-          oss-image: "elasticsearch"
-          XPACK_IMAGE: "docker.elastic.co/elasticsearch/elasticsearch:6.8.9"
-          ES_OPENDISTRO_IMAGE: "ghcr.io/phillbaker/opendistro-for-elasticsearch:0.10.0"
-          ES_KIBANA_IMAGE: "docker.elastic.co/kibana/kibana-oss:6.0.0"
-        - es-major-version: "7"
-          version: 7.10.1
-          # oss-image: "docker.elastic.co/elasticsearch/elasticsearch-oss"
-          oss-image: "elasticsearch"
-          XPACK_IMAGE: "docker.elastic.co/elasticsearch/elasticsearch:7.10.1"
-          ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:1.13.2"
-          ES_KIBANA_IMAGE: "docker.elastic.co/kibana/kibana:7.10.1"
-        - es-major-version: "7-opensearch"
-          version: 1.0.0
-          oss-image: "opensearchproject/opensearch"
-          XPACK_IMAGE: "docker.elastic.co/elasticsearch/elasticsearch:7.10.1"
-          ES_OPENDISTRO_IMAGE: "opensearchproject/opensearch:1.0.0"
-          ES_KIBANA_IMAGE: "" # opensearchproject/opensearch-dashboards:1.0.0"
-          OPENSEARCH_PREFIX: "plugins.security"
-          OSS_ENV_VAR: "plugins.security.disabled=true"
+          - es-major-version: "6"
+            version: 6.8.9
+            # oss-image: "docker.elastic.co/elasticsearch/elasticsearch-oss"
+            oss-image: "elasticsearch"
+            XPACK_IMAGE: "docker.elastic.co/elasticsearch/elasticsearch:6.8.9"
+            ES_OPENDISTRO_IMAGE: "ghcr.io/phillbaker/opendistro-for-elasticsearch:0.10.0"
+            ES_KIBANA_IMAGE: "docker.elastic.co/kibana/kibana-oss:6.0.0"
+          - es-major-version: "7"
+            version: 7.10.1
+            # oss-image: "docker.elastic.co/elasticsearch/elasticsearch-oss"
+            oss-image: "elasticsearch"
+            XPACK_IMAGE: "docker.elastic.co/elasticsearch/elasticsearch:7.10.1"
+            ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:1.13.2"
+            ES_KIBANA_IMAGE: "docker.elastic.co/kibana/kibana:7.10.1"
+          - es-major-version: "7-opensearch"
+            version: 1.0.0
+            oss-image: "opensearchproject/opensearch"
+            XPACK_IMAGE: "docker.elastic.co/elasticsearch/elasticsearch:7.10.1"
+            ES_OPENDISTRO_IMAGE: "opensearchproject/opensearch:1.0.0"
+            ES_KIBANA_IMAGE: "" # opensearchproject/opensearch-dashboards:1.0.0"
+            OPENSEARCH_PREFIX: "plugins.security"
+            OSS_ENV_VAR: "plugins.security.disabled=true"
     needs: [lint]
     name: Test against ES ${{ matrix.es-major-version }} on ${{ matrix.go-version }}/${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -63,77 +63,77 @@ jobs:
       OPENSEARCH_PREFIX: "${{matrix.OPENSEARCH_PREFIX}}"
       OSS_ENV_VAR: "${{matrix.OSS_ENV_VAR}}"
     steps:
-    - name: Prepare tests
-      run: |
-        sudo sysctl -w vm.max_map_count=262144
-    - name: Setup Go ${{ matrix.go-version }}
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ matrix.go-version }}
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        # we depend on full git history for linters
-        fetch-depth: 0
-    - name: Cache dependencies
-      uses: actions/cache@v2
-      with:
-        path: |
-          ~/go/pkg/mod              # Module download cache
-          ~/.cache/go-build         # Build cache (Linux)
-          ~/Library/Caches/go-build # Build cache (Mac)
-          '%LocalAppData%\go-build' # Build cache (Windows)
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-go-
-    - name: Run Docker containers
-      run: docker-compose up --detach
-      env:
-        OSS_IMAGE: "${{ matrix.oss-image }}:${{ matrix.version }}"
-        ES_COMMAND: "${{matrix.ES_COMMAND}}"
-    - name: Check Docker containers
-      run: docker ps -a
-    # While docker/ES is booting up, run the linters
-    - name: Get tools
-      run: |
-        ./script/install-tools
-    - name: Install managed version of terraform
-      uses: hashicorp/setup-terraform@v1
-      with:
-        terraform_version: 1.0.11
-        terraform_wrapper: false
-    - name: Run check scripts
-      run: |
-        ./script/test-mod-tidy
-        ./script/test-terraform-fmt
-    - name: Wait for Elasticsearch
-      # ensure that ES has come up and is available
-      run: |
-        ./script/wait-for-endpoint --timeout=20 http://localhost:9200
-    - name: Wait for Kibana
-      # ensure that Kibana API has come up and is available
-      run: |
-        if [ -n "$ES_KIBANA_IMAGE" ]; then
-          ./script/wait-for-endpoint --timeout=120 http://localhost:5601/api/saved_objects/_find?type=visualization
-        fi
-    - name: Warm up OpenDistro/Opensearch
-      # - OpenDistro lazily initializes its indexes, see
-      #   https://github.com/opendistro-for-elasticsearch/alerting/issues/60
-      run: |
-        if [ -n "$ES_OPENDISTRO_IMAGE" ]; then
-          ./script/wait-for-endpoint --timeout=120 http://admin:admin@localhost:9220
-          curl -s -v -X POST -H 'Content-type: application/json' -d '{"name":"_warmup","type":"slack","slack":{"url": "http://www.example.com"}}' http://admin:admin@localhost:9220/_opendistro/_alerting/destinations
-        fi
-    - name: Dump docker logs on failure
-      if: failure()
-      uses: jwalton/gh-docker-logs@v2
-    - name: Run the tests
-      run: |
-        export ELASTICSEARCH_URL=http://localhost:9200
-        export TF_LOG=INFO
-        TF_ACC=1 go test ./... -v -parallel 20 -cover -short
-        TF_ACC=1 go test ./... -v -cover -run XpackLicense
-        # check goreleaser config for deprecations
-        curl -sfL https://git.io/goreleaser | sh -s -- check
+      - name: Prepare tests
+        run: |
+          sudo sysctl -w vm.max_map_count=262144
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          # we depend on full git history for linters
+          fetch-depth: 0
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/go/pkg/mod              # Module download cache
+            ~/.cache/go-build         # Build cache (Linux)
+            ~/Library/Caches/go-build # Build cache (Mac)
+            '%LocalAppData%\go-build' # Build cache (Windows)
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+      - name: Run Docker containers
+        run: docker-compose up --detach
+        env:
+          OSS_IMAGE: "${{ matrix.oss-image }}:${{ matrix.version }}"
+          ES_COMMAND: "${{matrix.ES_COMMAND}}"
+      - name: Check Docker containers
+        run: docker ps -a
+      # While docker/ES is booting up, run the linters
+      - name: Get tools
+        run: |
+          ./script/install-tools
+      - name: Install managed version of terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.11
+          terraform_wrapper: false
+      - name: Run check scripts
+        run: |
+          ./script/test-mod-tidy
+          ./script/test-terraform-fmt
+      - name: Wait for Elasticsearch
+        # ensure that ES has come up and is available
+        run: |
+          ./script/wait-for-endpoint --timeout=20 http://localhost:9200
+      - name: Wait for Kibana
+        # ensure that Kibana API has come up and is available
+        run: |
+          if [ -n "$ES_KIBANA_IMAGE" ]; then
+            ./script/wait-for-endpoint --timeout=120 http://localhost:5601/api/saved_objects/_find?type=visualization
+          fi
+      - name: Warm up OpenDistro/Opensearch
+        # - OpenDistro lazily initializes its indexes, see
+        #   https://github.com/opendistro-for-elasticsearch/alerting/issues/60
+        run: |
+          if [ -n "$ES_OPENDISTRO_IMAGE" ]; then
+            ./script/wait-for-endpoint --timeout=120 http://admin:admin@localhost:9220
+            curl -s -v -X POST -H 'Content-type: application/json' -d '{"name":"_warmup","type":"slack","slack":{"url": "http://www.example.com"}}' http://admin:admin@localhost:9220/_opendistro/_alerting/destinations
+          fi
+      - name: Dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2
+      - name: Run the tests
+        run: |
+          export ELASTICSEARCH_URL=http://localhost:9200
+          export TF_LOG=INFO
+          TF_ACC=1 go test ./... -v -parallel 20 -cover -short
+          TF_ACC=1 go test ./... -v -cover -run XpackLicense
+          # check goreleaser config for deprecations
+          curl -sfL https://git.io/goreleaser | sh -s -- check
   release:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     needs: [test]
@@ -142,22 +142,22 @@ jobs:
     env:
       GITHUB_TOKEN_ENCRYPTED:
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Setup Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.16.x
-    - name: Import GPG key
-      id: import_gpg
-      uses: crazy-max/ghaction-import-gpg@v2
-      env:
-        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-    - name: Run GoReleaser
-      uses: goreleaser/goreleaser-action@v2.1.1
-      with:
-        version: latest
-        args: release --rm-dist
-      env:
-        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18.x
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@v2
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2.1.1
+        with:
+          version: latest
+          args: release --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
