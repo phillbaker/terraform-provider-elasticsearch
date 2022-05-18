@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-uuid"
+	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	elastic7 "github.com/olivere/elastic/v7"
@@ -180,10 +181,26 @@ func resourceOpenSearchAuditConfig() *schema.Resource {
 	}
 }
 
-func resourceElasticsearchAuditConfigCreate(d *schema.ResourceData, m interface{}) error {
-	_, err := resourceElasticsearchPutAuditConfig(d, m)
-
+func resourceElasticsearchAuditConfigCheckVersion(meta interface{}) error {
+	providerConf := meta.(*ProviderConf)
+	elasticVersion, err := version.NewVersion(providerConf.esVersion)
 	if err != nil {
+		return err
+	}
+
+	if providerConf.flavor != Unknown && elasticVersion.Segments()[0] != 1 {
+		return fmt.Errorf("audit config only available from OpenSearch >= 1.0, got version %s", elasticVersion.String())
+	}
+
+	return nil
+}
+
+func resourceElasticsearchAuditConfigCreate(d *schema.ResourceData, m interface{}) error {
+	if err := resourceElasticsearchAuditConfigCheckVersion(m); err != nil {
+		return err
+	}
+
+	if _, err := resourceElasticsearchPutAuditConfig(d, m); err != nil {
 		return err
 	}
 
@@ -197,8 +214,11 @@ func resourceElasticsearchAuditConfigCreate(d *schema.ResourceData, m interface{
 }
 
 func resourceElasticsearchAuditConfigRead(d *schema.ResourceData, m interface{}) error {
-	res, err := resourceElasticsearchGetAuditConfig(m)
+	if err := resourceElasticsearchAuditConfigCheckVersion(m); err != nil {
+		return err
+	}
 
+	res, err := resourceElasticsearchGetAuditConfig(m)
 	if err != nil {
 		if elastic7.IsNotFound(err) {
 			log.Printf("[WARN] audit config (%s) not found, removing from state", d.Id())
@@ -248,6 +268,10 @@ func flatten(obj interface{}) ([]map[string]interface{}, error) {
 }
 
 func resourceElasticsearchAuditConfigUpdate(d *schema.ResourceData, m interface{}) error {
+	if err := resourceElasticsearchAuditConfigCheckVersion(m); err != nil {
+		return err
+	}
+
 	if _, err := resourceElasticsearchPutAuditConfig(d, m); err != nil {
 		return err
 	}
@@ -256,6 +280,10 @@ func resourceElasticsearchAuditConfigUpdate(d *schema.ResourceData, m interface{
 }
 
 func resourceElasticsearchAuditConfigDelete(d *schema.ResourceData, m interface{}) error {
+	if err := resourceElasticsearchAuditConfigCheckVersion(m); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -356,7 +384,7 @@ func resourceElasticsearchPutAuditConfig(d *schema.ResourceData, m interface{}) 
 
 	auditConfigJSON, err := json.Marshal(auditConfig)
 	if err != nil {
-		return response, fmt.Errorf("Body Error : %s", auditConfigJSON)
+		return response, fmt.Errorf("body Error : %s", auditConfigJSON)
 	}
 
 	var body json.RawMessage
@@ -389,11 +417,11 @@ func resourceElasticsearchPutAuditConfig(d *schema.ResourceData, m interface{}) 
 
 		body = res.Body
 	default:
-		return response, errors.New("Audit config resource not implemented prior to Elastic v7")
+		return response, errors.New("audit config resource not implemented prior to Elastic v7")
 	}
 
 	if err := json.Unmarshal(body, response); err != nil {
-		return response, fmt.Errorf("Error unmarshalling audit config body: %+v: %+v", err, body)
+		return response, fmt.Errorf("failed to unmarshal audit config body: %+v: %+v", err, body)
 	}
 
 	return response, nil
