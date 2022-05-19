@@ -96,14 +96,14 @@ resource "elasticsearch_opensearch_audit_config" "test" {
     external_config       = false
     read_metadata_only    = true
     read_ignore_users     = ["read-ignore-1"]
-	read_watched_field {
-		index = "index1"
-		fields = ["tmp1", "tmp2"]
-	}
-	read_watched_field {
-		index = "index2"
-		fields = ["tmp1", "tmp2"]
-	}
+    read_watched_field {
+      index  = "read-index-1"
+      fields = ["field-1", "field-2"]
+    }
+    read_watched_field {
+      index  = "read-index-2"
+      fields = ["field-3"]
+    }
     write_metadata_only   = true
     write_log_diffs       = false
     write_watched_indices = ["write-index-1", "write-index-2", "log-*", "*"]
@@ -134,14 +134,14 @@ resource "elasticsearch_opensearch_audit_config" "test" {
     external_config       = false
     read_metadata_only    = true
     read_ignore_users     = ["read-ignore-1"]
-	read_watched_field {
-		index = "index1"
-		fields = ["tmp1", "tmp2"]
-	}
-	read_watched_field {
-		index = "index2"
-		fields = ["tmp1", "tmp2"]
-	}
+    read_watched_field {
+      index  = "read-index-1"
+      fields = ["field-1", "field-2"]
+    }
+    read_watched_field {
+      index  = "read-index-2"
+      fields = ["field-3"]
+    }
     write_metadata_only   = true
     write_log_diffs       = false
     write_watched_indices = ["write-index-1", "write-index-2", "log-*", "*"]

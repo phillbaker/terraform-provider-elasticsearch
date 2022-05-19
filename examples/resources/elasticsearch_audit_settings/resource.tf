@@ -26,9 +26,18 @@ resource "elasticsearch_opensearch_audit_config" "test" {
     internal_config = true
     external_config = false
 
-    read_metadata_only  = true
-    read_ignore_users   = ["read-ignore-1"]
-    read_watched_fields = {}
+    read_metadata_only = true
+    read_ignore_users  = ["read-ignore-1"]
+
+    read_watched_field {
+      index  = "read-index-1"
+      fields = ["field-1", "field-2"]
+    }
+
+    read_watched_field {
+      index  = "read-index-2"
+      fields = ["field-3"]
+    }
 
     write_metadata_only   = true
     write_log_diffs       = false

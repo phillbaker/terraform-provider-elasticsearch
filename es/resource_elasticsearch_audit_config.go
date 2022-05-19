@@ -244,22 +244,12 @@ func resourceElasticsearchAuditConfigRead(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	audit, err := flatten(res.Config.Audit)
+	err = d.Set("audit", flattenAudit(res.Config.Audit))
 	if err != nil {
 		return err
 	}
 
-	err = d.Set("audit", audit)
-	if err != nil {
-		return err
-	}
-
-	compliance, err := flattenCompliance(res.Config.Compliance)
-	if err != nil {
-		return err
-	}
-
-	err = d.Set("compliance", compliance)
+	err = d.Set("compliance", flattenCompliance(res.Config.Compliance))
 	if err != nil {
 		return err
 	}
@@ -267,8 +257,8 @@ func resourceElasticsearchAuditConfigRead(d *schema.ResourceData, m interface{})
 	return nil
 }
 
-func flattenCompliance(com compliance) ([]map[string]interface{}, error) {
-	result := map[string]interface{}{
+func flattenCompliance(com compliance) []map[string]interface{} {
+	return []map[string]interface{}{{
 		"enabled":               com.Enabled,
 		"internal_config":       com.InternalConfig,
 		"external_config":       com.ExternalConfig,
@@ -279,9 +269,7 @@ func flattenCompliance(com compliance) ([]map[string]interface{}, error) {
 		"write_log_diffs":       com.WriteLogDiffs,
 		"write_watched_indices": com.WriteWatchedIndices,
 		"write_ignore_users":    com.WriteIgnoreUsers,
-	}
-
-	return []map[string]interface{}{result}, nil
+	}}
 }
 
 func flattenReadWatchedFields(com compliance) []map[string]interface{} {
@@ -297,15 +285,19 @@ func flattenReadWatchedFields(com compliance) []map[string]interface{} {
 	return result
 }
 
-func flatten(obj interface{}) ([]map[string]interface{}, error) {
-
-	var result map[string]interface{}
-	inrec, _ := json.Marshal(obj)
-	err := json.Unmarshal(inrec, &result)
-	if err != nil {
-		return nil, err
-	}
-	return []map[string]interface{}{result}, nil
+func flattenAudit(aud audit) []map[string]interface{} {
+	return []map[string]interface{}{{
+		"enable_rest":                   aud.EnableRest,
+		"disabled_rest_categories":      aud.DisabledRestCategories,
+		"enable_transport":              aud.EnableTransport,
+		"disabled_transport_categories": aud.DisabledTransportCategories,
+		"resolve_bulk_requests":         aud.ResolveBulkRequests,
+		"log_request_body":              aud.LogRequestBody,
+		"resolve_indices":               aud.ResolveIndices,
+		"exclude_sensitive_headers":     aud.ExcludeSensitiveHeaders,
+		"ignore_users":                  aud.IgnoreUsers,
+		"ignore_requests":               aud.IgnoreRequests,
+	}}
 }
 
 func resourceElasticsearchAuditConfigUpdate(d *schema.ResourceData, m interface{}) error {
