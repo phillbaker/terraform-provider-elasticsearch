@@ -116,18 +116,25 @@ var auditConfigSchema = map[string]*schema.Schema{
 					Optional: true,
 					Default:  false,
 				},
-				"read_watched_fields": {
-					Type:     schema.TypeMap,
+				"read_watched_field": {
+					Type:     schema.TypeSet,
 					Optional: true,
-					Elem: &schema.Schema{
-						Type:     schema.TypeSet,
-						Required: true,
-						Elem: &schema.Schema{
-							Type: schema.TypeString,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"index": {
+								Type:     schema.TypeString,
+								Required: true,
+							},
+							"fields": {
+								Type:     schema.TypeSet,
+								Required: true,
+								Elem: &schema.Schema{
+									Type: schema.TypeString,
+								},
+								Set: schema.HashString,
+							},
 						},
-						Set: schema.HashString,
 					},
-					Set: schema.HashString,
 				},
 				"read_ignore_users": {
 					Type:     schema.TypeSet,
@@ -247,7 +254,7 @@ func resourceElasticsearchAuditConfigRead(d *schema.ResourceData, m interface{})
 		return err
 	}
 
-	compliance, err := flatten(res.Config.Compliance)
+	compliance, err := flattenCompliance(res.Config.Compliance)
 	if err != nil {
 		return err
 	}
@@ -258,6 +265,36 @@ func resourceElasticsearchAuditConfigRead(d *schema.ResourceData, m interface{})
 	}
 
 	return nil
+}
+
+func flattenCompliance(com compliance) ([]map[string]interface{}, error) {
+	result := map[string]interface{}{
+		"enabled":               com.Enabled,
+		"internal_config":       com.InternalConfig,
+		"external_config":       com.ExternalConfig,
+		"read_metadata_only":    com.ReadMetadataOnly,
+		"read_ignore_users":     com.ReadIgnoreUsers,
+		"read_watched_field":    flattenReadWatchedFields(com),
+		"write_metadata_only":   com.WriteMetadataOnly,
+		"write_log_diffs":       com.WriteLogDiffs,
+		"write_watched_indices": com.WriteWatchedIndices,
+		"write_ignore_users":    com.WriteIgnoreUsers,
+	}
+
+	return []map[string]interface{}{result}, nil
+}
+
+func flattenReadWatchedFields(com compliance) []map[string]interface{} {
+	result := []map[string]interface{}{}
+
+	for k, v := range com.ReadWatchedFields {
+		item := map[string]interface{}{
+			"index":  k,
+			"fields": v,
+		}
+		result = append(result, item)
+	}
+	return result
 }
 
 func flatten(obj interface{}) ([]map[string]interface{}, error) {
@@ -371,11 +408,25 @@ func expandCompliance(d *schema.ResourceData) compliance {
 		WriteMetadataOnly:   m["write_metadata_only"].(bool),
 		ReadMetadataOnly:    m["read_metadata_only"].(bool),
 		WriteLogDiffs:       m["write_log_diffs"].(bool),
-		ReadWatchedFields:   map[string][]string{}, // FIXME: need to populate
+		ReadWatchedFields:   expandReadWatchedFields(m["read_watched_field"].(*schema.Set).List()),
 		ReadIgnoreUsers:     expandStringList(m["read_ignore_users"].(*schema.Set).List()),
 		WriteWatchedIndices: expandStringList(m["write_watched_indices"].(*schema.Set).List()),
 		WriteIgnoreUsers:    expandStringList(m["write_ignore_users"].(*schema.Set).List()),
 	}
+}
+
+func expandReadWatchedFields(fields []interface{}) map[string][]string {
+	result := map[string][]string{}
+
+	for _, field := range fields {
+		key := field.(map[string]interface{})["index"].(string)
+		values := field.(map[string]interface{})["fields"].(*schema.Set).List()
+		result[key] = []string{}
+		for _, v := range values {
+			result[key] = append(result[key], v.(string))
+		}
+	}
+	return result
 }
 
 func resourceElasticsearchPutAuditConfig(d *schema.ResourceData, m interface{}) (*putResponse, error) {
