@@ -183,6 +183,10 @@ func resourceOpenSearchAuditConfig() *schema.Resource {
 
 func resourceElasticsearchAuditConfigCheckVersion(meta interface{}) error {
 	providerConf := meta.(*ProviderConf)
+	if _, err := getClient(providerConf); err != nil {
+		return err
+	}
+
 	elasticVersion, err := version.NewVersion(providerConf.esVersion)
 	if err != nil {
 		return err
