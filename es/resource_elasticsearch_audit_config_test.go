@@ -91,11 +91,11 @@ resource "elasticsearch_opensearch_audit_config" "test" {
     ignore_requests               = ["SearchRequest", "indices:data/read/*", "/_cluster/health"]
   }
   compliance {
-    enabled               = true
-    internal_config       = true
-    external_config       = false
-    read_metadata_only    = true
-    read_ignore_users     = ["read-ignore-1"]
+    enabled            = true
+    internal_config    = true
+    external_config    = false
+    read_metadata_only = true
+    read_ignore_users  = ["read-ignore-1"]
     read_watched_field {
       index  = "read-index-1"
       fields = ["field-1", "field-2"]
@@ -129,11 +129,11 @@ resource "elasticsearch_opensearch_audit_config" "test" {
     ignore_requests               = ["SearchRequest", "indices:data/read/*", "/_cluster/health"]
   }
   compliance {
-    enabled               = true
-    internal_config       = true
-    external_config       = false
-    read_metadata_only    = true
-    read_ignore_users     = ["read-ignore-1"]
+    enabled            = true
+    internal_config    = true
+    external_config    = false
+    read_metadata_only = true
+    read_ignore_users  = ["read-ignore-1"]
     read_watched_field {
       index  = "read-index-1"
       fields = ["field-1", "field-2"]
