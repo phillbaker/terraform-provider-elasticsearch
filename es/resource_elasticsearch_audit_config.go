@@ -24,6 +24,7 @@ var auditConfigSchema = map[string]*schema.Schema{
 	"audit": {
 		Type:     schema.TypeSet,
 		Optional: true,
+		MaxItems: 1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"enable_rest": {
@@ -94,6 +95,7 @@ var auditConfigSchema = map[string]*schema.Schema{
 	"compliance": {
 		Type:     schema.TypeSet,
 		Optional: true,
+		MaxItems: 1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"enabled": {
