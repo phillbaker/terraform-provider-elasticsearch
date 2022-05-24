@@ -253,7 +253,7 @@ func resourceElasticsearchAuditConfigRead(d *schema.ResourceData, m interface{})
 	return nil
 }
 
-func flattenCompliance(com compliance) []map[string]interface{} {
+func flattenCompliance(com auditConfig_compliance) []map[string]interface{} {
 	return []map[string]interface{}{{
 		"enabled":               com.Enabled,
 		"internal_config":       com.InternalConfig,
@@ -268,7 +268,7 @@ func flattenCompliance(com compliance) []map[string]interface{} {
 	}}
 }
 
-func flattenReadWatchedFields(com compliance) []map[string]interface{} {
+func flattenReadWatchedFields(com auditConfig_compliance) []map[string]interface{} {
 	result := []map[string]interface{}{}
 
 	for k, v := range com.ReadWatchedFields {
@@ -281,7 +281,7 @@ func flattenReadWatchedFields(com compliance) []map[string]interface{} {
 	return result
 }
 
-func flattenAudit(aud audit) []map[string]interface{} {
+func flattenAudit(aud auditConfig_audit) []map[string]interface{} {
 	return []map[string]interface{}{{
 		"enable_rest":                   aud.EnableRest,
 		"disabled_rest_categories":      aud.DisabledRestCategories,
@@ -316,9 +316,9 @@ func resourceElasticsearchAuditConfigDelete(d *schema.ResourceData, m interface{
 	return nil
 }
 
-func resourceElasticsearchGetAuditConfig(m interface{}) (getResponse, error) {
+func resourceElasticsearchGetAuditConfig(m interface{}) (getAuditConfigResponse, error) {
 	var err error
-	audit := new(getResponse)
+	audit := new(getAuditConfigResponse)
 
 	var body json.RawMessage
 	esClient, err := getClient(m.(*ProviderConf))
@@ -347,10 +347,10 @@ func resourceElasticsearchGetAuditConfig(m interface{}) (getResponse, error) {
 	return *audit, err
 }
 
-func expandAudit(d *schema.ResourceData) audit {
+func expandAudit(d *schema.ResourceData) auditConfig_audit {
 	aud, ok := d.GetOk("audit")
 	if !ok || len(aud.(*schema.Set).List()) == 0 {
-		return audit{
+		return auditConfig_audit{
 			ExcludeSensitiveHeaders:     true,
 			IgnoreUsers:                 []string{},
 			IgnoreRequests:              []string{},
@@ -360,7 +360,7 @@ func expandAudit(d *schema.ResourceData) audit {
 	}
 
 	m := aud.(*schema.Set).List()[0].(map[string]interface{})
-	return audit{
+	return auditConfig_audit{
 		EnableRest:                  m["enable_rest"].(bool),
 		EnableTransport:             m["enable_transport"].(bool),
 		ExcludeSensitiveHeaders:     m["exclude_sensitive_headers"].(bool),
@@ -374,10 +374,10 @@ func expandAudit(d *schema.ResourceData) audit {
 	}
 }
 
-func expandCompliance(d *schema.ResourceData) compliance {
+func expandCompliance(d *schema.ResourceData) auditConfig_compliance {
 	comp, ok := d.GetOk("compliance")
 	if !ok || len(comp.(*schema.Set).List()) == 0 {
-		return compliance{
+		return auditConfig_compliance{
 			InternalConfig:      true,
 			ExternalConfig:      false,
 			ReadWatchedFields:   map[string][]string{},
@@ -389,7 +389,7 @@ func expandCompliance(d *schema.ResourceData) compliance {
 
 	m := comp.(*schema.Set).List()[0].(map[string]interface{})
 
-	return compliance{
+	return auditConfig_compliance{
 		Enabled:             m["enabled"].(bool),
 		InternalConfig:      m["internal_config"].(bool),
 		ExternalConfig:      m["external_config"].(bool),
@@ -417,9 +417,9 @@ func expandReadWatchedFields(fields []interface{}) map[string][]string {
 	return result
 }
 
-func resourceElasticsearchPutAuditConfig(d *schema.ResourceData, m interface{}) (*putResponse, error) {
-	response := new(putResponse)
-	auditConfig := config{
+func resourceElasticsearchPutAuditConfig(d *schema.ResourceData, m interface{}) (*putAuditConfigResponse, error) {
+	response := new(putAuditConfigResponse)
+	auditConfig := auditConfig{
 		Enabled:    d.Get("enabled").(bool),
 		Audit:      expandAudit(d),
 		Compliance: expandCompliance(d),
@@ -471,24 +471,24 @@ func resourceElasticsearchPutAuditConfig(d *schema.ResourceData, m interface{}) 
 }
 
 // Response used by the security plugin API (GET method)
-type getResponse struct {
-	Config config `json:"config"`
+type getAuditConfigResponse struct {
+	Config auditConfig `json:"config"`
 }
 
 // Response sent by the security plugin API (PUT method)
-type putResponse struct {
+type putAuditConfigResponse struct {
 	Message string `json:"message"`
 	Status  string `json:"status"`
 }
 
 // Payload used by the security plugin API (PUT method)
-type config struct {
-	Enabled    bool       `json:"enabled"`
-	Audit      audit      `json:"audit"`
-	Compliance compliance `json:"compliance"`
+type auditConfig struct {
+	Enabled    bool                   `json:"enabled"`
+	Audit      auditConfig_audit      `json:"audit"`
+	Compliance auditConfig_compliance `json:"compliance"`
 }
 
-type audit struct {
+type auditConfig_audit struct {
 	EnableRest                  bool     `json:"enable_rest"`
 	DisabledRestCategories      []string `json:"disabled_rest_categories"`
 	EnableTransport             bool     `json:"enable_transport"`
@@ -501,7 +501,7 @@ type audit struct {
 	IgnoreRequests              []string `json:"ignore_requests"`
 }
 
-type compliance struct {
+type auditConfig_compliance struct {
 	Enabled             bool                `json:"enabled"`
 	InternalConfig      bool                `json:"internal_config"`
 	ExternalConfig      bool                `json:"external_config"`
