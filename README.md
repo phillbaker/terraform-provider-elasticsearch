@@ -308,13 +308,15 @@ When running tests, ensure that your test/debug profile has environmental variab
 - `ELASTICSEARCH_URL=http://localhost:9200_`
 - `TF_ACC=1`
 
-### Running terraform with a local provider
+
+
+### Debugging this provider
 
 Build the executable, and start in debug mode:
 
 ```console
 $ go build
-$ ./terraform-provider-elasticsearch -debuggable
+$ ./terraform-provider-elasticsearch -debuggable # or start in debug mode in your IDE
 {"@level":"debug","@message":"plugin address","@timestamp":"2022-05-17T10:10:04.331668+01:00","address":"/var/folders/32/3mbbgs9x0r5bf991ltrl3p280000gs/T/plugin1346340234","network":"unix"}
 Provider started, to attach Terraform set the TF_REATTACH_PROVIDERS env var:
 

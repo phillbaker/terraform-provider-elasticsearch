@@ -214,7 +214,7 @@ func Provider() *schema.Provider {
 				Description: "If provided, sets the 'Host' header of requests and the 'ServerName' for certificate validation to this value. See the documentation on connecting to Elasticsearch via an SSH tunnel.",
 			},
 		},
-		
+
 		ResourcesMap: map[string]*schema.Resource{
 			"elasticsearch_cluster_settings":                resourceElasticsearchClusterSettings(),
 			"elasticsearch_component_template":              resourceElasticsearchComponentTemplate(),
@@ -252,7 +252,7 @@ func Provider() *schema.Provider {
 			"elasticsearch_xpack_user":                      resourceElasticsearchXpackUser(),
 			"elasticsearch_xpack_watch":                     resourceElasticsearchXpackWatch(),
 		},
-		
+
 		DataSourcesMap: map[string]*schema.Resource{
 			"elasticsearch_host":                   dataSourceElasticsearchHost(),
 			"elasticsearch_opendistro_destination": dataSourceElasticsearchOpenDistroDestination(),
