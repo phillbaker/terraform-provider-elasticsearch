@@ -337,7 +337,7 @@ func resourceElasticsearchGetAuditConfig(m interface{}) (getResponse, error) {
 		}
 		body = res.Body
 	default:
-		return *audit, errors.New("audit config resource not implemented prior to Elastic v7")
+		return *audit, errors.New("audit config resource not implemented prior to OpenSearch v1")
 	}
 
 	if err := json.Unmarshal(body, &audit); err != nil {
@@ -460,7 +460,7 @@ func resourceElasticsearchPutAuditConfig(d *schema.ResourceData, m interface{}) 
 
 		body = res.Body
 	default:
-		return response, errors.New("audit config resource not implemented prior to Elastic v7")
+		return response, errors.New("audit config resource not implemented prior to OpenSearch v1")
 	}
 
 	if err := json.Unmarshal(body, response); err != nil {
