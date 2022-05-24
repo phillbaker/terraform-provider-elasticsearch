@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -217,12 +216,7 @@ func resourceElasticsearchAuditConfigCreate(d *schema.ResourceData, m interface{
 		return err
 	}
 
-	// There is no identifier associated with audit config, so just use a random one
-	id, err := uuid.GenerateUUID()
-	if err != nil {
-		return err
-	}
-	d.SetId(id)
+	d.SetId("audit_config")
 	return resourceElasticsearchAuditConfigRead(d, m)
 }
 
