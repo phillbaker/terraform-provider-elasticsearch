@@ -48,4 +48,11 @@ Optional:
 - **create** (String)
 - **update** (String)
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# Import by poilcy_id
+terraform import elasticsearch_opensearch_ism_policy_mapping.test policy_1
+```

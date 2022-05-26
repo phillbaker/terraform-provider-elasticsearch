@@ -45,3 +45,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The name of the ingest pipeline.
+
+## Import
+
+Ingest pipelines can be imported using the `name`, e.g.
+
+```sh
+$ terraform import elasticsearch_ingest_pipeline.test terraform-test
+```

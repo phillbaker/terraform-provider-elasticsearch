@@ -29,13 +29,6 @@ import (
 	elastic6 "gopkg.in/olivere/elastic.v6"
 )
 
-const (
-	// DefaultVersionPingTimeout is the time the ping to check the cluster
-	// version waits for a response from Elasticsearch on startup, i.e. when
-	// creating a provider.
-	DefaultVersionPingTimeout = 5 * time.Second
-)
-
 type ServerFlavor int64
 
 // e.g. elasticsearch, opensearch, elasticsearch-oss, etc.
@@ -61,6 +54,7 @@ type ProviderConf struct {
 	parsedUrl          *url.URL
 	signAWSRequests    bool
 	esVersion          string
+	pingTimeoutSeconds int
 	awsRegion          string
 	awsAssumeRoleArn   string
 	awsAccessKeyId     string
@@ -207,6 +201,15 @@ func Provider() *schema.Provider {
 				Default:     "",
 				Description: "ElasticSearch Version",
 			},
+			// version_ping_timeout is the time the ping to check the cluster
+			// version waits for a response from Elasticsearch on startup, e.g. when
+			// creating a provider.
+			"version_ping_timeout": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     5,
+				Description: "Version ping timeout in seconds",
+			},
 			"host_override": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -216,40 +219,41 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"elasticsearch_index":                           resourceElasticsearchIndex(),
-			"elasticsearch_index_template":                  resourceElasticsearchIndexTemplate(),
 			"elasticsearch_cluster_settings":                resourceElasticsearchClusterSettings(),
-			"elasticsearch_composable_index_template":       resourceElasticsearchComposableIndexTemplate(),
 			"elasticsearch_component_template":              resourceElasticsearchComponentTemplate(),
+			"elasticsearch_composable_index_template":       resourceElasticsearchComposableIndexTemplate(),
 			"elasticsearch_data_stream":                     resourceElasticsearchDataStream(),
+			"elasticsearch_index_template":                  resourceElasticsearchIndexTemplate(),
+			"elasticsearch_index":                           resourceElasticsearchIndex(),
 			"elasticsearch_ingest_pipeline":                 resourceElasticsearchIngestPipeline(),
 			"elasticsearch_kibana_alert":                    resourceElasticsearchKibanaAlert(),
 			"elasticsearch_kibana_object":                   resourceElasticsearchKibanaObject(),
-			"elasticsearch_snapshot_repository":             resourceElasticsearchSnapshotRepository(),
 			"elasticsearch_opendistro_destination":          resourceElasticsearchOpenDistroDestination(),
-			"elasticsearch_opensearch_destination":          resourceOpenSearchDestination(),
-			"elasticsearch_opendistro_ism_policy":           resourceElasticsearchOpenDistroISMPolicy(),
-			"elasticsearch_opensearch_ism_policy":           resourceOpenSearchISMPolicy(),
 			"elasticsearch_opendistro_ism_policy_mapping":   resourceElasticsearchOpenDistroISMPolicyMapping(),
-			"elasticsearch_opensearch_ism_policy_mapping":   resourceOpenSearchISMPolicyMapping(),
-			"elasticsearch_opendistro_monitor":              resourceElasticsearchOpenDistroMonitor(),
-			"elasticsearch_opensearch_monitor":              resourceOpenSearchMonitor(),
-			"elasticsearch_opendistro_roles_mapping":        resourceElasticsearchOpenDistroRolesMapping(),
-			"elasticsearch_opensearch_roles_mapping":        resourceOpenSearchRolesMapping(),
-			"elasticsearch_opendistro_role":                 resourceElasticsearchOpenDistroRole(),
-			"elasticsearch_opensearch_role":                 resourceOpenSearchRole(),
-			"elasticsearch_opendistro_user":                 resourceElasticsearchOpenDistroUser(),
-			"elasticsearch_opensearch_user":                 resourceOpenSearchUser(),
+			"elasticsearch_opendistro_ism_policy":           resourceElasticsearchOpenDistroISMPolicy(),
 			"elasticsearch_opendistro_kibana_tenant":        resourceElasticsearchOpenDistroKibanaTenant(),
+			"elasticsearch_opendistro_monitor":              resourceElasticsearchOpenDistroMonitor(),
+			"elasticsearch_opendistro_role":                 resourceElasticsearchOpenDistroRole(),
+			"elasticsearch_opendistro_roles_mapping":        resourceElasticsearchOpenDistroRolesMapping(),
+			"elasticsearch_opendistro_user":                 resourceElasticsearchOpenDistroUser(),
+			"elasticsearch_opensearch_audit_config":         resourceOpenSearchAuditConfig(),
+			"elasticsearch_opensearch_destination":          resourceOpenSearchDestination(),
+			"elasticsearch_opensearch_ism_policy_mapping":   resourceOpenSearchISMPolicyMapping(),
+			"elasticsearch_opensearch_ism_policy":           resourceOpenSearchISMPolicy(),
 			"elasticsearch_opensearch_kibana_tenant":        resourceOpenSearchKibanaTenant(),
+			"elasticsearch_opensearch_monitor":              resourceOpenSearchMonitor(),
+			"elasticsearch_opensearch_role":                 resourceOpenSearchRole(),
+			"elasticsearch_opensearch_roles_mapping":        resourceOpenSearchRolesMapping(),
+			"elasticsearch_opensearch_user":                 resourceOpenSearchUser(),
+			"elasticsearch_script":                          resourceElasticsearchScript(),
+			"elasticsearch_snapshot_repository":             resourceElasticsearchSnapshotRepository(),
 			"elasticsearch_xpack_index_lifecycle_policy":    resourceElasticsearchXpackIndexLifecyclePolicy(),
 			"elasticsearch_xpack_license":                   resourceElasticsearchXpackLicense(),
-			"elasticsearch_xpack_role":                      resourceElasticsearchXpackRole(),
 			"elasticsearch_xpack_role_mapping":              resourceElasticsearchXpackRoleMapping(),
+			"elasticsearch_xpack_role":                      resourceElasticsearchXpackRole(),
 			"elasticsearch_xpack_snapshot_lifecycle_policy": resourceElasticsearchXpackSnapshotLifecyclePolicy(),
 			"elasticsearch_xpack_user":                      resourceElasticsearchXpackUser(),
 			"elasticsearch_xpack_watch":                     resourceElasticsearchXpackWatch(),
-			"elasticsearch_script":                          resourceElasticsearchScript(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
@@ -270,21 +274,22 @@ func providerConfigure(c context.Context, d *schema.ResourceData) (interface{}, 
 	}
 
 	return &ProviderConf{
-		rawUrl:          rawUrl,
-		kibanaUrl:       d.Get("kibana_url").(string),
-		insecure:        d.Get("insecure").(bool),
-		sniffing:        d.Get("sniff").(bool),
-		healthchecking:  d.Get("healthcheck").(bool),
-		cacertFile:      d.Get("cacert_file").(string),
-		username:        d.Get("username").(string),
-		password:        d.Get("password").(string),
-		token:           d.Get("token").(string),
-		tokenName:       d.Get("token_name").(string),
-		parsedUrl:       parsedUrl,
-		signAWSRequests: d.Get("sign_aws_requests").(bool),
-		awsSig4Service:  d.Get("aws_signature_service").(string),
-		esVersion:       d.Get("elasticsearch_version").(string),
-		awsRegion:       d.Get("aws_region").(string),
+		rawUrl:             rawUrl,
+		kibanaUrl:          d.Get("kibana_url").(string),
+		insecure:           d.Get("insecure").(bool),
+		sniffing:           d.Get("sniff").(bool),
+		healthchecking:     d.Get("healthcheck").(bool),
+		cacertFile:         d.Get("cacert_file").(string),
+		username:           d.Get("username").(string),
+		password:           d.Get("password").(string),
+		token:              d.Get("token").(string),
+		tokenName:          d.Get("token_name").(string),
+		parsedUrl:          parsedUrl,
+		signAWSRequests:    d.Get("sign_aws_requests").(bool),
+		awsSig4Service:     d.Get("aws_signature_service").(string),
+		esVersion:          d.Get("elasticsearch_version").(string),
+		pingTimeoutSeconds: d.Get("version_ping_timeout").(int),
+		awsRegion:          d.Get("aws_region").(string),
 
 		awsAssumeRoleArn:   d.Get("aws_assume_role_arn").(string),
 		awsAccessKeyId:     d.Get("aws_access_key").(string),
@@ -371,14 +376,19 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 
 	// Use the v7 client to ping the cluster to determine the version if one was not provided
 	if conf.esVersion == "" {
-		log.Printf("[INFO] Pinging url to determine version %+v", conf.rawUrl)
-		ctx, cancel := context.WithTimeout(context.Background(), DefaultVersionPingTimeout)
+		log.Printf("[INFO] Pinging url to determine version %+v with timeout %ds", conf.rawUrl, conf.pingTimeoutSeconds)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(conf.pingTimeoutSeconds)*time.Second)
 		defer cancel()
 		info, httpStatus, err := client.Ping(conf.rawUrl).Do(ctx)
 		if httpStatus == http.StatusForbidden {
 			return nil, errors.New("HTTP 403 Forbidden: Permission denied. Please ensure that the correct credentials are being used to access the cluster.")
 		}
 		if err != nil {
+			// Replace the timeout error because it gives no context
+			if os.IsTimeout(err) {
+				err = fmt.Errorf("timeout after %d seconds while pinging '%+v' to determine server version, please consider setting 'elasticsearch_version' to avoid this lookup", conf.pingTimeoutSeconds, conf.rawUrl)
+			}
+
 			return nil, err
 		}
 		conf.esVersion = info.Version.Number

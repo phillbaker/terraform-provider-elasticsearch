@@ -50,4 +50,11 @@ resource "elasticsearch_xpack_user" "test" {
 
 - **id** (String) The ID of this resource.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# Import by username
+terraform import elasticsearch_xpack_user.test johndoe
+```

@@ -55,3 +55,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The name of the index template.
+
+## Import
+
+Index templates can be imported using the `name`, e.g.
+
+```sh
+$ terraform import elasticsearch_index_template.template_1 template_1
+```

@@ -3,7 +3,7 @@ layout: "elasticsearch"
 page_title: "Elasticsearch: elasticsearch_xpack_license"
 subcategory: "Elasticsearch Xpack"
 description: |-
-  Provides an Elasticsearch xpack license resource.
+  Provides an Elasticsearch XPack license resource.
 ---
 
 # elasticsearch_xpack_license

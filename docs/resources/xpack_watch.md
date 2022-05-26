@@ -3,12 +3,12 @@ layout: "elasticsearch"
 page_title: "Elasticsearch: elasticsearch_xpack_watch"
 subcategory: "Elasticsearch Xpack"
 description: |-
-  Provides an Elasticsearch xpack watch resource.
+  Provides an Elasticsearch XPack watch resource.
 ---
 
 # elasticsearch_xpack_watch
 
-Provides an Elasticsearch xpack watch resource.
+Provides an Elasticsearch XPack watch resource.
 
 ## Example Usage
 
@@ -74,7 +74,7 @@ EOF
 }
 ```
 
-Note: Watches using basic authentication should define a basic authorization header as part of `headers` json block, rather than using the watch basic auth stanza. 
+Note: Watches using basic authentication should define a basic authorization header as part of `headers` json block, rather than using the watch basic auth stanza.
 With the watch basic auth stanza, the value of the `password` field return by the get watch api will be `::es_redacted::`, not the plain text password. This will cause the provider to continuously re-apply watches as the passwords do not match.
 
 
@@ -91,3 +91,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The name of the xpack watch.
+
+## Import
+
+XPack watches can be imported using the `watch_id`, e.g.
+
+```sh
+$ terraform import elasticsearch_xpack_watch.watch_1 watch_1
+```

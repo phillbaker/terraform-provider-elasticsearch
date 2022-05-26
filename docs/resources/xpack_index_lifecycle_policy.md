@@ -3,12 +3,12 @@ layout: "elasticsearch"
 page_title: "Elasticsearch: elasticsearch_xpack_index_lifecycle_policy"
 subcategory: "Elasticsearch Xpack"
 description: |-
-  Provides an Elasticsearch xpack index lifecycle policy resource.
+  Provides an Elasticsearch XPack index lifecycle policy resource.
 ---
 
 # elasticsearch_xpack_index_lifecycle_policy
 
-Provides an Elasticsearch xpack index lifecycle policy resource. Please see [docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/index-lifecycle-management-api.html) for more details on usage.
+Provides an Elasticsearch XPack index lifecycle policy resource. Please see [docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/index-lifecycle-management-api.html) for more details on usage.
 
 ## Example Usage
 
@@ -55,3 +55,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - The name of the xpack index_lifecycle_policy.
+
+## Import
+
+XPack index lifecycles can be imported using the `name`, e.g.
+
+```sh
+$ terraform import elasticsearch_xpack_index_lifecycle_policy.test terraform-test
+```

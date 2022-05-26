@@ -3,7 +3,7 @@ layout: "elasticsearch"
 page_title: "Elasticsearch: elasticsearch_xpack_role"
 subcategory: "Elasticsearch Xpack"
 description: |-
-  Provides an Elasticsearch Xpack role resource.
+  Provides an Elasticsearch XPack role resource.
 ---
 
 # elasticsearch_xpack_role
@@ -86,3 +86,11 @@ The `applications` object supports the following:
 The following attributes are exported:
 
 * `id` - The name of the xpack role.
+
+## Import
+
+XPack roles can be imported using the `role_name`, e.g.
+
+```sh
+$ terraform import elasticsearch_xpack_role.test tes
+```
