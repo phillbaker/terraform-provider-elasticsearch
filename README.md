@@ -286,6 +286,53 @@ Please see [the documentation](./docs/index.md#AWS-authentication) for details.
 go build -o /path/to/binary/terraform-provider-elasticsearch
 ```
 
+### Running tests locally
+
+Start an instance of ElasticSearch locally with the following:
+
+```sh
+./script/install-tools
+export OSS_IMAGE="opensearchproject/opensearch:1.2.0"
+export ES_OPENDISTRO_IMAGE="opensearchproject/opensearch:1.2.0"
+export ES_COMMAND=""
+export ES_KIBANA_IMAGE=""
+export OPENSEARCH_PREFIX="plugins.security"
+export OSS_ENV_VAR="plugins.security.disabled=true"
+export XPACK_IMAGE="docker.elastic.co/elasticsearch/elasticsearch:7.10.1"
+docker-compose up -d
+docker-compose ps -a
+```
+
+When running tests, ensure that your test/debug profile has environmental variables as below:
+
+- `ELASTICSEARCH_URL=http://localhost:9200_`
+- `TF_ACC=1`
+
+
+
+### Debugging this provider
+
+Build the executable, and start in debug mode:
+
+```console
+$ go build
+$ ./terraform-provider-elasticsearch -debuggable # or start in debug mode in your IDE
+{"@level":"debug","@message":"plugin address","@timestamp":"2022-05-17T10:10:04.331668+01:00","address":"/var/folders/32/3mbbgs9x0r5bf991ltrl3p280000gs/T/plugin1346340234","network":"unix"}
+Provider started, to attach Terraform set the TF_REATTACH_PROVIDERS env var:
+
+        TF_REATTACH_PROVIDERS='{"registry.terraform.io/phillbaker/elasticsearch":{"Protocol":"grpc","ProtocolVersion":5,"Pid":79075,"Test":true,"Addr":{"Network":"unix","String":"/var/folders/32/3mbbgs9x0r5bf991ltrl3p280000gs/T/plugin1346340234"}}}'
+```
+
+In another terminal, you can test your terraform code:
+
+```console
+$ cd <my-project/terraform>
+$ export TF_REATTACH_PROVIDERS=<env var above>
+$ terraform apply
+```
+
+The local provider will be used instead, and you should see debug information printed to the terminal.
+
 ## Licence
 
 See LICENSE.
