@@ -3,8 +3,18 @@
 ### Changed
 
 ### Added
+
+### Fixed
+
+
+## [2.0.2] - 2022-06-01
+### Changed
+* Provide context with ping timeout errors and make the timeout configurable
+
+### Added
 * Add custer settings resource
 * Add data stream resource
+* Add opensearch audit config resource
 
 ### Fixed
 * [role mapping] Check error before referencing response
