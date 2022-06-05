@@ -28,6 +28,7 @@ jobs:
         os: [ubuntu-latest]
         es-major-version:
           - "6"
+          - "7-opendistro"
           - "7"
           - "7-opensearch"
         include:
@@ -38,13 +39,21 @@ jobs:
           XPACK_IMAGE: "docker.elastic.co/elasticsearch/elasticsearch:6.8.9"
           ES_OPENDISTRO_IMAGE: "ghcr.io/phillbaker/opendistro-for-elasticsearch:0.10.0"
           ES_KIBANA_IMAGE: "docker.elastic.co/kibana/kibana-oss:6.0.0"
-        - es-major-version: "7"
+        - es-major-version: "7-opendistro"
           version: 7.10.1
           # oss-image: "docker.elastic.co/elasticsearch/elasticsearch-oss"
           oss-image: "elasticsearch"
           XPACK_IMAGE: "docker.elastic.co/elasticsearch/elasticsearch:7.10.1"
-          ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:1.13.2"
+          ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:1.13.3"
           ES_KIBANA_IMAGE: "docker.elastic.co/kibana/kibana:7.10.1"
+        - es-major-version: "7"
+          version: 7.17.4
+          # oss-image: "docker.elastic.co/elasticsearch/elasticsearch-oss"
+          oss-image: "elasticsearch"
+          XPACK_IMAGE: "docker.elastic.co/elasticsearch/elasticsearch:7.17.4"
+          # Note: this is still 7.10.x
+          ES_OPENDISTRO_IMAGE: "amazon/opendistro-for-elasticsearch:1.13.2"
+          ES_KIBANA_IMAGE: "docker.elastic.co/kibana/kibana:7.17.4"
         - es-major-version: "7-opensearch"
           version: 1.0.0
           oss-image: "opensearchproject/opensearch"
