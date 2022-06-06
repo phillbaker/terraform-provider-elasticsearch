@@ -5,6 +5,7 @@
 ### Added
 
 ### Fixed
+* [xpack ilm] Ignore read only element on diff
 
 
 ## [2.0.2] - 2022-06-01
