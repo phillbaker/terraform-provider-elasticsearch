@@ -23,6 +23,8 @@ var (
 		"number_of_routing_shards",
 		"load_fixed_bitset_filters_eagerly",
 		"shard.check_on_startup",
+		"sort.field",
+		"sort.order",
 	}
 	dynamicsSettingsKeys = []string{
 		"number_of_replicas",
@@ -124,6 +126,18 @@ var (
 		"shard_check_on_startup": {
 			Type:        schema.TypeString,
 			Description: "Whether or not shards should be checked for corruption before opening. When corruption is detected, it will prevent the shard from being opened. Accepts `false`, `true`, `checksum`.",
+			ForceNew:    true,
+			Optional:    true,
+		},
+		"sort_field": {
+			Type:        schema.TypeString,
+			Description: "The field to sort shards in this index by.",
+			ForceNew:    true,
+			Optional:    true,
+		},
+		"sort_order": {
+			Type:        schema.TypeString,
+			Description: "The direction to sort shards in. Accepts `asc`, `desc`.",
 			ForceNew:    true,
 			Optional:    true,
 		},
