@@ -6,6 +6,7 @@
 
 ### Fixed
 * [xpack ilm] Ignore read only element on diff
+* [kibana alert] Handle diff on >=7.11
 
 
 ## [2.0.2] - 2022-06-01
