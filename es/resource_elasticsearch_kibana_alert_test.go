@@ -11,6 +11,7 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 
+	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
@@ -37,7 +38,6 @@ func TestAccElasticsearchKibanaAlert(t *testing.T) {
 	switch esClient.(type) {
 	case *elastic7.Client:
 		allowed = providerConf.flavor == Elasticsearch
-		log.Printf("[INFO] TestAccElasticsearchKibanaAlert_importBasic %+v %+v", providerConf.flavor, providerConf.flavor == Elasticsearch)
 	case *elastic6.Client:
 		allowed = false
 	default:
@@ -53,6 +53,23 @@ func TestAccElasticsearchKibanaAlert(t *testing.T) {
 		}
 	}
 
+	testConfig := testAccElasticsearchKibanaAlertV77(defaultActionID)
+	testParmsConfig := testAccElasticsearchKibanaAlertParamsJSONV77
+	elasticVersion, err := resourceElasticsearchKibanaGetVersion(meta)
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+
+	versionV711, err := version.NewVersion("7.11.0")
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	if elasticVersion.GreaterThanOrEqual(versionV711) {
+		testConfig = testAccElasticsearchKibanaAlertV711
+		testParmsConfig = testAccElasticsearchKibanaAlertParamsJSONV711
+	}
+
+	log.Printf("[INFO] TestAccElasticsearchKibanaAlert %+v", elasticVersion)
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -64,13 +81,13 @@ func TestAccElasticsearchKibanaAlert(t *testing.T) {
 		CheckDestroy: testCheckElasticsearchKibanaAlertDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccElasticsearchKibanaAlertV77(defaultActionID),
+				Config: testConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchKibanaAlertExists("elasticsearch_kibana_alert.test"),
 				),
 			},
 			{
-				Config: testAccElasticsearchKibanaAlertParamsJSONV77,
+				Config: testParmsConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchKibanaAlertExists("elasticsearch_kibana_alert.test_params_json"),
 				),
@@ -96,13 +113,28 @@ func TestAccElasticsearchKibanaAlert_importBasic(t *testing.T) {
 	var allowed bool
 	switch esClient.(type) {
 	case *elastic7.Client:
-		log.Printf("[INFO] TestAccElasticsearchKibanaAlert_importBasic %+v %+v", providerConf.flavor, providerConf.flavor == Elasticsearch)
 		allowed = providerConf.flavor == Elasticsearch
 	case *elastic6.Client:
 		allowed = false
 	default:
 		allowed = false
 	}
+
+	config := testAccElasticsearchKibanaAlertNoActionsV77
+	elasticVersion, err := resourceElasticsearchKibanaGetVersion(meta)
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+
+	versionV711, err := version.NewVersion("7.11.0")
+	if err != nil {
+		t.Skipf("err: %s", err)
+	}
+	if elasticVersion.GreaterThanOrEqual(versionV711) {
+		config = testAccElasticsearchKibanaAlertV711
+	}
+	log.Printf("[INFO] TestAccElasticsearchKibanaAlert_importBasic %+v", elasticVersion)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -114,7 +146,7 @@ func TestAccElasticsearchKibanaAlert_importBasic(t *testing.T) {
 		CheckDestroy: testCheckElasticsearchKibanaAlertDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccElasticsearchKibanaAlertNoActionsV77,
+				Config: config,
 			},
 			{
 				ResourceName:      "elasticsearch_kibana_alert.test",
@@ -304,25 +336,54 @@ EOF
 }
 `
 
-// var testAccElasticsearchKibanaAlertV711 = `
-// resource "elasticsearch_kibana_alert" "test" {
-//   name = "terraform-alert"
-//   notify_when = "onActionGroupChange"
-//   schedule {
-//   	interval = "1m"
-//   }
-//   conditions {
-//     aggregation_type = "avg"
-//     term_size = 6
-//     threshold_comparator = ">"
-//     time_window_size = 5
-//     time_window_unit = "m"
-//     group_by = "top"
-//     threshold = [1000]
-//     index = [".test-index"]
-//     time_field = "@timestamp"
-//     aggregation_field = "sheet.version"
-//     term_field = "name.keyword"
-//   }
-// }
-// `
+var testAccElasticsearchKibanaAlertV711 = `
+resource "elasticsearch_kibana_alert" "test" {
+  name        = "terraform-alert"
+  notify_when = "onActionGroupChange"
+  schedule {
+    interval = "1m"
+  }
+  conditions {
+    aggregation_type     = "avg"
+    term_size            = 6
+    threshold_comparator = ">"
+    time_window_size     = 5
+    time_window_unit     = "m"
+    group_by             = "top"
+    threshold            = [1000]
+    index                = [".test-index"]
+    time_field           = "@timestamp"
+    aggregation_field    = "sheet.version"
+    term_field           = "name.keyword"
+  }
+}
+`
+
+var testAccElasticsearchKibanaAlertParamsJSONV711 = `
+resource "elasticsearch_kibana_alert" "test_params_json" {
+  name        = "terraform-alert"
+  notify_when = "onActionGroupChange"
+  schedule {
+    interval = "1m"
+  }
+  params_json = <<EOF
+{
+  "aggType":"avg",
+  "termSize":6,
+  "thresholdComparator":">",
+  "timeWindowSize":5,
+  "timeWindowUnit":"m",
+  "groupBy":"top",
+  "threshold":[
+    1000
+  ],
+  "index":[
+    ".test-index"
+  ],
+  "timeField":"@timestamp",
+  "aggField":"sheet.version",
+  "termField":"name.keyword"
+}
+EOF
+}
+`
