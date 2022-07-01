@@ -23,6 +23,7 @@ func resourceElasticsearchXpackRole() *schema.Resource {
 			"role_name": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"indices": {
 				Type:     schema.TypeSet,
