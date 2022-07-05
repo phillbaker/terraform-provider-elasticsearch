@@ -138,7 +138,7 @@ jobs:
     - name: Run the tests
       run: |
         export ELASTICSEARCH_URL=http://localhost:9200
-        export TF_LOG=INFO
+        export TF_LOG=INFO TF_LOG_PROVIDER=INFO
         TF_ACC=1 go test ./... -v -parallel 20 -cover -short
         TF_ACC=1 go test ./... -v -cover -run XpackLicense
         # check goreleaser config for deprecations
