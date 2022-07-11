@@ -80,7 +80,7 @@ func resourceElasticsearchIndexTemplateRead(d *schema.ResourceData, meta interfa
 }
 
 func elastic7IndexGetTemplate(client *elastic7.Client, id string) (string, error) {
-	res, err := client.IndexGetTemplate(id).Do(context.TODO())
+	res, err := client.IndexGetIndexTemplate(id).Do(context.TODO())
 	if err != nil {
 		return "", err
 	}
@@ -136,7 +136,7 @@ func resourceElasticsearchIndexTemplateDelete(d *schema.ResourceData, meta inter
 }
 
 func elastic7IndexDeleteTemplate(client *elastic7.Client, id string) error {
-	_, err := client.IndexDeleteTemplate(id).Do(context.TODO())
+	_, err := client.IndexDeleteIndexTemplate(id).Do(context.TODO())
 	return err
 }
 
@@ -167,7 +167,7 @@ func resourceElasticsearchPutIndexTemplate(d *schema.ResourceData, meta interfac
 }
 
 func elastic7IndexPutTemplate(client *elastic7.Client, name string, body string, create bool) error {
-	_, err := client.IndexPutTemplate(name).BodyString(body).Create(create).Do(context.TODO())
+	_, err := client.IndexPutIndexTemplate(name).BodyString(body).Create(create).Do(context.TODO())
 	return err
 }
 
