@@ -16,7 +16,7 @@ Provides an Elasticsearch OpenSearch security user. Please refer to the OpenSear
 # Create a user
 resource "elasticsearch_opensearch_user" "mapper" {
   username    = "app-reader"
-  password    = "supersekret123!"
+  password    = "SuperSekret123!"
   description = "a reader role for our app"
 }
 ```
@@ -58,6 +58,10 @@ The following arguments are supported:
     (Optional) A list of backend roles.
 * `password` -
     (Optional) The plain text password for the user, cannot be specified with `password_hash`.
+    Some implementations may enforce a password policy. Invalid passwords may cause a non-descriptive
+    HTTP 400 Bad Request error. For AWS Elasticsearch domains "password must be at least 8 characters
+    long and contain at least one uppercase letter, one lowercase letter, one digit, and one special
+    character".
 * `password_hash` -
     (Optional) The pre-hashed password for the user, cannot be specified with `password`.
 * `attributes` -
