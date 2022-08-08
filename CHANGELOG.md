@@ -7,6 +7,11 @@
 ### Fixed
 
 
+## [2.0.4] - 2022-08-08
+### Changed
+* [ci] Use go1.18 to test and build
+
+
 ## [2.0.3] - 2022-08-07
 ### Added
 * [index] Add index sorting fields
