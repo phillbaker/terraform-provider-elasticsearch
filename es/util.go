@@ -80,12 +80,23 @@ func normalizeMonitor(tpl map[string]interface{}) {
 func normalizeMonitorTriggers(triggers []interface{}) {
 	for _, t := range triggers {
 		if trigger, ok := t.(map[string]interface{}); ok {
-			delete(trigger, "id")
-
-			if actions, ok := trigger["actions"].([]interface{}); ok {
-				normalizeMonitorTriggerActions(actions)
+			if _, ok := trigger["query_level_trigger"]; ok {
+				normalizeMonitorTrigger(trigger["query_level_trigger"].(map[string]interface{}))
+				return
 			}
+			if _, ok := trigger["bucket_level_trigger"]; ok {
+				normalizeMonitorTrigger(trigger["bucket_level_trigger"].(map[string]interface{}))
+				return
+			}
+			normalizeMonitorTrigger(trigger)
 		}
+	}
+}
+func normalizeMonitorTrigger(trigger map[string]interface{}) {
+	delete(trigger, "id")
+
+	if actions, ok := trigger["actions"].([]interface{}); ok {
+		normalizeMonitorTriggerActions(actions)
 	}
 }
 
