@@ -177,7 +177,7 @@ EOF
 
 
 resource "elasticsearch_opendistro_monitor" "test_monitor2" {
-	body = <<EOF
+  body = <<EOF
 {
 	"name": "test-bucket-level-monitor",
 	"type": "monitor",
