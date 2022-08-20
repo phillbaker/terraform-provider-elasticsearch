@@ -13,6 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
+var openSearch11Version, _ = version.NewVersion("1.1.0")
+
 func TestAccElasticsearchOpenDistroISMPolicy(t *testing.T) {
 	provider := Provider()
 	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
@@ -33,14 +35,14 @@ func TestAccElasticsearchOpenDistroISMPolicy(t *testing.T) {
 		config = testAccElasticsearchOpenDistroISMPolicyV6
 	default:
 		allowed = true
-		version, err := version.NewVersion(meta.(*ProviderConf).esVersion)
+		v, err := version.NewVersion(meta.(*ProviderConf).esVersion)
 		if err != nil {
 			t.Skipf("err: %s", err)
 		}
-		if (version.Segments()[0] == 1) && (version.Segments()[1] > 0) {
-			config = testAccElasticsearchOpenDistroISMPolicyV7opensearch11
+		if v.GreaterThanOrEqual(openSearch11Version) {
+			config = testAccElasticsearchOpenDistroISMPolicyOpenSearch11
 		} else {
-			config = testAccElasticsearchOpenDistroISMPolicyV7default
+			config = testAccElasticsearchOpenDistroISMPolicyV7
 		}
 	}
 
@@ -196,7 +198,7 @@ resource "elasticsearch_opendistro_ism_policy" "test_policy" {
 }
 `
 
-var testAccElasticsearchOpenDistroISMPolicyV7default = `
+var testAccElasticsearchOpenDistroISMPolicyV7 = `
 resource "elasticsearch_opendistro_ism_policy" "test_policy" {
   policy_id = "test_policy"
   body      = <<EOF
@@ -265,7 +267,7 @@ resource "elasticsearch_opendistro_ism_policy" "test_policy" {
 }
 `
 
-var testAccElasticsearchOpenDistroISMPolicyV7opensearch11 = `
+var testAccElasticsearchOpenDistroISMPolicyOpenSearch11 = `
 resource "elasticsearch_opendistro_ism_policy" "test_policy" {
   policy_id = "test_policy"
   body      = <<EOF
