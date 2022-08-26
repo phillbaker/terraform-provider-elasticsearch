@@ -1,4 +1,4 @@
-module github.com/phillbaker/terraform-provider-elasticsearch
+module github.com/phillbaker/terraform-provider-elasticsearch/v2
 
 go 1.14
 
