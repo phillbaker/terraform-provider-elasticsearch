@@ -7,21 +7,21 @@ import (
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
 
-	// "github.com/hashicorp/go-version"
+	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccElasticsearchOpenDistroMonitor(t *testing.T) {
-	// meta := testAccOpendistroProvider.Meta()
-	// providerConf := meta.(*ProviderConf)
-	// version, err := version.NewVersion(providerConf.esVersion)
-	// if err != nil {
-	// 	t.Fatalf("err: %s", err)
-	// }
-	// if !((version.Segments()[0] == 1) && (version.Segments()[1] > 0)) {
-	// 	t.Skip("Test is designed for Opensearch 1.1+")
-	// }
+	opensearchVerionConstraints, _ := version.NewConstraint(">= 1.1, < 6")
+	meta := testAccOpendistroProvider.Meta()
+	v, err := version.NewVersion(meta.(*ProviderConf).esVersion)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+	if !opensearchVerionConstraints.Check(v) {
+		t.Skip("Test is designed for Opensearch 1.1+")
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {

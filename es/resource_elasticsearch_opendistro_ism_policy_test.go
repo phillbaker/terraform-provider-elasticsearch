@@ -13,9 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-var openSearch11Version, _ = version.NewVersion("1.1.0")
-
 func TestAccElasticsearchOpenDistroISMPolicy(t *testing.T) {
+	opensearchVerionConstraints, _ := version.NewConstraint(">= 1.1, < 6")
 	provider := Provider()
 	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
 	if diags.HasError() {
@@ -39,7 +38,7 @@ func TestAccElasticsearchOpenDistroISMPolicy(t *testing.T) {
 		if err != nil {
 			t.Skipf("err: %s", err)
 		}
-		if v.GreaterThanOrEqual(openSearch11Version) {
+		if opensearchVerionConstraints.Check(v) {
 			config = testAccElasticsearchOpenDistroISMPolicyOpenSearch11
 		} else {
 			config = testAccElasticsearchOpenDistroISMPolicyV7
