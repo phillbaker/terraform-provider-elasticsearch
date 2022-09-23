@@ -80,6 +80,14 @@ resource "elasticsearch_index" "test" {
       output_unigrams  = false
     }
   })
+  analysis_char_filter = jsonencode({
+    my_char_filter_apostrophe = {
+      type     = "mapping"
+      mappings = [
+        "'=>"
+      ]
+    }
+  })
   analysis_normalizer = jsonencode({
     my_normalizer = {
       type   = "custom"

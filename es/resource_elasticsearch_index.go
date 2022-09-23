@@ -380,6 +380,13 @@ var (
 			ForceNew:     true, // To add a filter, the index must be closed, updated, and then reopened; we can't handle that here.
 			ValidateFunc: validation.StringIsJSON,
 		},
+		"analysis_char_filter": {
+			Type:         schema.TypeString,
+			Description:  "A JSON string describing the char_filters applied to the index.",
+			Optional:     true,
+			ForceNew:     true, // To add a char_filters, the index must be closed, updated, and then reopened; we can't handle that here.
+			ValidateFunc: validation.StringIsJSON,
+		},
 		"analysis_normalizer": {
 			Type:         schema.TypeString,
 			Description:  "A JSON string describing the normalizers applied to the index.",
@@ -461,6 +468,15 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 			return fmt.Errorf("fail to unmarshal: %v", err)
 		}
 		analysis["filter"] = filter
+	}
+	if filterJSON, ok := d.GetOk("analysis_char_filter"); ok {
+		var filter map[string]interface{}
+		bytes := []byte(filterJSON.(string))
+		err = json.Unmarshal(bytes, &filter)
+		if err != nil {
+			return fmt.Errorf("fail to unmarshal: %v", err)
+		}
+		analysis["char_filter"] = filter
 	}
 	if normalizerJSON, ok := d.GetOk("analysis_normalizer"); ok {
 		var normalizer map[string]interface{}
