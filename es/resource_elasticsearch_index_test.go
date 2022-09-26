@@ -83,9 +83,7 @@ resource "elasticsearch_index" "test" {
   analysis_char_filter = jsonencode({
     my_char_filter_apostrophe = {
       type     = "mapping"
-      mappings = [
-        "'=>"
-      ]
+      mappings = ["'=>"]
     }
   })
   analysis_normalizer = jsonencode({
