@@ -47,6 +47,7 @@ EOF
 - **aliases** (String) A JSON string describing a set of aliases. The index aliases API allows aliasing an index with a name, with all APIs automatically converting the alias name to the actual index name. An alias can also be mapped to more than one index, and when specifying it, the alias will automatically expand to the aliased indices.
 - **analysis_analyzer** (String) A JSON string describing the analyzers applied to the index.
 - **analysis_filter** (String) A JSON string describing the filters applied to the index.
+- **analysis_char_filter** (String) A JSON string describing the char_filters applied to the index.
 - **analysis_normalizer** (String) A JSON string describing the normalizers applied to the index.
 - **analysis_tokenizer** (String) A JSON string describing the tokenizers applied to the index.
 - **analyze_max_token_count** (String) The maximum number of tokens that can be produced using _analyze API. A stringified number.
