@@ -320,10 +320,18 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 
 	if m := awsUrlRegexp.FindStringSubmatch(conf.parsedUrl.Hostname()); m != nil && conf.signAWSRequests {
 		log.Printf("[INFO] Using AWS: %+v", m[1])
-		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(m[1], conf, map[string]string{})), elastic7.SetSniff(false))
+		client, err := awsHttpClient(m[1], conf, map[string]string{})
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, elastic7.SetHttpClient(client), elastic7.SetSniff(false))
 	} else if awsRegion := conf.awsRegion; conf.awsRegion != "" && conf.signAWSRequests {
 		log.Printf("[INFO] Using AWS: %+v", awsRegion)
-		opts = append(opts, elastic7.SetHttpClient(awsHttpClient(awsRegion, conf, map[string]string{})), elastic7.SetSniff(false))
+		client, err := awsHttpClient(awsRegion, conf, map[string]string{})
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, elastic7.SetHttpClient(client), elastic7.SetSniff(false))
 	} else if conf.insecure || conf.cacertFile != "" {
 		opts = append(opts, elastic7.SetHttpClient(tlsHttpClient(conf, map[string]string{})), elastic7.SetSniff(false))
 	} else if conf.token != "" {
@@ -423,10 +431,18 @@ func getClient(conf *ProviderConf) (interface{}, error) {
 
 		if m := awsUrlRegexp.FindStringSubmatch(conf.parsedUrl.Hostname()); m != nil && conf.signAWSRequests {
 			log.Printf("[INFO] Using AWS: %+v", m[1])
-			opts = append(opts, elastic6.SetHttpClient(awsHttpClient(m[1], conf, map[string]string{})), elastic6.SetSniff(false))
+			client, err := awsHttpClient(m[1], conf, map[string]string{})
+			if err != nil {
+				return nil, err
+			}
+			opts = append(opts, elastic6.SetHttpClient(client), elastic6.SetSniff(false))
 		} else if awsRegion := conf.awsRegion; conf.awsRegion != "" && conf.signAWSRequests {
 			log.Printf("[INFO] Using AWS: %+v", conf.awsRegion)
-			opts = append(opts, elastic6.SetHttpClient(awsHttpClient(awsRegion, conf, map[string]string{})), elastic6.SetSniff(false))
+			client, err := awsHttpClient(awsRegion, conf, map[string]string{})
+			if err != nil {
+				return nil, err
+			}
+			opts = append(opts, elastic6.SetHttpClient(client), elastic6.SetSniff(false))
 		} else if conf.insecure || conf.cacertFile != "" {
 			opts = append(opts, elastic6.SetHttpClient(tlsHttpClient(conf, map[string]string{})), elastic6.SetSniff(false))
 		} else if conf.token != "" {
@@ -501,10 +517,18 @@ func getKibanaClient(conf *ProviderConf) (interface{}, error) {
 
 		if m := awsUrlRegexp.FindStringSubmatch(conf.parsedUrl.Hostname()); m != nil && conf.signAWSRequests {
 			log.Printf("[INFO] Using AWS: %+v", m[1])
-			opts = append(opts, elastic7.SetHttpClient(awsHttpClient(m[1], conf, headers)), elastic7.SetSniff(false))
+			client, err := awsHttpClient(m[1], conf, headers)
+			if err != nil {
+				return nil, err
+			}
+			opts = append(opts, elastic7.SetHttpClient(client), elastic7.SetSniff(false))
 		} else if awsRegion := conf.awsRegion; conf.awsRegion != "" && conf.signAWSRequests {
 			log.Printf("[INFO] Using AWS: %+v", awsRegion)
-			opts = append(opts, elastic7.SetHttpClient(awsHttpClient(awsRegion, conf, headers)), elastic7.SetSniff(false))
+			client, err := awsHttpClient(awsRegion, conf, headers)
+			if err != nil {
+				return nil, err
+			}
+			opts = append(opts, elastic7.SetHttpClient(client), elastic7.SetSniff(false))
 		} else if conf.insecure || conf.cacertFile != "" {
 			opts = append(opts, elastic7.SetHttpClient(tlsHttpClient(conf, headers)))
 		} else if conf.token != "" {
@@ -589,18 +613,18 @@ func awsSession(region string, conf *ProviderConf) *awssession.Session {
 	return awssession.Must(awssession.NewSessionWithOptions(sessOpts))
 }
 
-func awsHttpClient(region string, conf *ProviderConf, headers map[string]string) *http.Client {
+func awsHttpClient(region string, conf *ProviderConf, headers map[string]string) (*http.Client, error) {
 	session := awsSession(region, conf)
 	// Call Get() to ensure concurrency safe retrieval of credentials. Since the
 	// client is created in many go routines, this synchronizes it.
 	_, err := session.Config.Credentials.Get()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	signer := awssigv4.NewSigner(session.Config.Credentials)
 	client, err := aws_signing_client.New(signer, session.Config.HTTPClient, conf.awsSig4Service, region)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	rt := WithHeader(client.Transport)
@@ -610,7 +634,7 @@ func awsHttpClient(region string, conf *ProviderConf, headers map[string]string)
 	}
 	client.Transport = rt
 
-	return client
+	return client, nil
 }
 
 func tokenHttpClient(conf *ProviderConf, headers map[string]string) *http.Client {
