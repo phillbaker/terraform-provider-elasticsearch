@@ -274,6 +274,19 @@ resource "elasticsearch_index" "test" {
   depends_on = [elasticsearch_index_template.test]
 }
 `
+
+	testAccElasticsearchIndexWithSimilarityConfig = `
+resource "elasticsearch_index" "test_date_math" {
+  name = "terraform-test-update-similarity-module"
+  number_of_shards   = 1
+  number_of_replicas = 1
+  index_similarity_default = jsonencode({
+    type: "BM25",
+    b: 0.25,
+    k1: 1.2
+  })
+}
+`
 )
 
 func TestAccElasticsearchIndex(t *testing.T) {

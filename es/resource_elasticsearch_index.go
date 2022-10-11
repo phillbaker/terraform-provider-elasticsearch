@@ -25,6 +25,7 @@ var (
 		"shard.check_on_startup",
 		"sort.field",
 		"sort.order",
+		"index.similarity.default",
 	}
 	dynamicsSettingsKeys = []string{
 		"number_of_replicas",
@@ -140,6 +141,13 @@ var (
 			Description: "The direction to sort shards in. Accepts `asc`, `desc`.",
 			ForceNew:    true,
 			Optional:    true,
+		},
+		"index_similarity_default": {
+			Type:         schema.TypeString,
+			Description:  "A JSON string describing the default index similarity config.",
+			Optional:     true,
+			ForceNew:     true, // To update index similarity config, the index must be closed, updated, and then reopened; we can't handle that here.
+			ValidateFunc: validation.StringIsJSON,
 		},
 		// Dynamic settings that can be changed at runtime
 		"number_of_replicas": {
