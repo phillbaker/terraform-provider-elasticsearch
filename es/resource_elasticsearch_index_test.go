@@ -312,7 +312,7 @@ func TestAccElasticsearchIndex(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkElasticsearchIndexUpdated("elasticsearch_index.test"),
 				),
-			}
+			},
 		},
 	})
 }
