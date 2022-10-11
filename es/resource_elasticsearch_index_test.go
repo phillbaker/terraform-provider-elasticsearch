@@ -276,7 +276,7 @@ resource "elasticsearch_index" "test" {
 `
 
 	testAccElasticsearchIndexWithSimilarityConfig = `
-resource "elasticsearch_index" "test_date_math" {
+resource "elasticsearch_index" "test_similarity_config" {
   name = "terraform-test-update-similarity-module"
   number_of_shards   = 1
   number_of_replicas = 1
@@ -312,7 +312,7 @@ func TestAccElasticsearchIndex(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkElasticsearchIndexUpdated("elasticsearch_index.test"),
 				),
-			},
+			}
 		},
 	})
 }
@@ -381,6 +381,22 @@ func TestAccElasticsearchIndex_dateMath(t *testing.T) {
 				Config: testAccElasticsearchIndexDateMath,
 				Check: resource.ComposeTestCheckFunc(
 					checkElasticsearchIndexExists("elasticsearch_index.test_date_math"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccElasticsearchIndex_similarityConfig(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: checkElasticsearchIndexDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccElasticsearchIndexWithSimilarityConfig,
+				Check: resource.ComposeTestCheckFunc(
+					checkElasticsearchIndexExists("elasticsearch_index.test_similarity_config"),
 				),
 			},
 		},
