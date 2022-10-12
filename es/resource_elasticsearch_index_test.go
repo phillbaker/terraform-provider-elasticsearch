@@ -277,13 +277,13 @@ resource "elasticsearch_index" "test" {
 
 	testAccElasticsearchIndexWithSimilarityConfig = `
 resource "elasticsearch_index" "test_similarity_config" {
-  name = "terraform-test-update-similarity-module"
+  name               = "terraform-test-update-similarity-module"
   number_of_shards   = 1
   number_of_replicas = 1
   index_similarity_default = jsonencode({
-    type: "BM25",
-    b: 0.25,
-    k1: 1.2,
+    type : "BM25",
+    b : 0.25,
+    k1 : 1.2
   })
 }
 `
