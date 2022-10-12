@@ -281,9 +281,9 @@ resource "elasticsearch_index" "test_similarity_config" {
   number_of_shards   = 1
   number_of_replicas = 1
   index_similarity_default = jsonencode({
-    type : "BM25",
-    b : 0.25,
-    k1 : 1.2
+    "type" : "BM25",
+    "b" : 0.25,
+	"k1" : 1.2
   })
 }
 `
@@ -389,9 +389,9 @@ func TestAccElasticsearchIndex_dateMath(t *testing.T) {
 
 func TestAccElasticsearchIndex_similarityConfig(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: checkElasticsearchIndexDestroy,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		//CheckDestroy: checkElasticsearchIndexDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccElasticsearchIndexWithSimilarityConfig,

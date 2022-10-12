@@ -506,6 +506,17 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 		body["mappings"] = mappings
 	}
 
+	// Decode index.similarity.default JSON
+	if defaultIndexSimilarityJSON, ok := d.GetOk("index_similarity_default"); ok {
+		var defaultIndexSimilarity map[string]interface{}
+		bytes := []byte(defaultIndexSimilarityJSON.(string))
+		err = json.Unmarshal(bytes, &defaultIndexSimilarity)
+		if err != nil {
+			return fmt.Errorf("fail to unmarshal: %v", err)
+		}
+		settings["index.similarity.default"] = defaultIndexSimilarity
+	}
+
 	// if date math is used, we need to pass the resolved name along to the read
 	// so we can pull the right result from the response
 	var resolvedName string
