@@ -283,7 +283,7 @@ resource "elasticsearch_index" "test_similarity_config" {
   index_similarity_default = jsonencode({
     type: "BM25",
     b: 0.25,
-    k1: 1.2
+    k1: 1.2,
   })
 }
 `
