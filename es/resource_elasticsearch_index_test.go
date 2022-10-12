@@ -389,9 +389,9 @@ func TestAccElasticsearchIndex_dateMath(t *testing.T) {
 
 func TestAccElasticsearchIndex_similarityConfig(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		//CheckDestroy: checkElasticsearchIndexDestroy,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: checkElasticsearchIndexDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccElasticsearchIndexWithSimilarityConfig,
