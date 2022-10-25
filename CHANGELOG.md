@@ -6,6 +6,12 @@
 
 ### Fixed
 
+
+## [2.0.6] - 2022-10-25
+### Added
+* [index] Add similarity module config in index resource (#321)
+
+
 ## [2.0.5] - 2022-10-03
 ### Added
 * [index] add ability to configure char_filter on an index (#314)

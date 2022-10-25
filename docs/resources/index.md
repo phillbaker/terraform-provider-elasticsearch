@@ -81,6 +81,7 @@ EOF
 - **max_script_fields** (String) The maximum number of `script_fields` that are allowed in a query. A stringified number.
 - **max_shingle_diff** (String) The maximum allowed difference between max_shingle_size and min_shingle_size for ShingleTokenFilter. A stringified number.
 - **max_terms_count** (String) The maximum number of terms that can be used in Terms Query. A stringified number.
+- **index_similarity_default** (String) A JSON string describing the default index similarity config.
 - **number_of_replicas** (String) Number of shard replicas. A stringified number.
 - **number_of_routing_shards** (String) Value used with number_of_shards to route documents to a primary shard. A stringified number. This can be set only on creation.
 - **number_of_shards** (String) Number of shards for the index. This can be set only on creation.
