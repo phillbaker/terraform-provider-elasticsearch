@@ -7,6 +7,19 @@
 ### Fixed
 
 
+## [2.0.6] - 2022-10-25
+### Added
+* [index] Add similarity module config in index resource (#321)
+
+
+## [2.0.5] - 2022-10-03
+### Added
+* [index] add ability to configure char_filter on an index (#314)
+
+### Fixed
+* [provider] Return Errors from AWS HTTP Client fixing "Plugin did not respond" (#251)
+
+
 ## [2.0.4] - 2022-08-08
 ### Changed
 * [ci] Use go1.18 to test and build

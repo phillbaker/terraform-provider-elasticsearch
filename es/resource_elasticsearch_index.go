@@ -25,6 +25,7 @@ var (
 		"shard.check_on_startup",
 		"sort.field",
 		"sort.order",
+		"index.similarity.default",
 	}
 	dynamicsSettingsKeys = []string{
 		"number_of_replicas",
@@ -140,6 +141,13 @@ var (
 			Description: "The direction to sort shards in. Accepts `asc`, `desc`.",
 			ForceNew:    true,
 			Optional:    true,
+		},
+		"index_similarity_default": {
+			Type:         schema.TypeString,
+			Description:  "A JSON string describing the default index similarity config.",
+			Optional:     true,
+			ForceNew:     true, // To update index similarity config, the index must be closed, updated, and then reopened; we can't handle that here.
+			ValidateFunc: validation.StringIsJSON,
 		},
 		// Dynamic settings that can be changed at runtime
 		"number_of_replicas": {
@@ -380,6 +388,13 @@ var (
 			ForceNew:     true, // To add a filter, the index must be closed, updated, and then reopened; we can't handle that here.
 			ValidateFunc: validation.StringIsJSON,
 		},
+		"analysis_char_filter": {
+			Type:         schema.TypeString,
+			Description:  "A JSON string describing the char_filters applied to the index.",
+			Optional:     true,
+			ForceNew:     true, // To add a char_filters, the index must be closed, updated, and then reopened; we can't handle that here.
+			ValidateFunc: validation.StringIsJSON,
+		},
 		"analysis_normalizer": {
 			Type:         schema.TypeString,
 			Description:  "A JSON string describing the normalizers applied to the index.",
@@ -462,6 +477,15 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 		}
 		analysis["filter"] = filter
 	}
+	if filterJSON, ok := d.GetOk("analysis_char_filter"); ok {
+		var filter map[string]interface{}
+		bytes := []byte(filterJSON.(string))
+		err = json.Unmarshal(bytes, &filter)
+		if err != nil {
+			return fmt.Errorf("fail to unmarshal: %v", err)
+		}
+		analysis["char_filter"] = filter
+	}
 	if normalizerJSON, ok := d.GetOk("analysis_normalizer"); ok {
 		var normalizer map[string]interface{}
 		bytes := []byte(normalizerJSON.(string))
@@ -480,6 +504,17 @@ func resourceElasticsearchIndexCreate(d *schema.ResourceData, meta interface{}) 
 			return fmt.Errorf("fail to unmarshal: %v", err)
 		}
 		body["mappings"] = mappings
+	}
+
+	// Decode index.similarity.default JSON
+	if defaultIndexSimilarityJSON, ok := d.GetOk("index_similarity_default"); ok {
+		var defaultIndexSimilarity map[string]interface{}
+		bytes := []byte(defaultIndexSimilarityJSON.(string))
+		err = json.Unmarshal(bytes, &defaultIndexSimilarity)
+		if err != nil {
+			return fmt.Errorf("fail to unmarshal: %v", err)
+		}
+		settings["index.similarity.default"] = defaultIndexSimilarity
 	}
 
 	// if date math is used, we need to pass the resolved name along to the read

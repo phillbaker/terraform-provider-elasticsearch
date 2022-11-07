@@ -80,6 +80,12 @@ resource "elasticsearch_index" "test" {
       output_unigrams  = false
     }
   })
+  analysis_char_filter = jsonencode({
+    my_char_filter_apostrophe = {
+      type     = "mapping"
+      mappings = ["'=>"]
+    }
+  })
   analysis_normalizer = jsonencode({
     my_normalizer = {
       type   = "custom"
@@ -268,6 +274,19 @@ resource "elasticsearch_index" "test" {
   depends_on = [elasticsearch_index_template.test]
 }
 `
+
+	testAccElasticsearchIndexWithSimilarityConfig = `
+resource "elasticsearch_index" "test_similarity_config" {
+  name               = "terraform-test-update-similarity-module"
+  number_of_shards   = 1
+  number_of_replicas = 1
+  index_similarity_default = jsonencode({
+    "type" : "BM25",
+    "b" : 0.25,
+    "k1" : 1.2
+  })
+}
+`
 )
 
 func TestAccElasticsearchIndex(t *testing.T) {
@@ -362,6 +381,22 @@ func TestAccElasticsearchIndex_dateMath(t *testing.T) {
 				Config: testAccElasticsearchIndexDateMath,
 				Check: resource.ComposeTestCheckFunc(
 					checkElasticsearchIndexExists("elasticsearch_index.test_date_math"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccElasticsearchIndex_similarityConfig(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: checkElasticsearchIndexDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccElasticsearchIndexWithSimilarityConfig,
+				Check: resource.ComposeTestCheckFunc(
+					checkElasticsearchIndexExists("elasticsearch_index.test_similarity_config"),
 				),
 			},
 		},
