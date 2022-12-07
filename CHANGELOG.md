@@ -6,6 +6,10 @@
 
 ### Fixed
 
+## [2.0.7] - 2022-12-06
+### Changed
+* Fix id normalization for opensearch 1.1+
+
 
 ## [2.0.6] - 2022-10-25
 ### Added
