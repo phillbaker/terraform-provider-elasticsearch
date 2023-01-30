@@ -5,6 +5,7 @@
 ### Added
 
 ### Fixed
+* [opensearch role] Possible nil pointer on not setting tenant permission
 
 ## [2.0.7] - 2022-12-06
 ### Changed
