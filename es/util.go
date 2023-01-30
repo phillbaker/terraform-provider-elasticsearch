@@ -600,6 +600,10 @@ func indexPermissionsHash(v interface{}) int {
 }
 
 func tenantPermissionsHash(v interface{}) int {
+	if v == nil {
+		return hashcode("")
+	}
+
 	var buf bytes.Buffer
 	m := v.(map[string]interface{})
 
