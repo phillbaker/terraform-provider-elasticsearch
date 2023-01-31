@@ -63,6 +63,7 @@ The following arguments are supported:
 * `username` (Optional) - Username to use to connect to elasticsearch using basic auth. Defaults to `ELASTICSEARCH_USERNAME` from the environment
 * `password` (Optional) - Password to use to connect to elasticsearch using basic auth. Defaults to `ELASTICSEARCH_PASSWORD` from the environment
 * `aws_assume_role_arn` (Optional) - ARN of role to assume when using AWS Elasticsearch Service domains.
+* `aws_assume_role_session_name` - AWS IAM session name to use when assuming a role.
 * `aws_access_key` (Optional) - The access key for use with AWS Elasticsearch Service domains. It can also be sourced from the `AWS_ACCESS_KEY_ID` environment variable.
 * `aws_secret_key` (Optional) - The secret key for use with AWS Elasticsearch Service domains. It can also be sourced from the `AWS_SECRET_ACCESS_KEY` environment variable.
 * `aws_token` (Optional) - The session token for use with AWS Elasticsearch Service domains. It can also be sourced from the `AWS_SESSION_TOKEN` environment variable.
