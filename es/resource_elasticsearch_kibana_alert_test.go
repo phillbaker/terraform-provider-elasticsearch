@@ -55,6 +55,7 @@ func TestAccElasticsearchKibanaAlert(t *testing.T) {
 
 	testConfig := testAccElasticsearchKibanaAlertV77(defaultActionID)
 	testParmsConfig := testAccElasticsearchKibanaAlertParamsJSONV77
+	testActionParmsConfig := testAccElasticsearchKibanaAlertJsonV77(defaultActionID)
 	elasticVersion, err := resourceElasticsearchKibanaGetVersion(meta)
 	if err != nil {
 		t.Skipf("err: %s", err)
@@ -67,6 +68,7 @@ func TestAccElasticsearchKibanaAlert(t *testing.T) {
 	if elasticVersion.GreaterThanOrEqual(versionV711) {
 		testConfig = testAccElasticsearchKibanaAlertV711
 		testParmsConfig = testAccElasticsearchKibanaAlertParamsJSONV711
+		testActionParmsConfig = testAccElasticsearchKibanaAlertJsonV77(defaultActionID)
 	}
 
 	log.Printf("[INFO] TestAccElasticsearchKibanaAlert %+v", elasticVersion)
@@ -90,6 +92,12 @@ func TestAccElasticsearchKibanaAlert(t *testing.T) {
 				Config: testParmsConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchKibanaAlertExists("elasticsearch_kibana_alert.test_params_json"),
+				),
+			},
+			{
+				Config: testActionParmsConfig,
+				Check: resource.ComposeTestCheckFunc(
+					testCheckElasticsearchKibanaAlertExists("elasticsearch_kibana_alert.test_action_json"),
 				),
 			},
 		},
@@ -281,6 +289,41 @@ resource "elasticsearch_kibana_alert" "test" {
       level   = "info"
       message = "alert '{{alertName}}' is active for group '{{context.group}}':\n\n- Value: {{context.value}}\n- Conditions Met: {{context.conditions}} over {{params.timeWindowSize}}{{params.timeWindowUnit}}\n- Timestamp: {{context.date}}"
     }
+  }
+}
+`, actionID)
+}
+
+func testAccElasticsearchKibanaAlertJsonV77(actionID string) string {
+	return fmt.Sprintf(`
+resource "elasticsearch_kibana_alert" "test_action_json" {
+  name = "terraform-alert"
+  schedule {
+    interval = "1m"
+  }
+  conditions {
+    aggregation_type     = "avg"
+    term_size            = 6
+    threshold_comparator = ">"
+    time_window_size     = 5
+    time_window_unit     = "m"
+    group_by             = "top"
+    threshold            = [1000]
+    index                = [".test-index"]
+    time_field           = "@timestamp"
+    aggregation_field    = "sheet.version"
+    term_field           = "name.keyword"
+  }
+  actions {
+    id             = "%s"
+    action_type_id = ".index"
+    group          = "threshold met"
+	params_json = <<EOF
+  { 
+    "level" : "info",
+    "message" : "alert '{{alertName}}' is active for group '{{context.group}}':\n\n- Value: {{context.value}}\n- Conditions Met: {{context.conditions}} over {{params.timeWindowSize}}{{params.timeWindowUnit}}\n- Timestamp: {{context.date}}"
+  }
+    EOF
   }
 }
 `, actionID)
