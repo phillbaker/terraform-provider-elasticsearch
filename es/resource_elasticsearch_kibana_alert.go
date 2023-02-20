@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/olivere/elastic/uritemplates"
 
@@ -152,7 +153,7 @@ func resourceElasticsearchKibanaAlert() *schema.Resource {
 				DiffSuppressFunc: suppressEquivalentJson,
 			},
 			"actions": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Actions are invocations of Kibana services or integrations with third-party systems, that run as background tasks on the Kibana server when alert conditions are met.",
 				Elem: &schema.Resource{
@@ -179,12 +180,20 @@ func resourceElasticsearchKibanaAlert() *schema.Resource {
 							Description: "Key value pairs passed to the action executor, e.g. a Mustache formatted `message`.",
 						},
 						"params_json": {
-							Type:             schema.TypeString,
-							Optional:         true,
-							Default:          "",
-							ValidateFunc:     validation.StringIsJSON,
-							Description:      "JSON body of actions `params`. Either `params_json` or `params` must be specified.",
-							DiffSuppressFunc: suppressEquivalentJson,
+							Type:         schema.TypeString,
+							Optional:     true,
+							Default:      "",
+							ValidateFunc: validation.StringIsJSON,
+							Description:  "JSON body of actions `params`. Either `params_json` or `params` must be specified.",
+							StateFunc: func(v interface{}) string {
+								json, _ := structure.NormalizeJsonString(v)
+								return json
+							},
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								newJson, _ := structure.NormalizeJsonString(new)
+								oldJson, _ := structure.NormalizeJsonString(old)
+								return newJson == oldJson
+							},
 						},
 					},
 				},
@@ -269,7 +278,8 @@ func resourceElasticsearchKibanaAlertRead(d *schema.ResourceData, meta interface
 	} else {
 		ds.set("conditions", flattenKibanaAlertConditions(alert.Params))
 	}
-	actions, err := flattenKibanaAlertActions(alert.Actions, d.Get("actions").(*schema.Set).List())
+
+	actions, err := flattenKibanaAlertActions(alert.Actions, d.Get("actions").([]interface{}))
 	if err != nil {
 		return err
 	}
@@ -331,7 +341,7 @@ func resourceElasticsearchPostKibanaAlert(d *schema.ResourceData, meta interface
 		scheduleEntry := schedule[0].(map[string]interface{})
 		alertSchedule.Interval = scheduleEntry["interval"].(string)
 	}
-	actions, err := expandKibanaActionsList(d.Get("actions").(*schema.Set).List())
+	actions, err := expandKibanaActionsList(d.Get("actions").([]interface{}))
 	if err != nil {
 		return "", err
 	}
@@ -408,10 +418,10 @@ func expandKibanaActionsList(resourcesArray []interface{}) ([]kibana.AlertAction
 	return actions, nil
 }
 
-func flattenKibanaAlertActions(actions []kibana.AlertAction, actionsSchema []interface{}) ([]map[string]interface{}, error) {
-	result := make([]map[string]interface{}, 0, len(actions))
+func flattenKibanaAlertActions(actions []kibana.AlertAction, actionsSchema []interface{}) ([]interface{}, error) {
+	result := []interface{}{}
 	for index, a := range actions {
-		m := make(map[string]interface{})
+		m := map[string]interface{}{}
 		m["id"] = a.ID
 		m["group"] = a.Group
 		m["action_type_id"] = a.ActionTypeId
