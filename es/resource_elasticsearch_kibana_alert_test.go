@@ -298,6 +298,7 @@ func testAccElasticsearchKibanaAlertJsonV77(actionID string) string {
 	return fmt.Sprintf(`
 resource "elasticsearch_kibana_alert" "test_action_json" {
   name = "terraform-alert"
+  notify_when   = "onActiveAlert"
   schedule {
     interval = "1m"
   }
@@ -319,7 +320,7 @@ resource "elasticsearch_kibana_alert" "test_action_json" {
     action_type_id = ".index"
     group          = "threshold met"
 	params_json = <<EOF
-  { 
+  {
     "level" : "info",
     "message" : "alert '{{alertName}}' is active for group '{{context.group}}':\n\n- Value: {{context.value}}\n- Conditions Met: {{context.conditions}} over {{params.timeWindowSize}}{{params.timeWindowUnit}}\n- Timestamp: {{context.date}}"
   }
