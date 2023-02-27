@@ -419,7 +419,7 @@ func resourceElasticsearchIndex() *schema.Resource {
 		Update:      resourceElasticsearchIndexUpdate,
 		Delete:      resourceElasticsearchIndexDelete,
 		Schema:      configSchema,
-                CustomizeDiff: verifyIndexMappingUpdates,
+		CustomizeDiff: verifyIndexMappingUpdates,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -671,91 +671,91 @@ func allowIndexDestroy(indexName string, d *schema.ResourceData, meta interface{
 }
 
 func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) error {
-  var err error
-  settings := make(map[string]interface{})
-  for _, key := range settingsKeys {
-    schemaName := strings.Replace(key, ".", "_", -1)
-    if d.HasChange(schemaName) {
-      settings[key] = d.Get(schemaName)
-    }
-  }
+	var err error
+	settings := make(map[string]interface{})
+	for _, key := range settingsKeys {
+		schemaName := strings.Replace(key, ".", "_", -1)
+		if d.HasChange(schemaName) {
+			settings[key] = d.Get(schemaName)
+		}
+	}
 
-  if len(settings) != 0 {
-    err = updateIndexSettings(d, meta, settings)
-  }
-  if err != nil {
-    return err
-  }
+	if len(settings) != 0 {
+		err = updateIndexSettings(d, meta, settings)
+	}
+	if err != nil {
+		return err
+	}
 
-  mappings := d.Get("mappings")
-  if err = updateIndexMappings(d, meta, mappings.(string)); err != nil {
-    return err
-  }
+	mappings := d.Get("mappings")
+	if err = updateIndexMappings(d, meta, mappings.(string)); err != nil {
+		return err
+	}
 
-  return resourceElasticsearchIndexRead(d, meta.(*ProviderConf))
+	return resourceElasticsearchIndexRead(d, meta.(*ProviderConf))
 }
 
 func updateIndexSettings(d *schema.ResourceData, meta interface{}, settings map[string]interface{}) error {
-  body := map[string]interface{}{
-    // Note you do not have to explicitly specify the `index` section inside
-    // the `settings` section
-    "settings": settings,
-  }
+	body := map[string]interface{}{
+		// Note you do not have to explicitly specify the `index` section inside
+		// the `settings` section
+		"settings": settings,
+	}
 
-  var (
-    name = d.Id()
-    ctx  = context.Background()
-    err  error
-  )
+	var (
+		name = d.Id()
+		ctx  = context.Background()
+		err  error
+	)
 
-  if alias, ok := d.GetOk("rollover_alias"); ok {
-    name = getWriteIndexByAlias(alias.(string), d, meta)
-  }
+	if alias, ok := d.GetOk("rollover_alias"); ok {
+		name = getWriteIndexByAlias(alias.(string), d, meta)
+	}
 
-  esClient, err := getClient(meta.(*ProviderConf))
-  if err != nil {
-    return err
-  }
-  switch client := esClient.(type) {
-  case *elastic7.Client:
-  _, err = client.IndexPutSettings(name).BodyJson(body).Do(ctx)
-  case *elastic6.Client:
-  _, err = client.IndexPutSettings(name).BodyJson(body).Do(ctx)
-  default:
-    return errors.New("Elasticsearch version not supported")
-}
-  return err
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
+	case *elastic7.Client:
+		_, err = client.IndexPutSettings(name).BodyJson(body).Do(ctx)
+	case *elastic6.Client:
+		_, err = client.IndexPutSettings(name).BodyJson(body).Do(ctx)
+	default:
+		return errors.New("Elasticsearch version not supported")
+	}
+	return err
 }
 
 func updateIndexMappings(d *schema.ResourceData, meta interface{}, mapping string) error {
-  var (
-    name = d.Id()
-    ctx  = context.Background()
-    err  error
-  )
-  esClient, err := getClient(meta.(*ProviderConf))
-  if err != nil {
-    return err
-  }
-  switch client := esClient.(type) {
-  case *elastic7.Client:
-  _, err = client.PutMapping().Index(name).BodyString(mapping).Do(ctx)
-  case *elastic6.Client:
-  _, err = client.PutMapping().Index(name).BodyString(mapping).Do(ctx)
-  default:
-    return errors.New("Elasticsearch version not supported")
+	var (
+		name = d.Id()
+		ctx  = context.Background()
+		err  error
+	)
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
+	case *elastic7.Client:
+		_, err = client.PutMapping().Index(name).BodyString(mapping).Do(ctx)
+	case *elastic6.Client:
+		_, err = client.PutMapping().Index(name).BodyString(mapping).Do(ctx)
+	default:
+		return errors.New("Elasticsearch version not supported")
 }
 
-  return err
+	return err
 }
 
 func verifyIndexMappingUpdates(ctx context.Context, resourceDiff *schema.ResourceDiff, meta interface{}) error {
-  oldMapping, newMapping := resourceDiff.GetChange("mappings")
-  difference, _ := jsondiff.Compare([]byte(newMapping.(string)), []byte(oldMapping.(string)), &jsondiff.Options{})
-  if difference == jsondiff.NoMatch {
-    return resourceDiff.ForceNew("mappings")
-  }
-  return nil
+	oldMapping, newMapping := resourceDiff.GetChange("mappings")
+	difference, _ := jsondiff.Compare([]byte(newMapping.(string)), []byte(oldMapping.(string)), &jsondiff.Options{})
+	if difference == jsondiff.NoMatch {
+		return resourceDiff.ForceNew("mappings")
+	}
+	return nil
 }
 
 func getWriteIndexByAlias(alias string, d *schema.ResourceData, meta interface{}) string {

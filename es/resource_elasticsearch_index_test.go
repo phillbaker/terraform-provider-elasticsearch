@@ -500,95 +500,95 @@ func TestAccElasticsearchIndex_doctype(t *testing.T) {
 }
 
 func TestAccElasticsearchIndex_mapping(t *testing.T) {
-  g := NewGomegaWithT(t)
-  provider := Provider()
-  diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
-  if diags.HasError() {
-    t.Skipf("err: %#v", diags)
-  }
+    g := NewGomegaWithT(t)
+    provider := Provider()
+    diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
+    if diags.HasError() {
+	t.Skipf("err: %#v", diags)
+    }
 
-  var initialUUID string
-  var err error
+    var initialUUID string
+    var err error
 
-  resource.Test(t, resource.TestCase{
-    PreCheck:     func() { testAccPreCheck(t) },
-    Providers:    testAccProviders,
-    CheckDestroy: checkElasticsearchIndexDestroy,
-    Steps: []resource.TestStep{
-      {
-        Config: testAccElasticsearchBasicMapping,
-        Check: resource.ComposeTestCheckFunc(
-          checkElasticsearchIndexMapping("terraform-test", func(s *terraform.State, mapping map[string]interface{}) error {
-            initialUUID, err = getElasticsearchIndexUUID("elasticsearch_index.test_mapping", s)
-            if err != nil {
-              return fmt.Errorf("Failed to get index uuid: %w", err)
-            }
-            g.Expect(mapping).To(MatchAllKeys(Keys{
-              "terraform-test": MatchAllKeys(Keys{
-                "mappings": MatchAllKeys(Keys{
-                  "properties": MatchAllKeys(Keys{
-                    "age": MatchAllKeys(Keys{
-                      "type": Equal("integer"),
-                    }),
-                    "name": MatchAllKeys(Keys{
-                      "type": Equal("text"),
-                    }),
-                  }),
-                }),
-              }),
-            }))
-            return nil
-          }),
-        ),
-      },
-      {
-        Config: testAccElasticsearchAddedMapping,
-        Check: resource.ComposeTestCheckFunc(
-          checkElasticsearchIndexNotRecreated("elasticsearch_index.test_mapping", &initialUUID),
-          checkElasticsearchIndexMapping("terraform-test", func(s *terraform.State, mapping map[string]interface{}) error {
-            g.Expect(mapping).To(MatchAllKeys(Keys{
-              "terraform-test": MatchAllKeys(Keys{
-                "mappings": MatchAllKeys(Keys{
-                  "properties": MatchAllKeys(Keys{
-                    "age": MatchAllKeys(Keys{
-                      "type": Equal("integer"),
-                    }),
-                    "name": MatchAllKeys(Keys{
-                      "type": Equal("text"),
-                    }),
-                    "surname": MatchAllKeys(Keys{
-                      "type": Equal("text"),
-                    }),
-                  }),
-                }),
-              }),
-            }))
-            return nil
-          }),
-        ),
-      },
-      {
-        Config: testAccElasticsearchRemovedMapping,
-        Check: resource.ComposeTestCheckFunc(
-          checkElasticsearchIndexRecreated("elasticsearch_index.test_mapping", &initialUUID),
-          checkElasticsearchIndexMapping("terraform-test", func(s *terraform.State, mapping map[string]interface{}) error {
-            g.Expect(mapping).To(MatchAllKeys(Keys{
-              "terraform-test": MatchAllKeys(Keys{
-                "mappings": MatchAllKeys(Keys{
-                  "properties": MatchAllKeys(Keys{
-                    "name": MatchAllKeys(Keys{
-                      "type": Equal("text"),
-                    }),
-                  }),
-                }),
-              }),
-            }))
-            return nil
-          }),
-        ),
-      },
-    },
-  })
+    resource.Test(t, resource.TestCase{
+	PreCheck:     func() { testAccPreCheck(t) },
+	Providers:    testAccProviders,
+	CheckDestroy: checkElasticsearchIndexDestroy,
+	Steps: []resource.TestStep{
+	    {
+		Config: testAccElasticsearchBasicMapping,
+		Check: resource.ComposeTestCheckFunc(
+		    checkElasticsearchIndexMapping("terraform-test", func(s *terraform.State, mapping map[string]interface{}) error {
+			initialUUID, err = getElasticsearchIndexUUID("elasticsearch_index.test_mapping", s)
+			if err != nil {
+			    return fmt.Errorf("Failed to get index uuid: %w", err)
+			}
+			g.Expect(mapping).To(MatchAllKeys(Keys{
+			    "terraform-test": MatchAllKeys(Keys{
+				"mappings": MatchAllKeys(Keys{
+				    "properties": MatchAllKeys(Keys{
+					"age": MatchAllKeys(Keys{
+					    "type": Equal("integer"),
+					}),
+					"name": MatchAllKeys(Keys{
+					    "type": Equal("text"),
+					}),
+				    }),
+				}),
+			    }),
+			}))
+			return nil
+		    }),
+		),
+	    },
+	    {
+		Config: testAccElasticsearchAddedMapping,
+		Check: resource.ComposeTestCheckFunc(
+		    checkElasticsearchIndexNotRecreated("elasticsearch_index.test_mapping", &initialUUID),
+		    checkElasticsearchIndexMapping("terraform-test", func(s *terraform.State, mapping map[string]interface{}) error {
+			g.Expect(mapping).To(MatchAllKeys(Keys{
+			    "terraform-test": MatchAllKeys(Keys{
+				"mappings": MatchAllKeys(Keys{
+				    "properties": MatchAllKeys(Keys{
+					"age": MatchAllKeys(Keys{
+					    "type": Equal("integer"),
+					}),
+					"name": MatchAllKeys(Keys{
+					    "type": Equal("text"),
+					}),
+					"surname": MatchAllKeys(Keys{
+					    "type": Equal("text"),
+					}),
+				    }),
+				}),
+			    }),
+			}))
+			return nil
+		    }),
+		),
+	    },
+	    {
+		Config: testAccElasticsearchRemovedMapping,
+		Check: resource.ComposeTestCheckFunc(
+		    checkElasticsearchIndexRecreated("elasticsearch_index.test_mapping", &initialUUID),
+		    checkElasticsearchIndexMapping("terraform-test", func(s *terraform.State, mapping map[string]interface{}) error {
+			g.Expect(mapping).To(MatchAllKeys(Keys{
+			    "terraform-test": MatchAllKeys(Keys{
+				"mappings": MatchAllKeys(Keys{
+				    "properties": MatchAllKeys(Keys{
+					"name": MatchAllKeys(Keys{
+					    "type": Equal("text"),
+					}),
+				    }),
+				}),
+			    }),
+			}))
+			return nil
+		    }),
+		),
+	    },
+	},
+    })
 }
 
 func TestAccElasticsearchIndex_rolloverAliasXpack(t *testing.T) {
@@ -670,41 +670,41 @@ func TestAccElasticsearchIndex_rolloverAliasOpendistro(t *testing.T) {
 }
 
 func getElasticsearchIndex(name string, s *terraform.State) (map[string]interface{}, error) {
-  rs, ok := s.RootModule().Resources[name]
-  if !ok {
-    return nil, fmt.Errorf("not found: %s", name)
-  }
-  if rs.Primary.ID == "" {
-    return nil, fmt.Errorf("index ID not set")
-  }
+	rs, ok := s.RootModule().Resources[name]
+	if !ok {
+		return nil, fmt.Errorf("not found: %s", name)
+	}
+	if rs.Primary.ID == "" {
+		return nil, fmt.Errorf("index ID not set")
+	}
 
-  meta := testAccProvider.Meta()
-  var settings map[string]interface{}
+	meta := testAccProvider.Meta()
+	var settings map[string]interface{}
 
-  var err error
-  esClient, err := getClient(meta.(*ProviderConf))
-  if err != nil {
-    return nil, err
-  }
-  switch client := esClient.(type) {
-  case *elastic7.Client:
-    resp, err := client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
-    if err != nil {
-      return nil, err
-    }
-    settings = resp[rs.Primary.ID].Settings["index"].(map[string]interface{})
+	var err error
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return nil, err
+	}
+	switch client := esClient.(type) {
+	case *elastic7.Client:
+		resp, err := client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
+		if err != nil {
+			return nil, err
+		}
+		settings = resp[rs.Primary.ID].Settings["index"].(map[string]interface{})
 
-  case *elastic6.Client:
-    resp, err := client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
-    if err != nil {
-      return nil, err
-    }
-    settings = resp[rs.Primary.ID].Settings["index"].(map[string]interface{})
+	case *elastic6.Client:
+		resp, err := client.IndexGetSettings(rs.Primary.ID).Do(context.TODO())
+		if err != nil {
+			return nil, err
+		}
+		settings = resp[rs.Primary.ID].Settings["index"].(map[string]interface{})
 
-  default:
-    return nil, errors.New("Elasticsearch version not supported")
-  }
-  return settings, nil
+	default:
+		return nil, errors.New("Elasticsearch version not supported")
+	}
+	return settings, nil
 }
 
 func checkElasticsearchIndexExists(name string) resource.TestCheckFunc {
@@ -715,37 +715,37 @@ func checkElasticsearchIndexExists(name string) resource.TestCheckFunc {
 }
 
 func getElasticsearchIndexUUID(name string, s *terraform.State) (string, error) {
-    index, err := getElasticsearchIndex(name, s)
-    if err != nil {
-      return "", fmt.Errorf("failed to get index %s: %w", name, err)
-    }
-    return index["uuid"].(string), err
+	index, err := getElasticsearchIndex(name, s)
+	if err != nil {
+		return "", fmt.Errorf("failed to get index %s: %w", name, err)
+	}
+	return index["uuid"].(string), err
 }
 
 func checkElasticsearchIndexRecreated(name string, initialIndexUUID *string) resource.TestCheckFunc {
-  return func(s *terraform.State) error {
-    newUUID, err := getElasticsearchIndexUUID(name, s)
-    if err != nil {
-      return fmt.Errorf("failed to get index UUID for %s: %w", name, err)
-    }
-    if newUUID == *initialIndexUUID {
-      return fmt.Errorf("index was not recreated where it was expected to: initial index UUID %s matches post-update index UUID %s", *initialIndexUUID, newUUID)
-    }
-    return nil
-  }
+	return func(s *terraform.State) error {
+		newUUID, err := getElasticsearchIndexUUID(name, s)
+		if err != nil {
+			return fmt.Errorf("failed to get index UUID for %s: %w", name, err)
+		}
+		if newUUID == *initialIndexUUID {
+			return fmt.Errorf("index was not recreated where it was expected to: initial index UUID %s matches post-update index UUID %s", *initialIndexUUID, newUUID)
+		}
+		return nil
+	}
 }
 
 func checkElasticsearchIndexNotRecreated(name string, initialIndexUUID *string) resource.TestCheckFunc {
-  return func(s *terraform.State) error {
-    newUUID, err := getElasticsearchIndexUUID(name, s)
-    if err != nil {
-      return fmt.Errorf("failed to get index UUID for %s: %w", name, err)
-    }
-    if newUUID != *initialIndexUUID {
-      return fmt.Errorf("index was recreated where it was not expected to: initial index UUID %s does not match post-update index UUID %s", *initialIndexUUID, newUUID)
-    }
-    return nil
-  }
+	return func(s *terraform.State) error {
+		newUUID, err := getElasticsearchIndexUUID(name, s)
+		if err != nil {
+			return fmt.Errorf("failed to get index UUID for %s: %w", name, err)
+		}
+		if newUUID != *initialIndexUUID {
+			return fmt.Errorf("index was recreated where it was not expected to: initial index UUID %s does not match post-update index UUID %s", *initialIndexUUID, newUUID)
+		}
+		return nil
+	}
 }
 
 func checkElasticsearchIndexMapping(name string, mappingChecker func(s *terraform.State, mapping map[string]interface{}) error) resource.TestCheckFunc {
@@ -757,25 +757,25 @@ func checkElasticsearchIndexMapping(name string, mappingChecker func(s *terrafor
 		if err != nil {
 			return err
 		}
-                var mapping map[string]interface{}
+		var mapping map[string]interface{}
 		switch client := esClient.(type) {
 		case *elastic7.Client:
 			mapping, err = client.GetMapping().Index(name).Do(context.TODO())
 			if err != nil {
-	                	return fmt.Errorf("failed to find mapping for index %s: %w", name, err)
+				return fmt.Errorf("failed to find mapping for index %s: %w", name, err)
 			}
 
 		case *elastic6.Client:
 			mapping, err = client.GetMapping().Index(name).Do(context.TODO())
 			if err != nil {
-	                	return fmt.Errorf("failed to find mapping for index %s: %w", name, err)
+				return fmt.Errorf("failed to find mapping for index %s: %w", name, err)
 			}
 
 		default:
 			return errors.New("Elasticsearch version not supported")
 		}
 
-                return mappingChecker(s, mapping)
+		return mappingChecker(s, mapping)
 	}
 }
 
