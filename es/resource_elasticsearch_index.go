@@ -419,6 +419,7 @@ func resourceElasticsearchIndex() *schema.Resource {
 		Update:      resourceElasticsearchIndexUpdate,
 		Delete:      resourceElasticsearchIndexDelete,
 		Schema:      configSchema,
+                CustomizeDiff: verifyIndexMappingUpdates,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -679,14 +680,6 @@ func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) 
     }
   }
 
-  o, n := d.GetChange("mappings")
-  difference, _ := jsondiff.Compare([]byte(n.(string)), []byte(o.(string)), &jsondiff.Options{})
-
-  // if we're not changing any settings, no-op this function
-  if len(settings) == 0 && difference == jsondiff.FullMatch {
-    return resourceElasticsearchIndexRead(d, meta)
-  }
-
   if len(settings) != 0 {
     err = updateIndexSettings(d, meta, settings)
   }
@@ -694,10 +687,8 @@ func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) 
     return err
   }
 
-  if difference == jsondiff.SupersetMatch {
-    err = updateIndexMappings(d, meta, n.(string))
-  }
-  if err != nil {
+  mappings := d.Get("mappings")
+  if err = updateIndexMappings(d, meta, mappings.(string)); err != nil {
     return err
   }
 
@@ -756,6 +747,15 @@ func updateIndexMappings(d *schema.ResourceData, meta interface{}, mapping strin
 }
 
   return err
+}
+
+func verifyIndexMappingUpdates(ctx context.Context, resourceDiff *schema.ResourceDiff, meta interface{}) error {
+  oldMapping, newMapping := resourceDiff.GetChange("mappings")
+  difference, _ := jsondiff.Compare([]byte(newMapping.(string)), []byte(oldMapping.(string)), &jsondiff.Options{})
+  if difference == jsondiff.NoMatch {
+    return resourceDiff.ForceNew("mappings")
+  }
+  return nil
 }
 
 func getWriteIndexByAlias(alias string, d *schema.ResourceData, meta interface{}) string {

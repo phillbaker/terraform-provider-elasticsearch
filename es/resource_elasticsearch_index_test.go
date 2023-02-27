@@ -192,6 +192,22 @@ resource "elasticsearch_index" "test_mapping" {
 EOF
 }
 `
+	testAccElasticsearchRemovedMapping = `
+resource "elasticsearch_index" "test_mapping" {
+  name               = "terraform-test"
+  number_of_replicas = "1"
+  include_type_name  = false
+  mappings           = <<EOF
+{
+  "properties": {
+    "name": {
+      "type": "text"
+    }
+  }
+}
+EOF
+}
+`
 	testAccElasticsearchIndexUpdateForceDestroy = `
 resource "elasticsearch_index" "test" {
   name               = "terraform-test"
@@ -541,6 +557,26 @@ func TestAccElasticsearchIndex_mapping(t *testing.T) {
                       "type": Equal("text"),
                     }),
                     "surname": MatchAllKeys(Keys{
+                      "type": Equal("text"),
+                    }),
+                  }),
+                }),
+              }),
+            }))
+            return nil
+          }),
+        ),
+      },
+      {
+        Config: testAccElasticsearchRemovedMapping,
+        Check: resource.ComposeTestCheckFunc(
+          checkElasticsearchIndexRecreated("elasticsearch_index.test_mapping", &initialUUID),
+          checkElasticsearchIndexMapping("terraform-test", func(s *terraform.State, mapping map[string]interface{}) error {
+            g.Expect(mapping).To(MatchAllKeys(Keys{
+              "terraform-test": MatchAllKeys(Keys{
+                "mappings": MatchAllKeys(Keys{
+                  "properties": MatchAllKeys(Keys{
+                    "name": MatchAllKeys(Keys{
                       "type": Equal("text"),
                     }),
                   }),
