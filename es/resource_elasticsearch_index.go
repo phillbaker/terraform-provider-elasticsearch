@@ -687,9 +687,10 @@ func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) 
 		return err
 	}
 
-	mappings := d.Get("mappings")
-	if err = updateIndexMappings(d, meta, mappings.(string)); err != nil {
-		return err
+	if d.HasChange("mappings") {
+		if err = updateIndexMappings(d, meta, d.Get("mappings").(string)); err != nil {
+			return err
+		}
 	}
 
 	return resourceElasticsearchIndexRead(d, meta.(*ProviderConf))
@@ -750,9 +751,12 @@ func updateIndexMappings(d *schema.ResourceData, meta interface{}, mapping strin
 }
 
 func verifyIndexMappingUpdates(ctx context.Context, resourceDiff *schema.ResourceDiff, meta interface{}) error {
+	if !resourceDiff.HasChange("mappings") {
+		return nil
+	}
 	oldMapping, newMapping := resourceDiff.GetChange("mappings")
 	difference, _ := jsondiff.Compare([]byte(newMapping.(string)), []byte(oldMapping.(string)), &jsondiff.Options{})
-	if difference == jsondiff.NoMatch {
+	if difference > jsondiff.SupersetMatch {
 		return resourceDiff.ForceNew("mappings")
 	}
 	return nil

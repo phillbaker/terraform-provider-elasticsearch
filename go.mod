@@ -18,5 +18,6 @@ require (
 	github.com/olivere/elastic v6.2.26+incompatible
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/onsi/gomega v1.27.1 // indirect
+	github.com/spf13/viper v1.7.0 // indirect
 	gopkg.in/olivere/elastic.v6 v6.2.37
 )
