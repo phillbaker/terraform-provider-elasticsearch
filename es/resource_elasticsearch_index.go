@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/nsf/jsondiff"
 
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
@@ -355,7 +356,6 @@ var (
 			Type:         schema.TypeString,
 			Description:  "A JSON string defining how documents in the index, and the fields they contain, are stored and indexed. To avoid the complexities of field mapping updates, updates of this field are not allowed via this provider. See the upstream [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/indices-put-mapping.html#updating-field-mappings) for more details.",
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.StringIsJSON,
 		},
 		"aliases": {
@@ -670,52 +670,92 @@ func allowIndexDestroy(indexName string, d *schema.ResourceData, meta interface{
 }
 
 func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) error {
-	settings := make(map[string]interface{})
-	for _, key := range settingsKeys {
-		schemaName := strings.Replace(key, ".", "_", -1)
-		if d.HasChange(schemaName) {
-			settings[key] = d.Get(schemaName)
-		}
-	}
+  var err error
+  settings := make(map[string]interface{})
+  for _, key := range settingsKeys {
+    schemaName := strings.Replace(key, ".", "_", -1)
+    if d.HasChange(schemaName) {
+      settings[key] = d.Get(schemaName)
+    }
+  }
 
-	// if we're not changing any settings, no-op this function
-	if len(settings) == 0 {
-		return resourceElasticsearchIndexRead(d, meta)
-	}
+  o, n := d.GetChange("mappings")
+  difference, _ := jsondiff.Compare([]byte(n.(string)), []byte(o.(string)), &jsondiff.Options{})
 
-	body := map[string]interface{}{
-		// Note you do not have to explicitly specify the `index` section inside
-		// the `settings` section
-		"settings": settings,
-	}
+  // if we're not changing any settings, no-op this function
+  if len(settings) == 0 && difference == jsondiff.FullMatch {
+    return resourceElasticsearchIndexRead(d, meta)
+  }
 
-	var (
-		name = d.Id()
-		ctx  = context.Background()
-		err  error
-	)
+  if len(settings) != 0 {
+    err = updateIndexSettings(d, meta, settings)
+  }
+  if err != nil {
+    return err
+  }
 
-	if alias, ok := d.GetOk("rollover_alias"); ok {
-		name = getWriteIndexByAlias(alias.(string), d, meta)
-	}
+  if difference == jsondiff.SupersetMatch {
+    err = updateIndexMappings(d, meta, n.(string))
+  }
+  if err != nil {
+    return err
+  }
 
-	esClient, err := getClient(meta.(*ProviderConf))
-	if err != nil {
-		return err
-	}
-	switch client := esClient.(type) {
-	case *elastic7.Client:
-		_, err = client.IndexPutSettings(name).BodyJson(body).Do(ctx)
-	case *elastic6.Client:
-		_, err = client.IndexPutSettings(name).BodyJson(body).Do(ctx)
-	default:
-		return errors.New("Elasticsearch version not supported")
-	}
+  return resourceElasticsearchIndexRead(d, meta.(*ProviderConf))
+}
 
-	if err == nil {
-		return resourceElasticsearchIndexRead(d, meta.(*ProviderConf))
-	}
-	return err
+func updateIndexSettings(d *schema.ResourceData, meta interface{}, settings map[string]interface{}) error {
+  body := map[string]interface{}{
+    // Note you do not have to explicitly specify the `index` section inside
+    // the `settings` section
+    "settings": settings,
+  }
+
+  var (
+    name = d.Id()
+    ctx  = context.Background()
+    err  error
+  )
+
+  if alias, ok := d.GetOk("rollover_alias"); ok {
+    name = getWriteIndexByAlias(alias.(string), d, meta)
+  }
+
+  esClient, err := getClient(meta.(*ProviderConf))
+  if err != nil {
+    return err
+  }
+  switch client := esClient.(type) {
+  case *elastic7.Client:
+  _, err = client.IndexPutSettings(name).BodyJson(body).Do(ctx)
+  case *elastic6.Client:
+  _, err = client.IndexPutSettings(name).BodyJson(body).Do(ctx)
+  default:
+    return errors.New("Elasticsearch version not supported")
+}
+  return err
+}
+
+func updateIndexMappings(d *schema.ResourceData, meta interface{}, mapping string) error {
+  var (
+    name = d.Id()
+    ctx  = context.Background()
+    err  error
+  )
+  esClient, err := getClient(meta.(*ProviderConf))
+  if err != nil {
+    return err
+  }
+  switch client := esClient.(type) {
+  case *elastic7.Client:
+  _, err = client.PutMapping().Index(name).BodyString(mapping).Do(ctx)
+  case *elastic6.Client:
+  _, err = client.PutMapping().Index(name).BodyString(mapping).Do(ctx)
+  default:
+    return errors.New("Elasticsearch version not supported")
+}
+
+  return err
 }
 
 func getWriteIndexByAlias(alias string, d *schema.ResourceData, meta interface{}) string {

@@ -505,9 +505,8 @@ func TestAccElasticsearchIndex_mapping(t *testing.T) {
           checkElasticsearchIndexMapping("terraform-test", func(s *terraform.State, mapping map[string]interface{}) error {
             initialUUID, err = getElasticsearchIndexUUID("elasticsearch_index.test_mapping", s)
             if err != nil {
-              return err
+              return fmt.Errorf("Failed to get index uuid: %w", err)
             }
-            fmt.Println(initialUUID)
             g.Expect(mapping).To(MatchAllKeys(Keys{
               "terraform-test": MatchAllKeys(Keys{
                 "mappings": MatchAllKeys(Keys{
