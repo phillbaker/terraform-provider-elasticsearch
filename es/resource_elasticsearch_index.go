@@ -354,7 +354,7 @@ var (
 		// Other attributes
 		"mappings": {
 			Type:         schema.TypeString,
-			Description:  "A JSON string defining how documents in the index, and the fields they contain, are stored and indexed. To avoid the complexities of field mapping updates, updates of this field are not allowed via this provider. See the upstream [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/indices-put-mapping.html#updating-field-mappings) for more details.",
+			Description:  "A JSON string defining how documents in the index, and the fields they contain, are stored and indexed. Mappings may be updated on an existing index only if adding a new field to an existing mapping. See the upstream [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/indices-put-mapping.html#updating-field-mappings) for more details.",
 			Optional:     true,
 			ValidateFunc: validation.StringIsJSON,
 		},
