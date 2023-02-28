@@ -754,9 +754,19 @@ func verifyIndexMappingUpdates(ctx context.Context, resourceDiff *schema.Resourc
 	if !resourceDiff.HasChange("mappings") {
 		return nil
 	}
+
 	oldMapping, newMapping := resourceDiff.GetChange("mappings")
-	difference, _ := jsondiff.Compare([]byte(newMapping.(string)), []byte(oldMapping.(string)), &jsondiff.Options{})
-	if difference > jsondiff.SupersetMatch {
+	oldMappingStr := oldMapping.(string)
+	if len(oldMappingStr) == 0 {
+		oldMappingStr = "{}"
+	}
+	newMappingStr := newMapping.(string)
+	if len(newMappingStr) == 0 {
+		newMappingStr = "{}"
+	}
+	difference, _ := jsondiff.Compare([]byte(newMappingStr), []byte(oldMappingStr), &jsondiff.Options{})
+	// The new mapping is not a superset of the old mapping, therefore the index requires recreation
+	if difference == jsondiff.NoMatch {
 		return resourceDiff.ForceNew("mappings")
 	}
 	return nil
