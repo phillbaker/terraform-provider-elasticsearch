@@ -413,12 +413,12 @@ var (
 
 func resourceElasticsearchIndex() *schema.Resource {
 	return &schema.Resource{
-		Description: "Provides an Elasticsearch index resource.",
-		Create:      resourceElasticsearchIndexCreate,
-		Read:        resourceElasticsearchIndexRead,
-		Update:      resourceElasticsearchIndexUpdate,
-		Delete:      resourceElasticsearchIndexDelete,
-		Schema:      configSchema,
+		Description:   "Provides an Elasticsearch index resource.",
+		Create:        resourceElasticsearchIndexCreate,
+		Read:          resourceElasticsearchIndexRead,
+		Update:        resourceElasticsearchIndexUpdate,
+		Delete:        resourceElasticsearchIndexDelete,
+		Schema:        configSchema,
 		CustomizeDiff: verifyIndexMappingUpdates,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -745,7 +745,7 @@ func updateIndexMappings(d *schema.ResourceData, meta interface{}, mapping strin
 		_, err = client.PutMapping().Index(name).BodyString(mapping).Do(ctx)
 	default:
 		return errors.New("Elasticsearch version not supported")
-}
+	}
 
 	return err
 }
