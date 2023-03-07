@@ -29,7 +29,6 @@ func resourceElasticsearchKibanaAlert() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
-				ForceNew:    true,
 				Required:    true,
 				Description: "The name of the alert, does not have to be unique, used to identify and find an alert.",
 			},
@@ -43,6 +42,7 @@ func resourceElasticsearchKibanaAlert() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     ".index-threshold",
+				ForceNew:    true,
 				Description: "The ID of the alert type that you want to call when the alert is scheduled to run, defaults to `.index-threshold`.",
 			},
 			"schedule": {
@@ -69,17 +69,20 @@ func resourceElasticsearchKibanaAlert() *schema.Resource {
 			"notify_when": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Default:     "onActiveAlert",
 				Description: "The condition for throttling the notification: `onActionGroupChange`, `onActiveAlert`, or `onThrottleInterval`. Only available in Kibana >= 7.11",
 			},
 			"enabled": {
 				Type:        schema.TypeBool,
 				Default:     true,
+				ForceNew:    true,
 				Optional:    true,
 				Description: "Whether the alert is scheduled for evaluation.",
 			},
 			"consumer": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 				Default:     "alerts",
 				Description: "The name of the application that owns the alert. This name has to match the Kibana Feature name, as that dictates the required RBAC privileges. Defaults to `alerts`.",
 			},
@@ -491,6 +494,67 @@ func flattenKibanaAlertConditions(raw map[string]interface{}) []map[string]inter
 }
 
 func resourceElasticsearchPutKibanaAlert(d *schema.ResourceData, meta interface{}) error {
+	providerConf := meta.(*ProviderConf)
+	client, err := getKibanaClient(providerConf)
+	if err != nil {
+		return fmt.Errorf("error building URL path for alert: %+v", err)
+	}
+
+	path, err := uritemplates.Expand("/api/alerts/alert/{id}", map[string]string{"id": d.Id()})
+	if err != nil {
+		return fmt.Errorf("error building URL path for alert: %+v", err)
+	}
+
+	actions, err := expandKibanaActionsList(d.Get("actions").(*schema.Set).List())
+	if err != nil {
+		return err
+	}
+
+	tags := expandStringList(d.Get("tags").(*schema.Set).List())
+
+	var params map[string]interface{}
+	if conditions, ok := d.GetOk("conditions"); ok {
+		c := conditions.(*schema.Set).List()[0].(map[string]interface{})
+		params = expandKibanaAlertConditions(c)
+	} else if pj, ok := d.GetOk("params_json"); ok {
+		bytes := []byte(pj.(string))
+		err = json.Unmarshal(bytes, &params)
+		if err != nil {
+			return fmt.Errorf("fail to unmarshal: %v", err)
+		}
+	}
+
+	alert := kibana.Alert{
+		Name:       d.Get("name").(string),
+		Tags:       tags,
+		Throttle:   d.Get("throttle").(string),
+		Params:     params,
+		Actions:    actions,
+		NotifyWhen: d.Get("notify_when").(string),
+	}
+	alert.Schedule.Interval = d.Get("schedule.0.interval").(string)
+
+	body, err := json.Marshal(alert)
+	if err != nil {
+		log.Printf("[INFO] kibanaPutAlert: %+v %+v %+v", path, alert, err)
+		return fmt.Errorf("Body Error: %s", err)
+	}
+
+	res, err := client.PerformRequest(context.TODO(), elastic7.PerformRequestOptions{
+		Method: "PUT",
+		Path:   path,
+		Body:   string(body),
+	})
+
+	if err != nil {
+		log.Printf("[INFO] kibanaPutAlert: %+v %+v %+v", path, alert, string(body[:]))
+		return err
+	}
+
+	if err := json.Unmarshal(res.Body, &alert); err != nil {
+		return fmt.Errorf("error unmarshalling alert body: %+v: %+v", err, body)
+	}
+
 	return nil
 }
 
