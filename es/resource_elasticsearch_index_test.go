@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gstruct"
+	"github.com/onsi/gomega"
+	"github.com/onsi/gomega/gstruct"
 
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
@@ -500,7 +500,7 @@ func TestAccElasticsearchIndex_doctype(t *testing.T) {
 }
 
 func TestAccElasticsearchIndex_mapping(t *testing.T) {
-	g := NewGomegaWithT(t)
+	g := gomega.NewGomegaWithT(t)
 	provider := Provider()
 	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
 	if diags.HasError() {
@@ -523,15 +523,15 @@ func TestAccElasticsearchIndex_mapping(t *testing.T) {
 						if err != nil {
 							return fmt.Errorf("Failed to get index uuid: %w", err)
 						}
-						g.Expect(mapping).To(MatchAllKeys(Keys{
-							"terraform-test": MatchAllKeys(Keys{
-								"mappings": MatchAllKeys(Keys{
-									"properties": MatchAllKeys(Keys{
-										"age": MatchAllKeys(Keys{
-											"type": Equal("integer"),
+						g.Expect(mapping).To(gstruct.MatchAllKeys(gstruct.Keys{
+							"terraform-test": gstruct.MatchAllKeys(gstruct.Keys{
+								"mappings": gstruct.MatchAllKeys(gstruct.Keys{
+									"properties": gstruct.MatchAllKeys(gstruct.Keys{
+										"age": gstruct.MatchAllKeys(gstruct.Keys{
+											"type": gomega.Equal("integer"),
 										}),
-										"name": MatchAllKeys(Keys{
-											"type": Equal("text"),
+										"name": gstruct.MatchAllKeys(gstruct.Keys{
+											"type": gomega.Equal("text"),
 										}),
 									}),
 								}),
@@ -546,18 +546,18 @@ func TestAccElasticsearchIndex_mapping(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkElasticsearchIndexNotRecreated("elasticsearch_index.test_mapping", &initialUUID),
 					checkElasticsearchIndexMapping("terraform-test", func(s *terraform.State, mapping map[string]interface{}) error {
-						g.Expect(mapping).To(MatchAllKeys(Keys{
-							"terraform-test": MatchAllKeys(Keys{
-								"mappings": MatchAllKeys(Keys{
-									"properties": MatchAllKeys(Keys{
-										"age": MatchAllKeys(Keys{
-											"type": Equal("integer"),
+						g.Expect(mapping).To(gstruct.MatchAllKeys(gstruct.Keys{
+							"terraform-test": gstruct.MatchAllKeys(gstruct.Keys{
+								"mappings": gstruct.MatchAllKeys(gstruct.Keys{
+									"properties": gstruct.MatchAllKeys(gstruct.Keys{
+										"age": gstruct.MatchAllKeys(gstruct.Keys{
+											"type": gomega.Equal("integer"),
 										}),
-										"name": MatchAllKeys(Keys{
-											"type": Equal("text"),
+										"name": gstruct.MatchAllKeys(gstruct.Keys{
+											"type": gomega.Equal("text"),
 										}),
-										"surname": MatchAllKeys(Keys{
-											"type": Equal("text"),
+										"surname": gstruct.MatchAllKeys(gstruct.Keys{
+											"type": gomega.Equal("text"),
 										}),
 									}),
 								}),
@@ -572,12 +572,12 @@ func TestAccElasticsearchIndex_mapping(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					checkElasticsearchIndexRecreated("elasticsearch_index.test_mapping", &initialUUID),
 					checkElasticsearchIndexMapping("terraform-test", func(s *terraform.State, mapping map[string]interface{}) error {
-						g.Expect(mapping).To(MatchAllKeys(Keys{
-							"terraform-test": MatchAllKeys(Keys{
-								"mappings": MatchAllKeys(Keys{
-									"properties": MatchAllKeys(Keys{
-										"name": MatchAllKeys(Keys{
-											"type": Equal("text"),
+						g.Expect(mapping).To(gstruct.MatchAllKeys(gstruct.Keys{
+							"terraform-test": gstruct.MatchAllKeys(gstruct.Keys{
+								"mappings": gstruct.MatchAllKeys(gstruct.Keys{
+									"properties": gstruct.MatchAllKeys(gstruct.Keys{
+										"name": gstruct.MatchAllKeys(gstruct.Keys{
+											"type": gomega.Equal("text"),
 										}),
 									}),
 								}),
