@@ -72,6 +72,13 @@ func resourceElasticsearchXpackRole() *schema.Resource {
 								},
 							},
 						},
+						"allow_restricted_indices": {
+							Type:     schema.TypeSet,
+							Required: false,
+							Elem: &schema.Schema{
+								Type: schema.TypeBool,
+							},
+						},
 					},
 				},
 			},
