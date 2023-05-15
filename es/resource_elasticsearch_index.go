@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/nsf/jsondiff"
 
 	elastic7 "github.com/olivere/elastic/v7"
 	elastic6 "gopkg.in/olivere/elastic.v6"
@@ -353,9 +354,8 @@ var (
 		// Other attributes
 		"mappings": {
 			Type:         schema.TypeString,
-			Description:  "A JSON string defining how documents in the index, and the fields they contain, are stored and indexed. To avoid the complexities of field mapping updates, updates of this field are not allowed via this provider. See the upstream [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/indices-put-mapping.html#updating-field-mappings) for more details.",
+			Description:  "A JSON string defining how documents in the index, and the fields they contain, are stored and indexed. Mappings may be updated on an existing index only if adding a new field to an existing mapping. See the upstream [Elasticsearch docs](https://www.elastic.co/guide/en/elasticsearch/reference/6.8/indices-put-mapping.html#updating-field-mappings) for more details.",
 			Optional:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.StringIsJSON,
 		},
 		"aliases": {
@@ -413,12 +413,13 @@ var (
 
 func resourceElasticsearchIndex() *schema.Resource {
 	return &schema.Resource{
-		Description: "Provides an Elasticsearch index resource.",
-		Create:      resourceElasticsearchIndexCreate,
-		Read:        resourceElasticsearchIndexRead,
-		Update:      resourceElasticsearchIndexUpdate,
-		Delete:      resourceElasticsearchIndexDelete,
-		Schema:      configSchema,
+		Description:   "Provides an Elasticsearch index resource.",
+		Create:        resourceElasticsearchIndexCreate,
+		Read:          resourceElasticsearchIndexRead,
+		Update:        resourceElasticsearchIndexUpdate,
+		Delete:        resourceElasticsearchIndexDelete,
+		Schema:        configSchema,
+		CustomizeDiff: verifyIndexMappingUpdates,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -670,6 +671,7 @@ func allowIndexDestroy(indexName string, d *schema.ResourceData, meta interface{
 }
 
 func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) error {
+	var err error
 	settings := make(map[string]interface{})
 	for _, key := range settingsKeys {
 		schemaName := strings.Replace(key, ".", "_", -1)
@@ -678,11 +680,23 @@ func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	// if we're not changing any settings, no-op this function
-	if len(settings) == 0 {
-		return resourceElasticsearchIndexRead(d, meta)
+	if len(settings) != 0 {
+		err = updateIndexSettings(d, meta, settings)
+	}
+	if err != nil {
+		return err
 	}
 
+	if d.HasChange("mappings") {
+		if err = updateIndexMappings(d, meta, d.Get("mappings").(string)); err != nil {
+			return err
+		}
+	}
+
+	return resourceElasticsearchIndexRead(d, meta.(*ProviderConf))
+}
+
+func updateIndexSettings(d *schema.ResourceData, meta interface{}, settings map[string]interface{}) error {
 	body := map[string]interface{}{
 		// Note you do not have to explicitly specify the `index` section inside
 		// the `settings` section
@@ -711,11 +725,51 @@ func resourceElasticsearchIndexUpdate(d *schema.ResourceData, meta interface{}) 
 	default:
 		return errors.New("Elasticsearch version not supported")
 	}
-
-	if err == nil {
-		return resourceElasticsearchIndexRead(d, meta.(*ProviderConf))
-	}
 	return err
+}
+
+func updateIndexMappings(d *schema.ResourceData, meta interface{}, mapping string) error {
+	var (
+		name = d.Id()
+		ctx  = context.Background()
+		err  error
+	)
+	esClient, err := getClient(meta.(*ProviderConf))
+	if err != nil {
+		return err
+	}
+	switch client := esClient.(type) {
+	case *elastic7.Client:
+		_, err = client.PutMapping().Index(name).BodyString(mapping).Do(ctx)
+	case *elastic6.Client:
+		_, err = client.PutMapping().Index(name).BodyString(mapping).Do(ctx)
+	default:
+		return errors.New("Elasticsearch version not supported")
+	}
+
+	return err
+}
+
+func verifyIndexMappingUpdates(ctx context.Context, resourceDiff *schema.ResourceDiff, meta interface{}) error {
+	if !resourceDiff.HasChange("mappings") {
+		return nil
+	}
+
+	oldMapping, newMapping := resourceDiff.GetChange("mappings")
+	oldMappingStr := oldMapping.(string)
+	if len(oldMappingStr) == 0 {
+		oldMappingStr = "{}"
+	}
+	newMappingStr := newMapping.(string)
+	if len(newMappingStr) == 0 {
+		newMappingStr = "{}"
+	}
+	difference, _ := jsondiff.Compare([]byte(newMappingStr), []byte(oldMappingStr), &jsondiff.Options{})
+	// The new mapping is not a superset of the old mapping, therefore the index requires recreation
+	if difference == jsondiff.NoMatch {
+		return resourceDiff.ForceNew("mappings")
+	}
+	return nil
 }
 
 func getWriteIndexByAlias(alias string, d *schema.ResourceData, meta interface{}) string {
