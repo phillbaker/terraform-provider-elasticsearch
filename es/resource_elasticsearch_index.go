@@ -614,7 +614,7 @@ func resourceElasticsearchIndexDelete(d *schema.ResourceData, meta interface{}) 
 	// check to see if there are documents in the index
 	allowed := allowIndexDestroy(name, d, meta)
 	if !allowed {
-		return fmt.Errorf("There are documents in the index (or the index could not be , set force_destroy to true to allow destroying.")
+		return fmt.Errorf("There are documents in the index (or the index could not be found), set force_destroy to true to allow destroying.")
 	}
 
 	esClient, err := getClient(meta.(*ProviderConf))
