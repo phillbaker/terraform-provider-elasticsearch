@@ -57,6 +57,7 @@ type ProviderConf struct {
 	pingTimeoutSeconds       int
 	awsRegion                string
 	awsAssumeRoleArn         string
+	awsAssumeRoleExternalID  string
 	awsAssumeRoleSessionName string
 	awsAccessKeyId           string
 	awsSecretAccessKey       string
@@ -127,6 +128,12 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Default:     "",
 				Description: "Amazon Resource Name of an IAM Role to assume prior to making AWS API calls.",
+			},
+			"aws_assume_role_external_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+				Description: "External ID configured in the IAM policy of the IAM Role to assume prior to making AWS API calls.",
 			},
 			"aws_assume_role_session_name": {
 				Type:        schema.TypeString,
@@ -299,6 +306,7 @@ func providerConfigure(c context.Context, d *schema.ResourceData) (interface{}, 
 		awsRegion:          d.Get("aws_region").(string),
 
 		awsAssumeRoleArn:         d.Get("aws_assume_role_arn").(string),
+		awsAssumeRoleExternalID:  d.Get("aws_assume_role_external_id").(string),
 		awsAssumeRoleSessionName: d.Get("aws_assume_role_session_name").(string),
 		awsAccessKeyId:           d.Get("aws_access_key").(string),
 		awsSecretAccessKey:       d.Get("aws_secret_key").(string),
@@ -553,7 +561,7 @@ func getKibanaClient(conf *ProviderConf) (interface{}, error) {
 	}
 }
 
-func assumeRoleCredentials(region, roleARN, roleSessionName, profile string) *awscredentials.Credentials {
+func assumeRoleCredentials(region, roleARN, roleExternalID, roleSessionName, profile string) *awscredentials.Credentials {
 	sessOpts := awsSessionOptions(region)
 	sessOpts.Profile = profile
 
@@ -563,6 +571,7 @@ func assumeRoleCredentials(region, roleARN, roleSessionName, profile string) *aw
 		Client:          stsClient,
 		RoleARN:         roleARN,
 		RoleSessionName: roleSessionName,
+		ExternalID:      aws.String(roleExternalID),
 	}
 
 	return awscredentials.NewChainCredentials([]awscredentials.Provider{assumeRoleProvider})
@@ -593,6 +602,7 @@ func awsSession(region string, conf *ProviderConf) *awssession.Session {
 
 	// 1. access keys take priority
 	// 2. next is an assume role configuration
+	// 2.b check if the role external ID is set and use it
 	// 3. followed by a profile (for assume role)
 	// 4. let the default credentials provider figure out the rest (env, ec2, etc..)
 	//
@@ -600,7 +610,10 @@ func awsSession(region string, conf *ProviderConf) *awssession.Session {
 	if conf.awsAccessKeyId != "" {
 		sessOpts.Config.Credentials = awscredentials.NewStaticCredentials(conf.awsAccessKeyId, conf.awsSecretAccessKey, conf.awsSessionToken)
 	} else if conf.awsAssumeRoleArn != "" {
-		sessOpts.Config.Credentials = assumeRoleCredentials(region, conf.awsAssumeRoleArn, conf.awsAssumeRoleSessionName, conf.awsProfile)
+		if conf.awsAssumeRoleExternalID == "" {
+			conf.awsAssumeRoleExternalID = ""
+		}
+		sessOpts.Config.Credentials = assumeRoleCredentials(region, conf.awsAssumeRoleArn, conf.awsAssumeRoleExternalID, conf.awsAssumeRoleSessionName, conf.awsProfile)
 	} else if conf.awsProfile != "" {
 		sessOpts.Profile = conf.awsProfile
 	}

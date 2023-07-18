@@ -216,13 +216,15 @@ func TestAWSCredsAssumeRole(t *testing.T) {
 	testRegion := "us-east-1"
 
 	testConfig := map[string]interface{}{
-		"aws_assume_role_arn": "test_arn",
+		"aws_assume_role_arn":         "test_arn",
+		"aws_assume_role_external_id": "secret_id",
 	}
 
 	testConfigData := schema.TestResourceDataRaw(t, Provider().Schema, testConfig)
 
 	conf := &ProviderConf{
-		awsAssumeRoleArn: testConfigData.Get("aws_assume_role_arn").(string),
+		awsAssumeRoleArn:        testConfigData.Get("aws_assume_role_arn").(string),
+		awsAssumeRoleExternalID: testConfigData.Get("aws_assume_role_external_id").(string),
 	}
 	s := awsSession(testRegion, conf)
 	if s == nil {
