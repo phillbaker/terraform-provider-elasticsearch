@@ -118,7 +118,7 @@ Example usage:
 provider "elasticsearch" {
     url                         = "https://search-foo-bar-pqrhr4w3u4dzervg41frow4mmy.us-east-1.es.amazonaws.com"
     aws_assume_role_arn         = "arn:aws:iam::012345678901:role/rolename"
-    aws_assume_role_external_id = "Unique ID Assigned by Example Corp"
+    aws_assume_role_external_id = "Unique ID"
 }
 ```
 
