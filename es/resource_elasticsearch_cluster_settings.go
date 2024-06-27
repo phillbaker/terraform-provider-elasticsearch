@@ -20,15 +20,17 @@ import (
 
 var (
 	stringClusterSettings = []string{
+		"action.auto_create_index",
+		"cluster.info.update.interval",
+		"cluster.no_master_block",
 		"cluster.persistent_tasks.allocation.enable",
 		"cluster.persistent_tasks.allocation.recheck_interval",
-		"cluster.info.update.interval",
 		"cluster.routing.allocation.allow_rebalance",
 		"cluster.routing.allocation.awareness.attributes",
 		"cluster.routing.allocation.disk.watermark.high",
 		"cluster.routing.allocation.disk.watermark.low",
+		"cluster.routing.allocation.enable",
 		"cluster.routing.rebalance.enable",
-		"cluster.no_master_block",
 		"indices.breaker.fielddata.limit",
 		"indices.breaker.request.limit",
 		"indices.breaker.total.limit",
@@ -36,7 +38,6 @@ var (
 		"network.breaker.inflight_requests.limit",
 		"script.max_compilations_rate",
 		"search.default_search_timeout",
-		"action.auto_create_index",
 	}
 	intClusterSettings = []string{
 		"cluster.max_shards_per_node",
@@ -62,7 +63,6 @@ var (
 		"cluster.indices.close.enable",
 		"cluster.routing.allocation.disk.include_relocations",
 		"cluster.routing.allocation.disk.threshold_enabled",
-		"cluster.routing.allocation.enable",
 		"cluster.routing.allocation.same_shard.host",
 		"action.destructive_requires_name",
 	}
