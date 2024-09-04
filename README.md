@@ -299,8 +299,8 @@ export ES_KIBANA_IMAGE=""
 export OPENSEARCH_PREFIX="plugins.security"
 export OSS_ENV_VAR="plugins.security.disabled=true"
 export XPACK_IMAGE="docker.elastic.co/elasticsearch/elasticsearch:7.10.1"
-docker-compose up -d
-docker-compose ps -a
+docker compose up -d
+docker compose ps -a
 ```
 
 When running tests, ensure that your test/debug profile has environmental variables as below:

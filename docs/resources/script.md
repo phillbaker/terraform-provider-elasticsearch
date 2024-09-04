@@ -26,7 +26,7 @@ resource "elasticsearch_script" "test_script" {
 The following arguments are supported:
 
 * `script_id` - (Required) The name of the script.
-* `lang` - Specifies the language the script is written in. Defaults to painless..
+* `lang` - Specifies the language the script is written in. Defaults to painless.
 * `source` - (Required) The source of the stored script.
 
 ## Attributes Reference

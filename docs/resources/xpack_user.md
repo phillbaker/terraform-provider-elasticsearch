@@ -33,7 +33,7 @@ resource "elasticsearch_xpack_user" "test" {
 ### Required
 
 - **roles** (Set of String) A set of roles the user has. The roles determine the user’s access permissions
-- **username** (String) An identifier for the user. 
+- **username** (String) An identifier for the user.
 
  Usernames must be at least 1 and no more than 1024 characters. They can contain alphanumeric characters (a-z, A-Z, 0-9), spaces, punctuation, and printable symbols in the Basic Latin (ASCII) block. Leading or trailing whitespace is not allowed.
 

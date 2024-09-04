@@ -98,7 +98,7 @@
 
 ### Added
 - [index] Add include_type_name for compatibility between ESv6/7
-- [xpack license] Handle ackowledged only reponse.
+- [xpack license] Handle acknowledged only response.
 - [kibana alert] Fix storing actions, missing descriptions.
 
 ### Fixed

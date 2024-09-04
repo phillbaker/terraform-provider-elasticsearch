@@ -110,7 +110,7 @@ provider "elasticsearch" {
 #### Assume role configuration
 
 You can instruct the provider to assume a role in AWS before interacting with the cluster by setting the `aws_assume_role_arn` variable.
-Optionnaly, you can configure the [External ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) of IAM role trust policy by setting the `aws_assume_role_external_id` variable.
+Optionally, you can configure the [External ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) of IAM role trust policy by setting the `aws_assume_role_external_id` variable.
 
 Example usage:
 

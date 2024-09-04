@@ -75,7 +75,7 @@ resource "elasticsearch_index" "test" {
 
 ```sh
 $ export ES_OSS_IMAGE=elasticsearch:7.9.2
-$ docker-compose up -d elasticsearch
+$ docker compose up -d elasticsearch
 Creating network "terraform-provider-elasticsearch_default" with the default driver
 Creating terraform-provider-elasticsearch_elasticsearch_1 ... done
 ```

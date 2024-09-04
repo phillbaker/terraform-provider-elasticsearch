@@ -13,7 +13,7 @@ import (
 )
 
 func TestAccElasticsearchOpenDistroMonitor(t *testing.T) {
-	opensearchVerionConstraints, _ := version.NewConstraint(">= 1.1, < 6")
+	opensearchVersionConstraints, _ := version.NewConstraint(">= 1.1, < 6")
 	var config string
 	var check resource.TestCheckFunc
 	meta := testAccOpendistroProvider.Meta()
@@ -21,7 +21,7 @@ func TestAccElasticsearchOpenDistroMonitor(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
-	if opensearchVerionConstraints.Check(v) {
+	if opensearchVersionConstraints.Check(v) {
 		config = testAccElasticsearchOpenDistroMonitorOpenSearch11
 		check = resource.ComposeTestCheckFunc(
 			testCheckElasticsearchOpenDistroMonitorExists("elasticsearch_opendistro_monitor.test_monitor1"),

@@ -1,5 +1,6 @@
 # Visit https://goreleaser.com for documentation on how to customize this
 # behavior.
+version: 2
 before:
   hooks:
     - go mod tidy
@@ -34,7 +35,7 @@ checksum:
 signs:
   - artifacts: checksum
     args:
-      # pass the batch flag to indicate its not interactive.
+      # pass the batch flag to indicate it's not interactive.
       - "--batch"
       - "--local-user"
       - "{{ .Env.GPG_FINGERPRINT }}"

@@ -98,7 +98,7 @@ jobs:
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: ${{ runner.os }}-go-
     - name: Run Docker containers
-      run: docker-compose up --detach
+      run: docker compose up --detach
       env:
         OSS_IMAGE: "${{ matrix.oss-image }}:${{ matrix.version }}"
         ES_COMMAND: "${{matrix.ES_COMMAND}}"

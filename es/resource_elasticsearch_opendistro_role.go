@@ -276,11 +276,11 @@ func resourceElasticsearchPutOpenDistroRole(d *schema.ResourceData, m interface{
 	}
 	var tenantPermissionsBody []TenantPermissions
 	for _, tenant := range tenantPermissions {
-		putTeanant := TenantPermissions{
+		putTenant := TenantPermissions{
 			TenantPatterns: tenant.TenantPatterns,
 			AllowedActions: tenant.AllowedActions,
 		}
-		tenantPermissionsBody = append(tenantPermissionsBody, putTeanant)
+		tenantPermissionsBody = append(tenantPermissionsBody, putTenant)
 	}
 
 	rolesDefinition := RoleBody{
@@ -317,7 +317,7 @@ func resourceElasticsearchPutOpenDistroRole(d *schema.ResourceData, m interface{
 			// see https://github.com/opendistro-for-
 			// elasticsearch/security/issues/1095, this should return a 409, but
 			// retry on the 500 as well. We can't parse the message to only retry on
-			// the conlict exception becaues the elastic client doesn't directly
+			// the conflict exception because the elastic client doesn't directly
 			// expose the error response body
 			RetryStatusCodes: []int{http.StatusConflict, http.StatusInternalServerError},
 			Retrier: elastic7.NewBackoffRetrier(

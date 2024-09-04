@@ -95,7 +95,7 @@ func resourceElasticsearchClusterSettings() *schema.Resource {
 			"cluster_persistent_tasks_allocation_recheck_interval": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "A time string controling how often assignment checks are performed to react to whether persistent tasks can be assigned to nodes",
+				Description: "A time string controlling how often assignment checks are performed to react to whether persistent tasks can be assigned to nodes",
 			},
 			"cluster_blocks_read_only": {
 				Type:        schema.TypeBool,
@@ -225,7 +225,7 @@ func resourceElasticsearchClusterSettings() *schema.Resource {
 			"indices_breaker_request_limit": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The percentabge of memory above which per-request data structures (e.g. calculating aggregations) are prevented from exceeding",
+				Description: "The percentage of memory above which per-request data structures (e.g. calculating aggregations) are prevented from exceeding",
 			},
 			"indices_breaker_request_overhead": {
 				Type:        schema.TypeFloat,

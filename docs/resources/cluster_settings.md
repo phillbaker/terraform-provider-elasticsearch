@@ -34,7 +34,7 @@ resource "elasticsearch_cluster_settings" "global" {
 - **cluster_max_shards_per_node_frozen** (Number) The total number of primary and replica frozen shards, for the cluster; Ssards for closed indices do not count toward this limit, a cluster with no frozen data nodes is unlimited.
 - **cluster_no_master_block** (String) Specifies which operations are rejected when there is no active master in a cluster (all, write)
 - **cluster_persistent_tasks_allocation_enable** (String) Whether allocation for persistent tasks is active (all, none)
-- **cluster_persistent_tasks_allocation_recheck_interval** (String) A time string controling how often assignment checks are performed to react to whether persistent tasks can be assigned to nodes
+- **cluster_persistent_tasks_allocation_recheck_interval** (String) A time string controlling how often assignment checks are performed to react to whether persistent tasks can be assigned to nodes
 - **cluster_routing_allocation_allow_rebalance** (String) Specify when shard rebalancing is allowed (always, indices_primaries_active, indices_all_active)
 - **cluster_routing_allocation_awareness_attributes** (String) Use custom node attributes to take hardware configuration into account when allocating shards
 - **cluster_routing_allocation_balance_index** (Number) Weight factor for the number of shards per index allocated on a node, increasing this raises the tendency to equalize the number of shards per index across all nodes
@@ -55,7 +55,7 @@ resource "elasticsearch_cluster_settings" "global" {
 - **cluster_routing_rebalance_enable** (String) Allow rebalancing for specific kinds of shards (all, primaries, replicas, none)
 - **indices_breaker_fielddata_limit** (String) The percentage of memory above which if loading a field into the field data cache would cause the cache to exceed this limit, an error is returned
 - **indices_breaker_fielddata_overhead** (Number) A constant that all field data estimations are multiplied by
-- **indices_breaker_request_limit** (String) The percentabge of memory above which per-request data structures (e.g. calculating aggregations) are prevented from exceeding
+- **indices_breaker_request_limit** (String) The percentage of memory above which per-request data structures (e.g. calculating aggregations) are prevented from exceeding
 - **indices_breaker_request_overhead** (Number) A constant that all request estimations are multiplied by
 - **indices_breaker_total_limit** (String) The percentage of total amount of memory that can be used across all breakers
 - **indices_recovery_max_bytes_per_sec** (String) Maximum total inbound and outbound recovery traffic for each node, in mb

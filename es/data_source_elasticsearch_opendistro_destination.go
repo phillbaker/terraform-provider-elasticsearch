@@ -20,7 +20,7 @@ var datasourceOpenDistroDestinationSchema = map[string]*schema.Schema{
 	"name": {
 		Type:        schema.TypeString,
 		Required:    true,
-		Description: "Name of the destrination to retrieve",
+		Description: "Name of the destination to retrieve",
 	},
 	"body": {
 		Type:        schema.TypeMap,

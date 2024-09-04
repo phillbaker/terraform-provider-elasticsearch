@@ -14,7 +14,7 @@ import (
 )
 
 func TestAccElasticsearchOpenDistroISMPolicy(t *testing.T) {
-	opensearchVerionConstraints, _ := version.NewConstraint(">= 1.1, < 6")
+	opensearchVersionConstraints, _ := version.NewConstraint(">= 1.1, < 6")
 	provider := Provider()
 	diags := provider.Configure(context.Background(), &terraform.ResourceConfig{})
 	if diags.HasError() {
@@ -38,7 +38,7 @@ func TestAccElasticsearchOpenDistroISMPolicy(t *testing.T) {
 		if err != nil {
 			t.Skipf("err: %s", err)
 		}
-		if opensearchVerionConstraints.Check(v) {
+		if opensearchVersionConstraints.Check(v) {
 			config = testAccElasticsearchOpenDistroISMPolicyOpenSearch11
 		} else {
 			config = testAccElasticsearchOpenDistroISMPolicyV7

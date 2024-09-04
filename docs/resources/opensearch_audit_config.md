@@ -10,10 +10,10 @@ description: |-
 
 Audit config lets you configure the security plugin audit log settings. See the guide https://opensearch.org/docs/latest/security-plugin/audit-logs/index/ and AWS specific information https://docs.aws.amazon.com/opensearch-service/latest/developerguide/audit-logs.html.
 
-Note that when using with a managed AWS OpenSearch cluster, some values and  permutations are not 
-allowed, and will result in a HTTP 409 (Conflict) error being returned. See the comments in the 
-example below for some know scenario's where this may occur.
-  
+Note that when using with a managed AWS OpenSearch cluster, some values and  permutations are not
+allowed, and will result in a HTTP 409 (Conflict) error being returned. See the comments in the
+example below for some known scenarios where this may occur.
+
 ## Example Usage
 
 ```terraform

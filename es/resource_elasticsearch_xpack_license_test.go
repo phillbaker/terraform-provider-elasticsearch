@@ -15,7 +15,7 @@ import (
 )
 
 // Note the tests run with a trial license enabled, so this test is
-// "destructive" in that once deactivated, a trail license may not be re-
+// "destructive" in that once deactivated, a trial license may not be re-
 // activated. Restarting the docker compose container doesn't seem to work.
 func TestAccElasticsearchXpackLicense_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{

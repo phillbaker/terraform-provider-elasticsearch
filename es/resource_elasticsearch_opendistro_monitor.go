@@ -68,7 +68,7 @@ func resourceElasticsearchOpenDistroMonitorCreate(d *schema.ResourceData, m inte
 	log.Printf("[INFO] Object ID: %s", d.Id())
 
 	// Although we receive the full monitor in the response to the POST,
-	// OpenDistro seems to add default values to the ojbect after the resource
+	// OpenDistro seems to add default values to the object after the resource
 	// is saved, e.g. adjust_pure_negative, boost values
 	return resourceElasticsearchOpenDistroMonitorRead(d, m)
 }

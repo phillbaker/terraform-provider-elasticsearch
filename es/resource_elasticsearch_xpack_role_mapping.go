@@ -36,7 +36,7 @@ func resourceElasticsearchXpackRoleMapping() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: suppressEquivalentJson,
-				Description:      "A list of mustache templates that will be evaluated to determine the roles names that should granted to the users that match the role mapping rules. This matches fields of users, rules can be grouped into `all` and `any` top level keys.",
+				Description:      "A list of mustache templates that will be evaluated to determine the roles names that should be granted to the users that match the role mapping rules. This matches fields of users, rules can be grouped into `all` and `any` top level keys.",
 			},
 			"roles": {
 				Type: schema.TypeSet,

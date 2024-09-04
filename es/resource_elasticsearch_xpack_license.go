@@ -215,13 +215,13 @@ func resourceElasticsearchPutEnterpriseLicense(l string, meta interface{}) (Lice
 	}
 
 	if !licenseResponse.Acknowledged {
-		return emptyLicense, errors.New("License waas not acknowledged")
+		return emptyLicense, errors.New("License was not acknowledged")
 	}
 
 	if len(licenseResponse.Licenses) > 0 {
 		return licenseResponse.Licenses[0], err
 	} else {
-		// The API can ackowledge a license, but not return it :|, so we parse what we PUTed
+		// The API can acknowledge a license, but not return it :|, so we parse what we PUTed
 		var license License
 		if err := json.Unmarshal([]byte(l), &license); err != nil {
 			return emptyLicense, fmt.Errorf("Error unmarshalling license: %+v: %+v", err, body)

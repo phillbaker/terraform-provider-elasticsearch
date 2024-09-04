@@ -5,7 +5,7 @@ services:
     image: ${OSS_IMAGE}
     hostname: elasticsearch
     container_name: elasticsearch
-    networks: 
+    networks:
       - elasticsearch # used by ESv6 kibana
     environment:
       - cluster.name=elasticsearch
@@ -28,7 +28,7 @@ services:
     ports:
       - 9200:9200
   xpack:
-    image: ${XPACK_IMAGE:-rwgrim/docker-noop}
+    image: ${XPACK_IMAGE:-alpine}
     hostname: elasticsearch-xpack
     container_name: elasticsearch-xpack
     environment:
@@ -55,7 +55,7 @@ services:
     ports:
       - 9210:9210
   opendistro:
-    image: ${ES_OPENDISTRO_IMAGE:-rwgrim/docker-noop}
+    image: ${ES_OPENDISTRO_IMAGE:-alpine}
     hostname: elasticsearch-opendistro
     container_name: elasticsearch-opendistro
     environment:
@@ -79,7 +79,7 @@ services:
     ports:
       - 9220:9220
   xpack-kibana:
-    image: ${XPACK_IMAGE:-rwgrim/docker-noop}
+    image: ${XPACK_IMAGE:-alpine}
     networks:
       - elasticsearch  # used by ESv7 kibana
     environment:
@@ -101,7 +101,7 @@ services:
     ports:
       - 9230:9230
   kibana:
-    image: ${ES_KIBANA_IMAGE:-rwgrim/docker-noop}
+    image: ${ES_KIBANA_IMAGE:-alpine}
     networks:
       - elasticsearch
     links:

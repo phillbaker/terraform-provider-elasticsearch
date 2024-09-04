@@ -26,7 +26,7 @@ func TestAccElasticsearchKibanaAlert(t *testing.T) {
 	}
 	meta := provider.Meta()
 
-	// We use the elasticsearch version to check compatibilty, it'll connect to
+	// We use the elasticsearch version to check compatibility, it'll connect to
 	// kibana below
 	providerConf := meta.(*ProviderConf)
 	esClient, err := getClient(providerConf)
@@ -54,8 +54,8 @@ func TestAccElasticsearchKibanaAlert(t *testing.T) {
 	}
 
 	testConfig := testAccElasticsearchKibanaAlertV77(defaultActionID)
-	testParmsConfig := testAccElasticsearchKibanaAlertParamsJSONV77
-	testActionParmsConfig := testAccElasticsearchKibanaAlertJsonV77(defaultActionID)
+	testParamsConfig := testAccElasticsearchKibanaAlertParamsJSONV77
+	testActionParamsConfig := testAccElasticsearchKibanaAlertJsonV77(defaultActionID)
 	elasticVersion, err := resourceElasticsearchKibanaGetVersion(meta)
 	if err != nil {
 		t.Skipf("err: %s", err)
@@ -67,8 +67,8 @@ func TestAccElasticsearchKibanaAlert(t *testing.T) {
 	}
 	if elasticVersion.GreaterThanOrEqual(versionV711) {
 		testConfig = testAccElasticsearchKibanaAlertV711
-		testParmsConfig = testAccElasticsearchKibanaAlertParamsJSONV711
-		testActionParmsConfig = testAccElasticsearchKibanaAlertJsonV711(defaultActionID)
+		testParamsConfig = testAccElasticsearchKibanaAlertParamsJSONV711
+		testActionParamsConfig = testAccElasticsearchKibanaAlertJsonV711(defaultActionID)
 	}
 
 	log.Printf("[INFO] TestAccElasticsearchKibanaAlert %+v", elasticVersion)
@@ -89,13 +89,13 @@ func TestAccElasticsearchKibanaAlert(t *testing.T) {
 				),
 			},
 			{
-				Config: testParmsConfig,
+				Config: testParamsConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchKibanaAlertExists("elasticsearch_kibana_alert.test_params_json"),
 				),
 			},
 			{
-				Config: testActionParmsConfig,
+				Config: testActionParamsConfig,
 				Check: resource.ComposeTestCheckFunc(
 					testCheckElasticsearchKibanaAlertExists("elasticsearch_kibana_alert.test_action_json"),
 				),

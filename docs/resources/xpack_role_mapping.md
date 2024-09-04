@@ -46,7 +46,7 @@ resource "elasticsearch_xpack_role_mapping" "test" {
 
 - **role_mapping_name** (String) The distinct name that identifies the role mapping, used solely as an identifier.
 - **roles** (Set of String) A list of role names that are granted to the users that match the role mapping rules.
-- **rules** (String) A list of mustache templates that will be evaluated to determine the roles names that should granted to the users that match the role mapping rules. This matches fields of users, rules can be grouped into `all` and `any` top level keys.
+- **rules** (String) A list of mustache templates that will be evaluated to determine the roles names that should be granted to the users that match the role mapping rules. This matches fields of users, rules can be grouped into `all` and `any` top level keys.
 
 ### Optional
 
